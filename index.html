@@ -1,279 +1,510 @@
-<!DOCTYPE html>
+ㅈㅈㅈㅈ<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RenderAI</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f7f5;--white:#fff;--border:#e8e8e5;--border2:#d8d8d4;--text:#1a1a18;--muted:#8a8a84;--light:#b8b8b2;--green:#2d7a4f;--green-light:#e8f5ee;--panel:320px}
+:root{--bg:#f0f0ee;--white:#fff;--border:#e2e2de;--text:#1a1a1a;--muted:#999;--light:#ccc;--panel:260px}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Geist',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-header{height:52px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
-.logo{font-family:'Instrument Serif',serif;font-size:19px;letter-spacing:-.3px}.logo em{font-style:italic;color:var(--green)}
-.hsep{width:1px;height:16px;background:var(--border)}
-.proj{font-size:13px;color:var(--muted)}
-.hright{margin-left:auto;display:flex;gap:8px}
-.hbtn{background:var(--text);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:'Geist',sans-serif;cursor:pointer;transition:opacity .2s}.hbtn:hover{opacity:.8}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+
+/* HEADER */
+header{height:44px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0}
+.logo{width:26px;height:26px;background:#1a1a1a;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo span{color:#fff;font-size:11px;font-weight:700}
+.logo-name{font-size:13px;font-weight:600;color:var(--text)}
+.hright{margin-left:auto;display:flex;gap:8px;align-items:center}
+.avatar-wrap{display:flex;align-items:center;gap:8px}
+.avatar{width:28px;height:28px;border-radius:50%;background:#e8e8e8;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)}
+.avatar-name{font-size:12px;color:var(--text);font-weight:500}
+.avatar-email{font-size:10px;color:var(--muted)}
+
+/* APP BODY */
 .app{flex:1;display:flex;overflow:hidden}
-.toolbar{width:48px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;flex-shrink:0}
-.tbtn{width:32px;height:32px;border-radius:6px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}.tbtn:hover{background:var(--bg);color:var(--text)}.tbtn.active{background:var(--text);color:#fff}
-.canvas-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.ctop{height:40px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0}
-.slabel{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--light);font-weight:600}
-.stab{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--white);font-size:12px;color:var(--muted);cursor:pointer}
-.carea{flex:1;position:relative;overflow:hidden;background:var(--bg)}
-.upload-zone{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-.ucard{width:240px;height:190px;background:var(--white);border:1.5px dashed var(--border2);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all .2s;text-align:center;padding:24px}.ucard:hover{border-color:var(--green);background:var(--green-light)}
-.uicon{width:44px;height:44px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
-.ucard h3{font-size:14px;font-weight:600;line-height:1.3}
-.ucard p{font-size:11px;color:var(--muted);line-height:1.5}
-.ucard small{font-size:10px;color:var(--light);text-transform:uppercase;letter-spacing:.8px}
-.drag-hint{font-size:11px;color:var(--light);letter-spacing:.5px}
-#preview-container{display:none;position:absolute;inset:0}
-#preview-container.visible{display:block}
-.psplit{width:100%;height:100%;display:grid;grid-template-columns:1fr 1fr}
-.psplit.single{grid-template-columns:1fr}
-.ppane{position:relative;overflow:hidden;background:#fff}
-.ppane img{width:100%;height:100%;object-fit:contain;background:#fff}
-.plabel{position:absolute;top:10px;left:10px;font-size:10px;text-transform:uppercase;letter-spacing:.8px;background:rgba(255,255,255,.9);color:var(--muted);padding:3px 8px;border-radius:4px;border:1px solid var(--border);font-weight:500}
-.pdiv{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border);z-index:2}
-.loading{display:none;position:absolute;inset:0;background:rgba(247,247,245,.92);backdrop-filter:blur(8px);flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:20}
+
+/* LEFT THIN BAR */
+.lbar{width:42px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:4px;flex-shrink:0}
+.lbtn{width:30px;height:30px;border-radius:6px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s}
+.lbtn:hover{background:var(--bg);color:var(--text)}
+.lbtn.active{background:#1a1a1a;color:#fff}
+
+/* CENTER */
+.center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* THUMBS BAR */
+.thumbbar{background:var(--white);border-bottom:1px solid var(--border);padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.tnav{width:22px;height:22px;border-radius:4px;border:1px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0}
+.tnav:hover{background:var(--bg)}
+.thumbs-wrap{display:flex;gap:8px;flex:1;overflow:hidden}
+.thumb{width:80px;height:56px;border-radius:6px;border:2px solid transparent;overflow:hidden;cursor:pointer;flex-shrink:0;background:#ddd;position:relative;transition:all .15s}
+.thumb:hover{border-color:#aaa}
+.thumb.active{border-color:#1a1a1a}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb-num{position:absolute;bottom:3px;left:5px;font-size:9px;color:#fff;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.6);background:rgba(0,0,0,.3);padding:1px 4px;border-radius:3px}
+.thumb-add{width:80px;height:56px;border-radius:6px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--light);font-size:20px;flex-shrink:0;transition:all .15s}
+.thumb-add:hover{border-color:#999;color:var(--muted)}
+
+/* CANVAS AREA */
+.canvas-wrap{flex:1;padding:12px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:0}
+
+/* UPLOAD STATE */
+.upload-zone{position:absolute;inset:12px;background:#e8e8e6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;border:2px dashed transparent}
+.upload-zone:hover{border-color:#ccc;background:#e2e2e0}
+.upload-icon{width:52px;height:52px;background:#d8d8d6;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+.upload-zone h3{font-size:14px;font-weight:600;margin-bottom:6px}
+.upload-zone p{font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
+.upload-zone small{font-size:10px;color:var(--light);margin-top:8px;text-transform:uppercase;letter-spacing:.5px}
+
+/* CANVAS WITH IMAGE */
+.canvas{position:absolute;inset:12px;border-radius:10px;overflow:hidden;background:#1a1a1a;display:none}
+.canvas.visible{display:block}
+
+/* COMPARISON SLIDER */
+.compare-container{width:100%;height:100%;position:relative;overflow:hidden;user-select:none}
+.compare-original{position:absolute;inset:0}
+.compare-original img{width:100%;height:100%;object-fit:contain}
+.compare-rendered{position:absolute;inset:0;overflow:hidden}
+.compare-rendered img{width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0}
+.compare-line{position:absolute;top:0;bottom:0;width:2px;background:#fff;transform:translateX(-50%);cursor:ew-resize;z-index:10;box-shadow:0 0 8px rgba(0,0,0,.4)}
+.compare-handle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:#fff;border-radius:50%;box-shadow:0 2px 12px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:ew-resize;z-index:11}
+.compare-handle svg{width:16px;height:16px;fill:#666}
+.compare-label{position:absolute;top:12px;font-size:10px;font-weight:600;background:rgba(0,0,0,.5);color:#fff;padding:3px 8px;border-radius:4px;backdrop-filter:blur(4px);pointer-events:none;letter-spacing:.5px;text-transform:uppercase}
+.label-original{left:12px}
+.label-rendered{right:12px}
+
+/* LOADING */
+.loading{display:none;position:absolute;inset:0;background:rgba(26,26,26,.8);backdrop-filter:blur(6px);flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:20}
 .loading.visible{display:flex}
-.spinner{width:34px;height:34px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+.spinner{width:36px;height:36px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.ltext{font-size:13px;color:var(--muted)}.lsub{font-size:11px;color:var(--light)}
-.cbot{height:52px;background:var(--white);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:4px;flex-shrink:0}
-.bbtn{width:32px;height:32px;border-radius:6px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}.bbtn:hover{background:var(--bg);color:var(--text)}
-.bsep{width:1px;height:20px;background:var(--border);margin:0 4px}
-.rpanel{width:var(--panel);background:var(--white);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none;flex-shrink:0}
+.loading-text{font-size:13px;color:rgba(255,255,255,.8)}
+.loading-sub{font-size:11px;color:rgba(255,255,255,.4)}
+
+/* CANVAS BOTTOM ACTIONS */
+.canvas-actions{position:absolute;bottom:20px;right:20px;display:none;gap:8px;z-index:15}
+.canvas-actions.visible{display:flex}
+.caction{background:rgba(0,0,0,.6);border:none;color:#fff;padding:7px 14px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;backdrop-filter:blur(4px);display:flex;align-items:center;gap:6px;transition:all .2s}
+.caction:hover{background:rgba(0,0,0,.8)}
+
+/* RIGHT PANEL */
+.rpanel{width:var(--panel);background:var(--white);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;scrollbar-width:none}
 .rpanel::-webkit-scrollbar{display:none}
-.psec{padding:14px 16px;border-bottom:1px solid var(--border)}
-.slab{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--light);margin-bottom:10px;font-weight:600}
-.ainput{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:7px;font-size:12px;font-family:monospace;outline:none;transition:border-color .2s}.ainput:focus{border-color:var(--green)}.ainput::placeholder{color:var(--light)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{padding:5px 11px;border-radius:6px;border:1px solid var(--border);background:var(--white);color:var(--muted);font-size:12px;font-family:'Geist',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}.chip:hover{border-color:var(--border2);color:var(--text)}.chip.sel{background:var(--text);border-color:var(--text);color:#fff;font-weight:500}.chip.sel.g{background:var(--green);border-color:var(--green)}
-.fchips{display:flex;flex-wrap:wrap;gap:6px}
-.fchip{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--white);color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s;min-width:56px}.fchip:hover{border-color:var(--border2);color:var(--text)}.fchip.sel{border-color:var(--text);color:var(--text);background:var(--bg);font-weight:500}
-.ficon{width:32px;height:18px;border-radius:3px;border:1px solid var(--border)}
-.fm{background:linear-gradient(135deg,#f8f8f8,#e0ddd8)}.fw{background:linear-gradient(135deg,#c8936a,#a06040)}.ft{background:linear-gradient(135deg,#e0e8f0,#c0d0e0)}.fg{background:linear-gradient(135deg,#888,#555)}.fc{background:linear-gradient(135deg,#d4a0a0,#b07070)}.fco{background:linear-gradient(135deg,#c0bdb8,#a0a09a)}
-.engrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.ecard{padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--white);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:space-between}.ecard:hover{border-color:var(--border2)}.ecard.sel{border-color:var(--green);background:var(--green-light)}
-.ename{font-size:12px;font-weight:500}
-.ebadge{font-size:9px;background:var(--green);color:#fff;padding:2px 5px;border-radius:3px;font-weight:600}
-.swrap{display:flex;flex-direction:column;gap:8px}
-.slabels{display:flex;justify-content:space-between;font-size:11px;color:var(--light)}
-.slider{width:100%;-webkit-appearance:none;height:3px;background:var(--border);border-radius:2px;outline:none}
-.slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--text);cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px var(--border2)}
-.tinput{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:7px;font-size:12px;font-family:'Geist',sans-serif;outline:none;resize:none;min-height:70px;transition:border-color .2s;line-height:1.6}.tinput:focus{border-color:var(--green)}.tinput::placeholder{color:var(--light)}
-.rsec{padding:12px 16px;position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--border)}
-.rbtn{width:100%;padding:11px;background:var(--text);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;font-family:'Geist',sans-serif;cursor:pointer;transition:all .2s;letter-spacing:.2px}.rbtn:hover{background:#333}.rbtn:disabled{opacity:.35;cursor:not-allowed}
-.errmsg{display:none;margin:0 16px 10px;padding:9px 12px;background:#fff5f5;border:1px solid #fcd0d0;border-radius:7px;font-size:12px;color:#c0392b;line-height:1.5}.errmsg.visible{display:block}
-.dlbtn{display:none;width:calc(100% - 32px);margin:0 16px 10px;padding:8px;background:var(--bg);border:1px solid var(--border);color:var(--muted);border-radius:7px;font-size:12px;font-family:'Geist',sans-serif;cursor:pointer;transition:all .15s;text-align:center}.dlbtn:hover{border-color:var(--green);color:var(--green)}.dlbtn.visible{display:block}
+
+/* PROFILE */
+.profile-section{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.profile-avatar{width:32px;height:32px;border-radius:50%;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.profile-info{flex:1}
+.profile-name{font-size:13px;font-weight:600}
+.profile-email{font-size:11px;color:var(--muted)}
+
+/* API KEY */
+.api-section{padding:12px 16px;border-bottom:1px solid var(--border)}
+.sec-label{font-size:11px;font-weight:600;color:var(--text);margin-bottom:8px;letter-spacing:.2px}
+.api-input{width:100%;background:#f5f5f3;border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:7px;font-size:11px;font-family:monospace;outline:none;transition:border-color .2s}
+.api-input:focus{border-color:#1a1a1a}
+.api-input::placeholder{color:var(--light)}
+
+/* OPTION SECTIONS */
+.opt-section{padding:14px 16px;border-bottom:1px solid var(--border)}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.opt-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.opt-btn{padding:8px 6px;border-radius:7px;border:1px solid var(--border);background:var(--white);color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;font-weight:400;white-space:nowrap}
+.opt-btn:hover{border-color:#aaa}
+.opt-btn.sel{background:#1a1a1a;border-color:#1a1a1a;color:#fff;font-weight:500}
+
+/* INSTRUCTIONS */
+.inst-input{width:100%;background:#f5f5f3;border:1px solid var(--border);color:var(--text);padding:9px 10px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;resize:none;min-height:80px;transition:border-color .2s;line-height:1.5}
+.inst-input:focus{border-color:#1a1a1a}
+.inst-input::placeholder{color:var(--light)}
+
+/* ERROR */
+.errmsg{display:none;margin:0 16px 10px;padding:9px 12px;background:#fff5f5;border:1px solid #fcd0d0;border-radius:7px;font-size:12px;color:#c0392b;line-height:1.5}
+.errmsg.visible{display:block}
+
+/* RENDER BUTTON */
+.render-wrap{padding:14px 16px;position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--border);margin-top:auto}
+.render-btn{width:100%;padding:13px;background:#1a1a1a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.render-btn:hover{background:#333}
+.render-btn:disabled{opacity:.35;cursor:not-allowed}
+.render-icon{font-size:14px}
+
 #fi{display:none}
 </style>
 </head>
 <body>
+
+<!-- HEADER -->
 <header>
-  <div class="logo">Render<em>AI</em></div>
-  <div class="hsep"></div>
-  <span class="proj">건축 인테리어 렌더링</span>
+  <div class="logo"><span>R</span></div>
+  <span class="logo-name">RenderAI</span>
   <div class="hright">
-    <button class="hbtn" id="change-btn">+ 이미지 변경</button>
+    <div class="avatar-wrap">
+      <div class="avatar">👤</div>
+      <div>
+        <div class="avatar-name">isstudio012</div>
+        <div class="avatar-email">hello@isstudio.ai</div>
+      </div>
+    </div>
   </div>
 </header>
+
 <div class="app">
-  <div class="toolbar">
-    <button class="tbtn active">↖</button>
-    <button class="tbtn">✥</button>
-    <button class="tbtn">⊕</button>
+
+  <!-- LEFT THIN BAR -->
+  <div class="lbar">
+    <button class="lbtn active" title="Select">⊹</button>
+    <button class="lbtn" title="Upload" id="upload-lbtn">⬆</button>
     <div style="flex:1"></div>
-    <button class="tbtn" id="dl-tb">⬇</button>
   </div>
-  <div class="canvas-wrap">
-    <div class="ctop">
-      <span class="slabel">Scene Library</span>
-      <div class="stab">📋 Scene 1</div>
-    </div>
-    <div class="carea">
-      <div class="upload-zone" id="uz">
-        <div class="ucard" id="uc">
-          <div class="uicon">🏠</div>
-          <h3>Ultra Realistic Rendering</h3>
-          <p>SketchUp, Revit, 사진, 스케치를<br>포토리얼 렌더링으로 변환</p>
-          <small>Click to upload scenes</small>
-        </div>
-        <div class="drag-hint">— OR DRAG AND DROP ANYWHERE —</div>
+
+  <!-- CENTER -->
+  <div class="center">
+
+    <!-- THUMBNAILS -->
+    <div class="thumbbar">
+      <button class="tnav">‹</button>
+      <div class="thumbs-wrap" id="thumbs-wrap">
+        <!-- populated by JS -->
       </div>
-      <div id="pc">
-        <div class="psplit single" id="ps">
-          <div class="ppane" id="op"><img id="oi" src="" alt="원본"><div class="plabel">Original</div></div>
-          <div class="ppane" id="rp" style="display:none"><img id="ri" src="" alt="렌더링"><div class="plabel">Rendered</div><div class="pdiv"></div></div>
+      <button class="thumb-add" id="thumb-add-btn">+</button>
+      <button class="tnav">›</button>
+    </div>
+
+    <!-- CANVAS WRAP -->
+    <div class="canvas-wrap">
+
+      <!-- UPLOAD STATE -->
+      <div class="upload-zone" id="upload-zone">
+        <div class="upload-icon">🏠</div>
+        <h3>씬을 업로드하세요</h3>
+        <p>SketchUp, Revit, 3ds Max, Rhino<br>스케치 또는 사진</p>
+        <small>Click to upload scenes</small>
+      </div>
+
+      <!-- CANVAS WITH COMPARISON -->
+      <div class="canvas" id="canvas">
+        <div class="compare-container" id="compare-container">
+          <!-- ORIGINAL (bottom layer) -->
+          <div class="compare-original">
+            <img id="original-img" src="" alt="원본">
+            <div class="compare-label label-original">Original</div>
+          </div>
+          <!-- RENDERED (top layer, clipped) -->
+          <div class="compare-rendered" id="rendered-layer" style="width:50%">
+            <img id="rendered-img" src="" alt="렌더링">
+            <div class="compare-label label-rendered">Rendered</div>
+          </div>
+          <!-- SLIDER LINE -->
+          <div class="compare-line" id="compare-line" style="left:50%">
+            <div class="compare-handle">
+              <svg viewBox="0 0 24 24"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7"/></svg>
+            </div>
+          </div>
         </div>
-        <div class="loading" id="lo">
+
+        <!-- LOADING -->
+        <div class="loading" id="loading">
           <div class="spinner"></div>
-          <div class="ltext">렌더링 생성 중...</div>
-          <div class="lsub">약 30~60초 소요됩니다</div>
+          <div class="loading-text">렌더링 생성 중...</div>
+          <div class="loading-sub">약 30~60초 소요됩니다</div>
+        </div>
+
+        <!-- CANVAS ACTIONS -->
+        <div class="canvas-actions" id="canvas-actions">
+          <button class="caction" id="download-btn">⬇ 다운로드</button>
+          <button class="caction" id="new-render-btn">↩ 새 이미지</button>
         </div>
       </div>
-    </div>
-    <div class="cbot">
-      <button class="bbtn">✏️</button><button class="bbtn">⬜</button><button class="bbtn">⭕</button><button class="bbtn">✂️</button>
-      <div class="bsep"></div>
-      <button class="bbtn">↩</button><button class="bbtn">↪</button>
-      <div class="bsep"></div>
-      <button class="bbtn">🔲</button><button class="bbtn">⤡</button>
+
     </div>
   </div>
+
+  <!-- RIGHT PANEL -->
   <div class="rpanel">
-    <div class="psec">
-      <div class="slab">Replicate API Key</div>
-      <input type="password" class="ainput" id="ak" placeholder="r8_xxxxxxxxxxxxxxxxxxxx">
-    </div>
-    <div class="psec">
-      <div class="slab">Time of Day</div>
-      <div class="chips">
-        <div class="chip sel g" data-g="time" data-v="morning sunlight, warm golden hour">🌅 Morning</div>
-        <div class="chip" data-g="time" data-v="bright noon daylight">☀️ Noon</div>
-        <div class="chip" data-g="time" data-v="warm evening light, sunset glow">🌆 Evening</div>
-        <div class="chip" data-g="time" data-v="night interior lighting, artificial lights">🌙 Night</div>
+
+    <!-- PROFILE -->
+    <div class="profile-section">
+      <div class="profile-avatar">🏠</div>
+      <div class="profile-info">
+        <div class="profile-name">RenderAI</div>
+        <div class="profile-email">hello@renderai.app</div>
       </div>
     </div>
-    <div class="psec">
-      <div class="slab">Lighting</div>
-      <div class="chips">
-        <div class="chip sel" data-g="lighting" data-v="natural daylight through windows">Daylight</div>
-        <div class="chip" data-g="lighting" data-v="soft ambient lighting, diffused light">Ambient</div>
-        <div class="chip" data-g="lighting" data-v="cove lighting, indirect LED strip lights">Cove</div>
-        <div class="chip" data-g="lighting" data-v="spot lighting, accent spotlights">Spot</div>
-        <div class="chip" data-g="lighting" data-v="track lighting">Track</div>
-        <div class="chip" data-g="lighting" data-v="profile lighting">Profile</div>
+
+    <!-- API KEY -->
+    <div class="api-section">
+      <div class="sec-label">Replicate API Key</div>
+      <input type="password" class="api-input" id="api-key" placeholder="r8_xxxxxxxxxxxxxxxxxxxx">
+    </div>
+
+    <!-- TIME OF DAY -->
+    <div class="opt-section">
+      <div class="sec-label">Time of Day</div>
+      <div class="opt-grid">
+        <button class="opt-btn sel" data-g="time" data-v="morning sunlight, warm golden hour lighting">🌅 Morning</button>
+        <button class="opt-btn" data-g="time" data-v="bright noon daylight, overhead sun">☀️ Noon</button>
+        <button class="opt-btn" data-g="time" data-v="warm evening light, sunset glow">🌆 Evening</button>
+        <button class="opt-btn" data-g="time" data-v="night interior, artificial warm lighting">🌙 Night</button>
       </div>
     </div>
-    <div class="psec">
-      <div class="slab">Flooring</div>
-      <div class="fchips">
-        <div class="fchip" data-g="floor" data-v="marble flooring, polished white marble"><div class="ficon fm"></div>Marble</div>
-        <div class="fchip sel" data-g="floor" data-v="hardwood flooring, oak wood planks"><div class="ficon fw"></div>Wood</div>
-        <div class="fchip" data-g="floor" data-v="ceramic tile flooring, large format tiles"><div class="ficon ft"></div>Tile</div>
-        <div class="fchip" data-g="floor" data-v="granite flooring"><div class="ficon fg"></div>Granite</div>
-        <div class="fchip" data-g="floor" data-v="carpet flooring, soft area rug"><div class="ficon fc"></div>Carpet</div>
-        <div class="fchip" data-g="floor" data-v="polished concrete flooring"><div class="ficon fco"></div>Concrete</div>
+
+    <!-- LIGHTING -->
+    <div class="opt-section">
+      <div class="sec-label">Lighting</div>
+      <div class="opt-grid-3">
+        <button class="opt-btn sel" data-g="lighting" data-v="natural daylight through windows">Daylight</button>
+        <button class="opt-btn sel" data-g="lighting" data-v="soft ambient lighting, diffused">Ambient</button>
+        <button class="opt-btn sel" data-g="lighting" data-v="cove lighting, indirect LED">Cove</button>
+        <button class="opt-btn" data-g="lighting" data-v="spot lighting, accent spotlights">Spot</button>
+        <button class="opt-btn" data-g="lighting" data-v="track lighting, directional">Track</button>
+        <button class="opt-btn" data-g="lighting" data-v="profile lighting, wall-mounted">Profile</button>
       </div>
     </div>
-    <div class="psec">
-      <div class="slab">Render Engine</div>
-      <div class="engrid">
-        <div class="ecard sel" data-e="fidelity"><span class="ename">Fidelity</span><span class="ebadge">V1</span></div>
-        <div class="ecard" data-e="hyperreal"><span class="ename">Hyperreal</span><span class="ebadge" style="background:#aaa">V2</span></div>
+
+    <!-- FLOORING -->
+    <div class="opt-section">
+      <div class="sec-label">Flooring</div>
+      <div class="opt-grid-3">
+        <button class="opt-btn" data-g="floor" data-v="marble flooring, polished white marble">Marble</button>
+        <button class="opt-btn sel" data-g="floor" data-v="hardwood flooring, oak wood planks">Wood</button>
+        <button class="opt-btn" data-g="floor" data-v="ceramic tile flooring, large format">Tile</button>
+        <button class="opt-btn" data-g="floor" data-v="granite flooring, polished granite">Granite</button>
+        <button class="opt-btn" data-g="floor" data-v="carpet flooring, soft area rug">Carpet</button>
+        <button class="opt-btn" data-g="floor" data-v="polished concrete flooring">Concrete</button>
       </div>
     </div>
-    <div class="psec">
-      <div class="slab">Structure Preservation</div>
-      <div class="swrap">
-        <input type="range" class="slider" id="ss" min="0.3" max="0.95" step="0.05" value="0.75">
-        <div class="slabels"><span>Creative</span><span id="sv">0.75</span><span>Strict</span></div>
-      </div>
+
+    <!-- ADDITIONAL INSTRUCTIONS -->
+    <div class="opt-section">
+      <div class="sec-label">Additional Instructions</div>
+      <textarea class="inst-input" id="instructions" placeholder="Enter any specific requirements or preferences"></textarea>
     </div>
-    <div class="psec">
-      <div class="slab">Additional Instructions</div>
-      <textarea class="tinput" id="ins" placeholder="예: 대형 창문, 식물 추가, 따뜻한 톤으로..."></textarea>
+
+    <!-- ERROR -->
+    <div class="errmsg" id="errmsg"></div>
+
+    <!-- RENDER BUTTON -->
+    <div class="render-wrap">
+      <button class="render-btn" id="render-btn" disabled>
+        <span class="render-icon">✦</span> Render
+      </button>
     </div>
-    <div class="errmsg" id="em"></div>
-    <button class="dlbtn" id="db">⬇ 결과 이미지 다운로드</button>
-    <div class="rsec">
-      <button class="rbtn" id="rb" disabled>✦ Render</button>
-    </div>
+
   </div>
 </div>
+
 <input type="file" id="fi" accept="image/*">
+
 <script>
-let b64=null,rUrl=null;
-const uz=document.getElementById('uz'),uc=document.getElementById('uc'),pc=document.getElementById('pc'),
-ps=document.getElementById('ps'),oi=document.getElementById('oi'),ri=document.getElementById('ri'),
-rp=document.getElementById('rp'),lo=document.getElementById('lo'),rb=document.getElementById('rb'),
-fi=document.getElementById('fi'),ak=document.getElementById('ak'),ss=document.getElementById('ss'),
-sv=document.getElementById('sv'),em=document.getElementById('em'),db=document.getElementById('db');
+let b64 = null;
+let resultUrl = null;
+let history = [];
+let isDragging = false;
 
-uc.addEventListener('click',()=>fi.click());
-document.getElementById('change-btn').addEventListener('click',()=>fi.click());
-document.addEventListener('dragover',e=>e.preventDefault());
-document.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))load(f);});
-fi.addEventListener('change',e=>{if(e.target.files[0])load(e.target.files[0]);});
+const uploadZone = document.getElementById('upload-zone');
+const canvas = document.getElementById('canvas');
+const originalImg = document.getElementById('original-img');
+const renderedImg = document.getElementById('rendered-img');
+const renderedLayer = document.getElementById('rendered-layer');
+const compareLine = document.getElementById('compare-line');
+const loading = document.getElementById('loading');
+const renderBtn = document.getElementById('render-btn');
+const fi = document.getElementById('fi');
+const apiKey = document.getElementById('api-key');
+const errmsg = document.getElementById('errmsg');
+const downloadBtn = document.getElementById('download-btn');
+const newRenderBtn = document.getElementById('new-render-btn');
+const canvasActions = document.getElementById('canvas-actions');
+const thumbsWrap = document.getElementById('thumbs-wrap');
 
-function load(f){
-  const r=new FileReader();
-  r.onload=e=>{
-    b64=e.target.result;oi.src=b64;
-    uz.style.display='none';pc.style.display='block';
-    rp.style.display='none';ps.className='psplit single';
-    rUrl=null;db.classList.remove('visible');clearErr();check();
-  };r.readAsDataURL(f);
+// UPLOAD TRIGGERS
+uploadZone.addEventListener('click', () => fi.click());
+document.getElementById('upload-lbtn').addEventListener('click', () => fi.click());
+document.getElementById('thumb-add-btn').addEventListener('click', () => fi.click());
+
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadFile(f);
+});
+
+fi.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(f) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    b64 = e.target.result;
+    originalImg.src = b64;
+    renderedImg.src = '';
+    renderedLayer.style.width = '50%';
+    compareLine.style.left = '50%';
+    uploadZone.style.display = 'none';
+    canvas.classList.add('visible');
+    canvasActions.classList.remove('visible');
+    resultUrl = null;
+    clearErr();
+    checkReady();
+  };
+  reader.readAsDataURL(f);
 }
 
-document.querySelectorAll('.chip').forEach(c=>{
-  c.addEventListener('click',()=>{
-    const g=c.dataset.g;
-    document.querySelectorAll(`.chip[data-g="${g}"]`).forEach(x=>x.classList.remove('sel','g'));
-    c.classList.add('sel');if(g==='time')c.classList.add('g');
+// OPTION BUTTONS - single select per group except lighting (multi)
+document.querySelectorAll('.opt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const g = btn.dataset.g;
+    if (g === 'lighting') {
+      btn.classList.toggle('sel');
+    } else {
+      document.querySelectorAll(`.opt-btn[data-g="${g}"]`).forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+    }
   });
 });
-document.querySelectorAll('.fchip').forEach(c=>{
-  c.addEventListener('click',()=>{document.querySelectorAll('.fchip').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');});
-});
-document.querySelectorAll('.ecard').forEach(c=>{
-  c.addEventListener('click',()=>{document.querySelectorAll('.ecard').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');});
-});
 
-ss.addEventListener('input',()=>sv.textContent=ss.value);
-ak.addEventListener('input',check);
+apiKey.addEventListener('input', checkReady);
 
-function check(){rb.disabled=!(b64&&ak.value.trim().startsWith('r8_'));}
-
-function prompt(){
-  const t=document.querySelector('.chip[data-g="time"].sel')?.dataset.v||'';
-  const l=document.querySelector('.chip[data-g="lighting"].sel')?.dataset.v||'';
-  const f=document.querySelector('.fchip.sel')?.dataset.v||'';
-  const ins=document.getElementById('ins').value.trim();
-  return ['photorealistic architectural interior rendering, professional photography','modern minimalist interior design, clean lines',t,l,f,ins,'high quality, ultra realistic, 8K, architectural visualization'].filter(Boolean).join(', ');
+function checkReady() {
+  renderBtn.disabled = !(b64 && apiKey.value.trim().startsWith('r8_'));
 }
 
-rb.addEventListener('click',async()=>{
-  const key=ak.value.trim();if(!key||!b64)return;
-  clearErr();setLoad(true);rp.style.display='none';ps.className='psplit single';
-  try{
-    const res=await fetch('/api/render',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apiKey:key,prompt:prompt(),image:b64,strength:parseFloat(ss.value)})});
-    const pred=await res.json();
-    if(!res.ok)throw new Error(pred.error||'시작 실패');
-    await poll(key,pred.id);
-  }catch(e){showErr('오류: '+e.message);setLoad(false);}
+function buildPrompt() {
+  const time = document.querySelector('.opt-btn[data-g="time"].sel')?.dataset.v || '';
+  const lights = [...document.querySelectorAll('.opt-btn[data-g="lighting"].sel')].map(b => b.dataset.v).join(', ');
+  const floor = document.querySelector('.opt-btn[data-g="floor"].sel')?.dataset.v || '';
+  const inst = document.getElementById('instructions').value.trim();
+  return ['photorealistic architectural interior rendering, professional photography, ultra realistic, 8K', time, lights, floor, inst, 'high quality, sharp details, professional interior design visualization'].filter(Boolean).join(', ');
+}
+
+// RENDER
+renderBtn.addEventListener('click', async () => {
+  const key = apiKey.value.trim();
+  if (!key || !b64) return;
+  clearErr();
+  setLoading(true);
+
+  try {
+    const res = await fetch('/api/render', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: key, prompt: buildPrompt(), image: b64, strength: 0.75 })
+    });
+    const pred = await res.json();
+    if (!res.ok) throw new Error(pred.error || '렌더링 시작 실패');
+    await poll(key, pred.id);
+  } catch (e) {
+    showErr('오류: ' + e.message);
+    setLoading(false);
+  }
 });
 
-async function poll(key,id){
-  while(true){
-    await new Promise(r=>setTimeout(r,2500));
-    const res=await fetch('/api/poll',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apiKey:key,predictionId:id})});
-    const d=await res.json();
-    if(d.status==='succeeded'){const u=Array.isArray(d.output)?d.output[0]:d.output;showResult(u);return;}
-    else if(d.status==='failed')throw new Error(d.error||'실패');
+async function poll(key, id) {
+  while (true) {
+    await new Promise(r => setTimeout(r, 2500));
+    const res = await fetch('/api/poll', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: key, predictionId: id })
+    });
+    const d = await res.json();
+    if (d.status === 'succeeded') {
+      const url = Array.isArray(d.output) ? d.output[0] : d.output;
+      showResult(url);
+      return;
+    } else if (d.status === 'failed') {
+      throw new Error(d.error || '렌더링 실패');
+    }
   }
 }
 
-function showResult(url){
-  rUrl=url;ri.src=url;
-  ri.onload=()=>{setLoad(false);rp.style.display='block';ps.className='psplit';db.classList.add('visible');};
+function showResult(url) {
+  resultUrl = url;
+  renderedImg.src = url;
+  renderedImg.onload = () => {
+    setLoading(false);
+    canvasActions.classList.add('visible');
+    addThumb(b64, url);
+  };
 }
 
-function setLoad(on){
-  if(on){lo.classList.add('visible');rb.disabled=true;rb.textContent='⏳ 렌더링 중...';}
-  else{lo.classList.remove('visible');rb.disabled=false;rb.textContent='✦ Render';}
+function addThumb(orig, rendered) {
+  history.push({ orig, rendered });
+  renderThumbs();
 }
 
-function showErr(m){em.textContent=m;em.classList.add('visible');}
-function clearErr(){em.classList.remove('visible');}
+function renderThumbs() {
+  thumbsWrap.innerHTML = '';
+  history.forEach((item, i) => {
+    const t = document.createElement('div');
+    t.className = 'thumb' + (i === history.length - 1 ? ' active' : '');
+    t.innerHTML = `<img src="${item.rendered}"><div class="thumb-num">${i + 1}</div>`;
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.thumb').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      originalImg.src = item.orig;
+      renderedImg.src = item.rendered;
+      resultUrl = item.rendered;
+      renderedLayer.style.width = '50%';
+      compareLine.style.left = '50%';
+      canvas.classList.add('visible');
+      uploadZone.style.display = 'none';
+      canvasActions.classList.add('visible');
+    });
+    thumbsWrap.appendChild(t);
+  });
+}
 
-db.addEventListener('click',()=>{if(!rUrl)return;const a=document.createElement('a');a.href=rUrl;a.download='renderai.png';a.target='_blank';a.click();});
-document.getElementById('dl-tb').addEventListener('click',()=>db.click());
+// COMPARISON SLIDER
+const compareContainer = document.getElementById('compare-container');
+
+function setSliderPos(x) {
+  const rect = compareContainer.getBoundingClientRect();
+  let pct = ((x - rect.left) / rect.width) * 100;
+  pct = Math.max(2, Math.min(98, pct));
+  compareLine.style.left = pct + '%';
+  renderedLayer.style.width = pct + '%';
+}
+
+compareLine.addEventListener('mousedown', e => { isDragging = true; e.preventDefault(); });
+document.addEventListener('mousemove', e => { if (isDragging) setSliderPos(e.clientX); });
+document.addEventListener('mouseup', () => { isDragging = false; });
+
+compareLine.addEventListener('touchstart', e => { isDragging = true; });
+document.addEventListener('touchmove', e => { if (isDragging) setSliderPos(e.touches[0].clientX); });
+document.addEventListener('touchend', () => { isDragging = false; });
+
+// DOWNLOAD
+downloadBtn.addEventListener('click', () => {
+  if (!resultUrl) return;
+  const a = document.createElement('a');
+  a.href = resultUrl;
+  a.download = 'renderai.png';
+  a.target = '_blank';
+  a.click();
+});
+
+// NEW IMAGE
+newRenderBtn.addEventListener('click', () => {
+  fi.click();
+});
+
+function setLoading(on) {
+  if (on) {
+    loading.classList.add('visible');
+    renderBtn.disabled = true;
+    renderBtn.innerHTML = '<span>⏳</span> 렌더링 중...';
+  } else {
+    loading.classList.remove('visible');
+    renderBtn.disabled = false;
+    renderBtn.innerHTML = '<span class="render-icon">✦</span> Render';
+  }
+}
+
+function showErr(m) { errmsg.textContent = m; errmsg.classList.add('visible'); }
+function clearErr() { errmsg.classList.remove('visible'); }
 </script>
 </body>
 </html>
+HTMLEOF
