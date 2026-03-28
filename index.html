@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RenderAI — 건축 인테리어 렌더링</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --accent: #c8a96e;
+    --accent2: #e8c98e;
+    --text: #f0ede8;
+    --text-muted: #888;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+
+  .logo span { color: var(--text); }
+
+  .badge {
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 0;
+    height: calc(100vh - 65px);
+  }
+
+  /* LEFT PANEL */
+  .canvas-area {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+
+  .upload-zone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone.has-image {
+    cursor: default;
+  }
+
+  .upload-zone:not(.has-image):hover {
+    background: rgba(200, 169, 110, 0.03);
+  }
+
+  .upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    color: var(--text-muted);
+    transition: all 0.3s;
+  }
+
+  .upload-icon {
+    width: 72px;
+    height: 72px;
+    border: 1.5px dashed var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: all 0.3s;
+  }
+
+  .upload-zone:not(.has-image):hover .upload-icon {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .upload-label {
+    font-size: 15px;
+    font-weight: 400;
+  }
+
+  .upload-sub {
+    font-size: 12px;
+    color: #555;
+  }
+
+  #preview-container {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  #preview-container.visible { display: flex; }
+
+  .preview-split {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .preview-split.single {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-pane {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .preview-pane img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .pane-label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 11px;
+    background: rgba(0,0,0,0.6);
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .preview-divider {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--accent);
+    opacity: 0.4;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .loading-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(14,14,14,0.85);
+    backdrop-filter: blur(4px);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 10;
+  }
+
+  .loading-overlay.visible { display: flex; }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .toolbar {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .tool-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    transition: all 0.2s;
+  }
+
+  .tool-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .tool-btn.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  .tool-sep {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+  }
+
+  .change-image-btn {
+    margin-left: auto;
+    font-size: 12px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .change-image-btn:hover {
+    border-color: var(--text-muted);
+    color: var(--text);
+  }
+
+  /* RIGHT PANEL */
+  .control-panel {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .control-panel::-webkit-scrollbar { display: none; }
+
+  .panel-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+
+  /* API KEY */
+  .api-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: monospace;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-input:focus { border-color: var(--accent); }
+  .api-input::placeholder { color: #444; }
+
+  /* CHIP GROUPS */
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .chip.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 500;
+  }
+
+  /* STYLE GRID */
+  .style-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .style-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .style-card:hover { border-color: var(--accent); }
+
+  .style-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+
+  .style-card-preview {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .style-card-label {
+    font-size: 11px;
+    text-align: center;
+    padding: 6px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+
+  .style-card.selected .style-card-label { color: var(--accent); }
+
+  /* STRENGTH SLIDER */
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .slider {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  .slider-value {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    width: 30px;
+    text-align: right;
+  }
+
+  /* INSTRUCTIONS */
+  .instruction-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    resize: none;
+    min-height: 80px;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+
+  .instruction-input:focus { border-color: var(--accent); }
+  .instruction-input::placeholder { color: #444; }
+
+  /* RENDER BUTTON */
+  .render-section {
+    padding: 20px 24px;
+    margin-top: auto;
+  }
+
+  .render-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .render-btn:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+  }
+
+  .render-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .render-btn .icon { font-size: 16px; }
+
+  /* ERROR */
+  .error-msg {
+    display: none;
+    margin: 0 24px 16px;
+    padding: 10px 14px;
+    background: rgba(255, 80, 80, 0.1);
+    border: 1px solid rgba(255,80,80,0.3);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #ff8080;
+    line-height: 1.5;
+  }
+
+  .error-msg.visible { display: block; }
+
+  /* DOWNLOAD BTN */
+  .download-btn {
+    display: none;
+    width: calc(100% - 48px);
+    margin: 0 24px 16px;
+    padding: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .download-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .download-btn.visible { display: block; }
+
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Render<span>AI</span></div>
+  <div class="badge">Powered by Flux Depth Pro</div>
+</header>
+
+<main>
+  <!-- LEFT: CANVAS -->
+  <div class="canvas-area">
+    <div class="upload-zone" id="upload-zone">
+      <div class="upload-placeholder" id="upload-placeholder">
+        <div class="upload-icon">🏠</div>
+        <div class="upload-label">이미지를 업로드하세요</div>
+        <div class="upload-sub">SketchUp · Revit · 사진 · 스케치 (PNG, JPG)</div>
+      </div>
+      <div id="preview-container">
+        <div class="preview-split single" id="preview-split">
+          <div class="preview-pane" id="original-pane">
+            <img id="original-img" src="" alt="원본">
+            <div class="pane-label">원본</div>
+          </div>
+          <div class="preview-pane" id="result-pane" style="display:none">
+            <img id="result-img" src="" alt="렌더링 결과">
+            <div class="pane-label">렌더링</div>
+            <div class="preview-divider"></div>
+          </div>
+        </div>
+        <div class="loading-overlay" id="loading-overlay">
+          <div class="spinner"></div>
+          <div class="loading-text">렌더링 생성 중... 약 30~60초 소요됩니다</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="tool-btn" title="비교보기" id="compare-btn" style="display:none">⇔</button>
+      <div class="tool-sep" id="tool-sep" style="display:none"></div>
+      <button class="change-image-btn" id="change-btn">+ 이미지 변경</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: CONTROLS -->
+  <div class="control-panel">
+
+    <!-- API KEY -->
+    <div class="panel-section">
+      <div class="section-label">Replicate API Key</div>
+      <input type="password" class="api-input" id="api-key" placeholder="r8_xxxxxxxxxxxxxxxxxxxx">
+    </div>
+
+    <!-- TIME OF DAY -->
+    <div class="panel-section">
+      <div class="section-label">Time of Day</div>
+      <div class="chip-group">
+        <div class="chip selected" data-group="time" data-value="morning sunlight, warm golden hour">🌅 Morning</div>
+        <div class="chip" data-group="time" data-value="bright noon daylight, overhead sun">☀️ Noon</div>
+        <div class="chip" data-group="time" data-value="warm evening light, sunset glow">🌆 Evening</div>
+        <div class="chip" data-group="time" data-value="night interior lighting, artificial lights, dark exterior">🌙 Night</div>
+      </div>
+    </div>
+
+    <!-- LIGHTING -->
+    <div class="panel-section">
+      <div class="section-label">Lighting</div>
+      <div class="chip-group">
+        <div class="chip selected" data-group="lighting" data-value="natural daylight through windows">Daylight</div>
+        <div class="chip" data-group="lighting" data-value="soft ambient lighting, diffused light">Ambient</div>
+        <div class="chip" data-group="lighting" data-value="cove lighting, indirect LED strip lights">Cove</div>
+        <div class="chip" data-group="lighting" data-value="spot lighting, accent spotlights">Spot</div>
+        <div class="chip" data-group="lighting" data-value="track lighting, directional track lights">Track</div>
+        <div class="chip" data-group="lighting" data-value="profile lighting, wall-mounted fixtures">Profile</div>
+      </div>
+    </div>
+
+    <!-- FLOORING -->
+    <div class="panel-section">
+      <div class="section-label">Flooring</div>
+      <div class="chip-group">
+        <div class="chip" data-group="flooring" data-value="marble flooring, polished white marble">Marble</div>
+        <div class="chip selected" data-group="flooring" data-value="hardwood flooring, oak wood planks">Wood</div>
+        <div class="chip" data-group="flooring" data-value="ceramic tile flooring, large format tiles">Tile</div>
+        <div class="chip" data-group="flooring" data-value="granite flooring, polished granite">Granite</div>
+        <div class="chip" data-group="flooring" data-value="carpet flooring, soft area rug">Carpet</div>
+        <div class="chip" data-group="flooring" data-value="polished concrete flooring">Concrete</div>
+      </div>
+    </div>
+
+    <!-- INTERIOR STYLE -->
+    <div class="panel-section">
+      <div class="section-label">Interior Style</div>
+      <div class="style-grid">
+        <div class="style-card selected" data-group="style" data-value="modern minimalist interior design, clean lines, neutral palette">
+          <div class="style-card-preview" style="background: linear-gradient(135deg, #f5f5f0, #e8e5e0);">🏢</div>
+          <div class="style-card-label">Modern</div>
+        </div>
+        <div class="style-card" data-group="style" data-value="Scandinavian interior design, light wood, white walls, cozy hygge">
+          <div class="style-card-preview" style="background: linear-gradient(135deg, #faf8f5, #e8ddd0);">🌿</div>
+          <div class="style-card-label">Scandinavian</div>
+        </div>
+        <div class="style-card" data-group="style" data-value="luxury interior design, opulent materials, gold accents, rich textures">
+          <div class="style-card-preview" style="background: linear-gradient(135deg, #2a1f0a, #c8a030);">✨</div>
+          <div class="style-card-label">Luxury</div>
+        </div>
+        <div class="style-card" data-group="style" data-value="industrial interior design, exposed brick, metal fixtures, raw concrete">
+          <div class="style-card-preview" style="background: linear-gradient(135deg, #3a3a3a, #666);">🔩</div>
+          <div class="style-card-label">Industrial</div>
+        </div>
+        <div class="style-card" data-group="style" data-value="Japanese wabi-sabi interior, natural materials, zen minimalism">
+          <div class="style-card-preview" style="background: linear-gradient(135deg, #e8dcc8, #c8b89a);">⛩️</div>
+          <div class="style-card-label">Japanese</div>
+        </div>
+        <div class="style-card" data-group="style" data-value="bohemian interior design, eclectic mix, colorful textiles, plants">
+          <div class="style-card-preview" style="background: linear-gradient(135deg, #8b4513, #daa520);">🎨</div>
+          <div class="style-card-label">Bohemian</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STRENGTH -->
+    <div class="panel-section">
+      <div class="section-label">원본 유지 강도</div>
+      <div class="slider-row">
+        <span style="font-size:12px; color:var(--text-muted)">자유</span>
+        <input type="range" class="slider" id="strength-slider" min="0.3" max="0.95" step="0.05" value="0.75">
+        <span style="font-size:12px; color:var(--text-muted)">고정</span>
+        <span class="slider-value" id="strength-value">0.75</span>
+      </div>
+    </div>
+
+    <!-- INSTRUCTIONS -->
+    <div class="panel-section">
+      <div class="section-label">Additional Instructions</div>
+      <textarea class="instruction-input" id="instructions" placeholder="예: 대형 창문, 식물 추가, 따뜻한 톤으로..."></textarea>
+    </div>
+
+    <!-- ERROR -->
+    <div class="error-msg" id="error-msg"></div>
+
+    <!-- DOWNLOAD -->
+    <button class="download-btn" id="download-btn">⬇ 결과 이미지 다운로드</button>
+
+    <!-- RENDER -->
+    <div class="render-section">
+      <button class="render-btn" id="render-btn" disabled>
+        <span class="icon">✦</span> Render
+      </button>
+    </div>
+
+  </div>
+</main>
+
+<input type="file" id="file-input" accept="image/*">
+
+<script>
+  // STATE
+  let uploadedImageBase64 = null;
+  let resultUrl = null;
+  const selections = { time: '🌅 Morning', lighting: 'Daylight', flooring: 'Wood', style: 'Modern' };
+
+  // ELEMENTS
+  const uploadZone = document.getElementById('upload-zone');
+  const uploadPlaceholder = document.getElementById('upload-placeholder');
+  const previewContainer = document.getElementById('preview-container');
+  const previewSplit = document.getElementById('preview-split');
+  const originalImg = document.getElementById('original-img');
+  const resultImg = document.getElementById('result-img');
+  const resultPane = document.getElementById('result-pane');
+  const loadingOverlay = document.getElementById('loading-overlay');
+  const renderBtn = document.getElementById('render-btn');
+  const fileInput = document.getElementById('file-input');
+  const apiKeyInput = document.getElementById('api-key');
+  const strengthSlider = document.getElementById('strength-slider');
+  const strengthValue = document.getElementById('strength-value');
+  const errorMsg = document.getElementById('error-msg');
+  const downloadBtn = document.getElementById('download-btn');
+  const compareBtn = document.getElementById('compare-btn');
+  const toolSep = document.getElementById('tool-sep');
+
+  // UPLOAD
+  uploadZone.addEventListener('click', (e) => {
+    if (!uploadZone.classList.contains('has-image') ||
+        e.target.id === 'change-btn') {
+      fileInput.click();
+    }
+  });
+
+  document.getElementById('change-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.style.background = 'rgba(200,169,110,0.05)';
+  });
+
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.style.background = '';
+  });
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.style.background = '';
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleFile(file);
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+  });
+
+  function handleFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedImageBase64 = e.target.result;
+      originalImg.src = uploadedImageBase64;
+      uploadPlaceholder.style.display = 'none';
+      previewContainer.classList.add('visible');
+      uploadZone.classList.add('has-image');
+      resultPane.style.display = 'none';
+      previewSplit.classList.add('single');
+      compareBtn.style.display = 'none';
+      toolSep.style.display = 'none';
+      resultUrl = null;
+      downloadBtn.classList.remove('visible');
+      hideError();
+      checkReady();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // CHIPS
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const group = chip.dataset.group;
+      document.querySelectorAll(`.chip[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    });
+  });
+
+  document.querySelectorAll('.style-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+  });
+
+  // SLIDER
+  strengthSlider.addEventListener('input', () => {
+    strengthValue.textContent = strengthSlider.value;
+  });
+
+  // API KEY
+  apiKeyInput.addEventListener('input', checkReady);
+
+  function checkReady() {
+    renderBtn.disabled = !(uploadedImageBase64 && apiKeyInput.value.trim().startsWith('r8_'));
+  }
+
+  // BUILD PROMPT
+  function buildPrompt() {
+    const timeChip = document.querySelector('.chip[data-group="time"].selected');
+    const lightChip = document.querySelector('.chip[data-group="lighting"].selected');
+    const floorChip = document.querySelector('.chip[data-group="flooring"].selected');
+    const styleCard = document.querySelector('.style-card.selected');
+    const instructions = document.getElementById('instructions').value.trim();
+
+    const parts = [
+      'photorealistic architectural interior rendering, professional photography',
+      styleCard?.dataset.value || '',
+      timeChip?.dataset.value || '',
+      lightChip?.dataset.value || '',
+      floorChip?.dataset.value || '',
+      instructions,
+      'high quality, ultra realistic, 8K, architectural visualization, professional interior design'
+    ].filter(Boolean);
+
+    return parts.join(', ');
+  }
+
+  // RENDER
+  renderBtn.addEventListener('click', async () => {
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey || !uploadedImageBase64) return;
+
+    hideError();
+    setLoading(true);
+    resultPane.style.display = 'none';
+    previewSplit.classList.add('single');
+
+    const prompt = buildPrompt();
+    const strength = parseFloat(strengthSlider.value);
+
+    try {
+      // Start prediction
+      const startRes = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          version: 'a3d8b88d8dba30dc2da0e6f9f4e2e77cb00e3d4e28e9c4d7cb5c0a8b4e3f2a1b',
+          input: {
+            prompt: prompt,
+            image: uploadedImageBase64,
+            strength: 1 - strength,
+            num_inference_steps: 28,
+            guidance_scale: 3.5
+          }
+        })
+      });
+
+      if (!startRes.ok) {
+        const err = await startRes.json();
+        // Try alternative model
+        await runWithModel(apiKey, prompt, strength);
+        return;
+      }
+
+      const prediction = await startRes.json();
+      await pollPrediction(apiKey, prediction.id);
+
+    } catch (err) {
+      // Fallback: try flux-depth-pro directly
+      try {
+        await runFluxDepth(apiKey, prompt, strength);
+      } catch (e) {
+        showError('렌더링 중 오류가 발생했습니다: ' + e.message);
+        setLoading(false);
+      }
+    }
+  });
+
+  async function runFluxDepth(apiKey, prompt, strength) {
+    const startRes = await fetch('https://api.replicate.com/v1/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'black-forest-labs/flux-depth-pro',
+        input: {
+          prompt: prompt,
+          control_image: uploadedImageBase64,
+          steps: 28,
+          guidance: 3.5,
+          control_strength: strength
+        }
+      })
+    });
+
+    if (!startRes.ok) {
+      const errData = await startRes.json();
+      throw new Error(errData.detail || JSON.stringify(errData));
+    }
+
+    const prediction = await startRes.json();
+    await pollPrediction(apiKey, prediction.id);
+  }
+
+  async function pollPrediction(apiKey, predictionId) {
+    while (true) {
+      await new Promise(r => setTimeout(r, 2000));
+
+      const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+        headers: { 'Authorization': `Token ${apiKey}` }
+      });
+
+      const data = await pollRes.json();
+
+      if (data.status === 'succeeded') {
+        const imageUrl = Array.isArray(data.output) ? data.output[0] : data.output;
+        showResult(imageUrl);
+        return;
+      } else if (data.status === 'failed') {
+        throw new Error(data.error || '렌더링 실패');
+      }
+    }
+  }
+
+  function showResult(url) {
+    resultUrl = url;
+    resultImg.src = url;
+    resultImg.onload = () => {
+      setLoading(false);
+      resultPane.style.display = 'block';
+      previewSplit.classList.remove('single');
+      compareBtn.style.display = 'flex';
+      toolSep.style.display = 'block';
+      downloadBtn.classList.add('visible');
+    };
+  }
+
+  function setLoading(on) {
+    if (on) {
+      loadingOverlay.classList.add('visible');
+      renderBtn.disabled = true;
+      renderBtn.innerHTML = '<span class="icon">⏳</span> 렌더링 중...';
+    } else {
+      loadingOverlay.classList.remove('visible');
+      renderBtn.disabled = false;
+      renderBtn.innerHTML = '<span class="icon">✦</span> Render';
+    }
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.classList.add('visible');
+  }
+
+  function hideError() {
+    errorMsg.classList.remove('visible');
+  }
+
+  // DOWNLOAD
+  downloadBtn.addEventListener('click', () => {
+    if (!resultUrl) return;
+    const a = document.createElement('a');
+    a.href = resultUrl;
+    a.download = 'renderai-result.png';
+    a.target = '_blank';
+    a.click();
+  });
+
+  // COMPARE
+  let showingBoth = true;
+  compareBtn.addEventListener('click', () => {
+    showingBoth = !showingBoth;
+    if (showingBoth) {
+      previewSplit.classList.remove('single');
+      compareBtn.title = '원본만 보기';
+    } else {
+      previewSplit.classList.add('single');
+      document.getElementById('original-pane').style.display = 'none';
+      setTimeout(() => {
+        document.getElementById('original-pane').style.display = 'block';
+        previewSplit.classList.remove('single');
+        showingBoth = true;
+      }, 100);
+    }
+  });
+</script>
+</body>
+</html>
