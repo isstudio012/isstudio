@@ -241,10 +241,10 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
     <div class="opt-section">
       <div class="sec-label">Time of Day</div>
       <div class="opt-grid">
-        <button class="opt-btn sel" data-g="time" data-v="early morning 7AM soft warm golden sunlight at low angle streaming through windows, long shadows stretching across floor, warm 2700K orange-golden atmosphere, gentle haze, soft diffused light, dawn sky visible outside">🌅 Morning</button>
-        <button class="opt-btn" data-g="time" data-v="bright noon 12PM intense direct overhead sunlight, harsh white daylight, overexposed bright windows, strong contrast between lit surfaces and deep shadows, cool 6500K daylight color temperature, vibrant clear sky outside">☀️ Noon</button>
-        <button class="opt-btn" data-g="time" data-v="sunset evening 6PM deep warm amber and orange golden light, dramatic long shadows, glowing red-orange sky outside windows, rich warm 1800K fire-like color temperature, everything bathed in golden warm tones">🌆 Evening</button>
-        <button class="opt-btn" data-g="time" data-v="night time, completely dark outside windows, only interior artificial lighting, warm yellow incandescent 2700K ceiling lights on, dark black sky outside, cozy intimate atmosphere, dramatic contrast between lit interior and dark exterior">🌙 Night</button>
+        <button class="opt-btn sel" data-g="time" data-v="morning 7AM warm golden sunlight at low angle streaming through windows, long interior shadows, outside windows: bright blue morning sky with soft golden sunrise light, green landscape lit by morning sun">🌅 Morning</button>
+        <button class="opt-btn" data-g="time" data-v="noon 12PM intense white overhead sunlight flooding interior, sharp shadows, outside windows: bright clear blue sky, harsh midday sunlight on exterior landscape, vivid green grass">☀️ Noon</button>
+        <button class="opt-btn" data-g="time" data-v="sunset evening 6PM deep golden orange warm light, long dramatic shadows inside, outside windows: dramatic orange red sunset sky, golden hour light on exterior, warm amber atmosphere">🌆 Evening</button>
+        <button class="opt-btn" data-g="time" data-v="night time, interior track lights and artificial ceiling lights ON creating warm light pools, outside windows: completely dark night black sky, dark exterior landscape, no sunlight outside, high contrast bright interior vs dark exterior">🌙 Night</button>
       </div>
     </div>
 
@@ -468,10 +468,17 @@ renderBtn.addEventListener('click', async () => {
   setLoading(true);
 
   try {
+    // 원본 이미지 크기 읽기
+    const imgEl = new Image();
+    imgEl.src = scene.orig;
+    await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
+    const w = imgEl.naturalWidth || 1280;
+    const h = imgEl.naturalHeight || 720;
+
     const res = await fetch('/api/render', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey: key, prompt: buildPrompt(), image: scene.orig, strength: 0.75 })
+      body: JSON.stringify({ apiKey: key, prompt: buildPrompt(), image: scene.orig, strength: 0.75, width: w, height: h })
     });
     const pred = await res.json();
     if (!res.ok) throw new Error(pred.error || '렌더링 시작 실패');
