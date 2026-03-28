@@ -241,7 +241,7 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
     <div class="opt-section">
       <div class="sec-label">Time of Day</div>
       <div class="opt-grid">
-        <button class="opt-btn sel" data-g="time" data-v="morning 7AM warm golden sunlight at low angle streaming through windows, long interior shadows, outside windows: bright blue morning sky with soft golden sunrise light, green landscape lit by morning sun">🌅 Morning</button>
+        <button class="opt-btn" data-g="time" data-v="morning 7AM warm golden sunlight at low angle streaming through windows, long interior shadows, outside windows: bright blue morning sky with soft golden sunrise light, green landscape lit by morning sun">🌅 Morning</button>
         <button class="opt-btn" data-g="time" data-v="noon 12PM intense white overhead sunlight flooding interior, sharp shadows, outside windows: bright clear blue sky, harsh midday sunlight on exterior landscape, vivid green grass">☀️ Noon</button>
         <button class="opt-btn" data-g="time" data-v="sunset evening 6PM deep golden orange warm light, long dramatic shadows inside, outside windows: dramatic orange red sunset sky, golden hour light on exterior, warm amber atmosphere">🌆 Evening</button>
         <button class="opt-btn" data-g="time" data-v="night time, interior track lights and artificial ceiling lights ON creating warm light pools, outside windows: completely dark night black sky, dark exterior landscape, no sunlight outside, high contrast bright interior vs dark exterior">🌙 Night</button>
@@ -253,8 +253,8 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
       <div class="sec-label">Lighting</div>
       <div class="opt-grid-3">
         <button class="opt-btn sel" data-g="lighting" data-v="natural daylight through windows">Daylight</button>
-        <button class="opt-btn sel" data-g="lighting" data-v="soft ambient lighting, diffused">Ambient</button>
-        <button class="opt-btn sel" data-g="lighting" data-v="cove lighting, indirect LED">Cove</button>
+        <button class="opt-btn" data-g="lighting" data-v="soft ambient lighting, diffused">Ambient</button>
+        <button class="opt-btn" data-g="lighting" data-v="cove lighting, indirect LED">Cove</button>
         <button class="opt-btn" data-g="lighting" data-v="spot lighting, accent spotlights">Spot</button>
         <button class="opt-btn" data-g="lighting" data-v="track lighting, directional">Track</button>
         <button class="opt-btn" data-g="lighting" data-v="profile lighting, wall-mounted">Profile</button>
@@ -277,7 +277,7 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
     <!-- ADDITIONAL INSTRUCTIONS -->
     <div class="opt-section">
       <div class="sec-label">Additional Instructions</div>
-      <textarea class="inst-input" id="instructions" placeholder="Enter any specific requirements or preferences"></textarea>
+      <textarea class="inst-input" id="instructions" placeholder="Enter any specific requirements or preferences" style="min-height:140px"></textarea>
     </div>
 
     <!-- ERROR -->
@@ -424,16 +424,12 @@ function renderThumbs() {
   });
 }
 
-// OPTION BUTTONS
+// OPTION BUTTONS - 모두 단일 선택
 document.querySelectorAll('.opt-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const g = btn.dataset.g;
-    if (g === 'lighting') {
-      btn.classList.toggle('sel');
-    } else {
-      document.querySelectorAll(`.opt-btn[data-g="${g}"]`).forEach(b => b.classList.remove('sel'));
-      btn.classList.add('sel');
-    }
+    document.querySelectorAll(`.opt-btn[data-g="${g}"]`).forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
   });
 });
 
