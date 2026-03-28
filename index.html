@@ -298,9 +298,9 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
 <input type="file" id="fi" accept="image/*">
 
 <script>
-let b64 = null;
-let resultUrl = null;
-let history = [];
+// 씬 관리
+let scenes = []; // {id, orig, rendered, name}
+let currentSceneId = null;
 let isDragging = false;
 
 const uploadZone = document.getElementById('upload-zone');
@@ -319,10 +319,13 @@ const newRenderBtn = document.getElementById('new-render-btn');
 const canvasActions = document.getElementById('canvas-actions');
 const thumbsWrap = document.getElementById('thumbs-wrap');
 
+// 현재 씬
+function currentScene() { return scenes.find(s => s.id === currentSceneId); }
+
 // UPLOAD TRIGGERS
 uploadZone.addEventListener('click', () => fi.click());
 document.getElementById('upload-lbtn').addEventListener('click', () => fi.click());
-document.getElementById('thumb-add-btn').addEventListener('click', () => fi.click());
+document.getElementById('thumb-add-btn').addEventListener('click', () => { fi.click(); });
 
 document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => {
@@ -331,27 +334,64 @@ document.addEventListener('drop', e => {
   if (f && f.type.startsWith('image/')) loadFile(f);
 });
 
-fi.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+fi.addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+  fi.value = '';
+});
 
 function loadFile(f) {
   const reader = new FileReader();
   reader.onload = e => {
-    b64 = e.target.result;
-    originalImg.src = b64;
-    renderedImg.src = '';
-    renderedLayer.style.width = '50%';
-    compareLine.style.left = '50%';
-    uploadZone.style.display = 'none';
-    canvas.classList.add('visible');
-    canvasActions.classList.remove('visible');
-    resultUrl = null;
+    const b64 = e.target.result;
+    const id = Date.now();
+    const scene = { id, orig: b64, rendered: null, name: `Scene ${scenes.length + 1}` };
+    scenes.push(scene);
+    currentSceneId = id;
+    showScene(scene);
+    renderThumbs();
     clearErr();
     checkReady();
   };
   reader.readAsDataURL(f);
 }
 
-// OPTION BUTTONS - single select per group except lighting (multi)
+function showScene(scene) {
+  originalImg.src = scene.orig;
+  uploadZone.style.display = 'none';
+  canvas.classList.add('visible');
+
+  if (scene.rendered) {
+    renderedImg.src = scene.rendered;
+    renderedLayer.style.width = '50%';
+    compareLine.style.left = '50%';
+    canvasActions.classList.add('visible');
+  } else {
+    renderedImg.src = '';
+    renderedLayer.style.width = '0%';
+    compareLine.style.left = '0%';
+    canvasActions.classList.remove('visible');
+  }
+}
+
+// THUMBNAILS
+function renderThumbs() {
+  thumbsWrap.innerHTML = '';
+  scenes.forEach((scene, i) => {
+    const t = document.createElement('div');
+    t.className = 'thumb' + (scene.id === currentSceneId ? ' active' : '');
+    const imgSrc = scene.rendered || scene.orig;
+    t.innerHTML = `<img src="${imgSrc}"><div class="thumb-num">${i + 1}</div>`;
+    t.addEventListener('click', () => {
+      currentSceneId = scene.id;
+      showScene(scene);
+      renderThumbs();
+      checkReady();
+    });
+    thumbsWrap.appendChild(t);
+  });
+}
+
+// OPTION BUTTONS
 document.querySelectorAll('.opt-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const g = btn.dataset.g;
@@ -364,10 +404,18 @@ document.querySelectorAll('.opt-btn').forEach(btn => {
   });
 });
 
-apiKey.addEventListener('input', checkReady);
+// API 키 자동 저장/불러오기
+const savedKey = localStorage.getItem('replicate_api_key');
+if (savedKey) apiKey.value = savedKey;
+
+apiKey.addEventListener('input', () => {
+  localStorage.setItem('replicate_api_key', apiKey.value.trim());
+  checkReady();
+});
 
 function checkReady() {
-  renderBtn.disabled = !(b64 && apiKey.value.trim().startsWith('r8_'));
+  const scene = currentScene();
+  renderBtn.disabled = !(scene && apiKey.value.trim().startsWith('r8_'));
 }
 
 function buildPrompt() {
@@ -381,7 +429,8 @@ function buildPrompt() {
 // RENDER
 renderBtn.addEventListener('click', async () => {
   const key = apiKey.value.trim();
-  if (!key || !b64) return;
+  const scene = currentScene();
+  if (!key || !scene) return;
   clearErr();
   setLoading(true);
 
@@ -389,7 +438,7 @@ renderBtn.addEventListener('click', async () => {
     const res = await fetch('/api/render', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey: key, prompt: buildPrompt(), image: b64, strength: 0.75 })
+      body: JSON.stringify({ apiKey: key, prompt: buildPrompt(), image: scene.orig, strength: 0.75 })
     });
     const pred = await res.json();
     if (!res.ok) throw new Error(pred.error || '렌더링 시작 실패');
@@ -420,40 +469,17 @@ async function poll(key, id) {
 }
 
 function showResult(url) {
-  resultUrl = url;
+  const scene = currentScene();
+  if (!scene) return;
+  scene.rendered = url;
   renderedImg.src = url;
   renderedImg.onload = () => {
     setLoading(false);
+    renderedLayer.style.width = '50%';
+    compareLine.style.left = '50%';
     canvasActions.classList.add('visible');
-    addThumb(b64, url);
+    renderThumbs();
   };
-}
-
-function addThumb(orig, rendered) {
-  history.push({ orig, rendered });
-  renderThumbs();
-}
-
-function renderThumbs() {
-  thumbsWrap.innerHTML = '';
-  history.forEach((item, i) => {
-    const t = document.createElement('div');
-    t.className = 'thumb' + (i === history.length - 1 ? ' active' : '');
-    t.innerHTML = `<img src="${item.rendered}"><div class="thumb-num">${i + 1}</div>`;
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.thumb').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      originalImg.src = item.orig;
-      renderedImg.src = item.rendered;
-      resultUrl = item.rendered;
-      renderedLayer.style.width = '50%';
-      compareLine.style.left = '50%';
-      canvas.classList.add('visible');
-      uploadZone.style.display = 'none';
-      canvasActions.classList.add('visible');
-    });
-    thumbsWrap.appendChild(t);
-  });
 }
 
 // COMPARISON SLIDER
@@ -470,25 +496,23 @@ function setSliderPos(x) {
 compareLine.addEventListener('mousedown', e => { isDragging = true; e.preventDefault(); });
 document.addEventListener('mousemove', e => { if (isDragging) setSliderPos(e.clientX); });
 document.addEventListener('mouseup', () => { isDragging = false; });
-
-compareLine.addEventListener('touchstart', e => { isDragging = true; });
+compareLine.addEventListener('touchstart', () => { isDragging = true; });
 document.addEventListener('touchmove', e => { if (isDragging) setSliderPos(e.touches[0].clientX); });
 document.addEventListener('touchend', () => { isDragging = false; });
 
 // DOWNLOAD
 downloadBtn.addEventListener('click', () => {
-  if (!resultUrl) return;
+  const scene = currentScene();
+  if (!scene?.rendered) return;
   const a = document.createElement('a');
-  a.href = resultUrl;
-  a.download = 'renderai.png';
+  a.href = scene.rendered;
+  a.download = `renderai-scene${scenes.indexOf(scene)+1}.png`;
   a.target = '_blank';
   a.click();
 });
 
-// NEW IMAGE
-newRenderBtn.addEventListener('click', () => {
-  fi.click();
-});
+// NEW IMAGE (+ 버튼과 동일)
+newRenderBtn.addEventListener('click', () => fi.click());
 
 function setLoading(on) {
   if (on) {
