@@ -24,11 +24,22 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
 /* APP BODY */
 .app{flex:1;display:flex;overflow:hidden}
 
-/* LEFT THIN BAR */
-.lbar{width:42px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:4px;flex-shrink:0}
-.lbtn{width:30px;height:30px;border-radius:6px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s}
+/* LEFT PROJECT PANEL */
+.lbar{width:180px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.lbar-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.lbar-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.lbtn{width:24px;height:24px;border-radius:5px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
 .lbtn:hover{background:var(--bg);color:var(--text)}
-.lbtn.active{background:#1a1a1a;color:#fff}
+.project-list{flex:1;overflow-y:auto;padding:8px;scrollbar-width:none;display:flex;flex-direction:column;gap:4px}
+.project-list::-webkit-scrollbar{display:none}
+.project-item{border-radius:7px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .15s;background:var(--bg)}
+.project-item:hover{border-color:#ccc}
+.project-item.active{border-color:#1a1a1a}
+.project-item img{width:100%;height:90px;object-fit:cover;display:block}
+.project-item-label{padding:5px 8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.project-item.active .project-item-label{color:var(--text);font-weight:500}
+.lbar-add{margin:8px;padding:10px;border:1.5px dashed var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--muted);font-size:12px;transition:all .15s;flex-shrink:0}
+.lbar-add:hover{border-color:#999;color:var(--text)}
 
 /* CENTER */
 .center{flex:1;display:flex;flex-direction:column;overflow:hidden}
@@ -152,11 +163,18 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
 
 <div class="app">
 
-  <!-- LEFT THIN BAR -->
+  <!-- LEFT PROJECT PANEL -->
   <div class="lbar">
-    <button class="lbtn active" title="Select">⊹</button>
-    <button class="lbtn" title="Upload" id="upload-lbtn">⬆</button>
-    <div style="flex:1"></div>
+    <div class="lbar-header">
+      <span class="lbar-title">Scenes</span>
+      <button class="lbtn" id="upload-lbtn" title="새 씬 추가">+</button>
+    </div>
+    <div class="project-list" id="project-list">
+      <!-- populated by JS -->
+    </div>
+    <div class="lbar-add" id="lbar-add-btn">
+      <span>+</span> 씬 추가
+    </div>
   </div>
 
   <!-- CENTER -->
@@ -325,6 +343,7 @@ function currentScene() { return scenes.find(s => s.id === currentSceneId); }
 // UPLOAD TRIGGERS
 uploadZone.addEventListener('click', () => fi.click());
 document.getElementById('upload-lbtn').addEventListener('click', () => fi.click());
+document.getElementById('lbar-add-btn').addEventListener('click', () => fi.click());
 document.getElementById('thumb-add-btn').addEventListener('click', () => { fi.click(); });
 
 document.addEventListener('dragover', e => e.preventDefault());
@@ -373,10 +392,14 @@ function showScene(scene) {
   }
 }
 
-// THUMBNAILS
+// THUMBNAILS + PROJECT LIST
 function renderThumbs() {
   thumbsWrap.innerHTML = '';
+  const projectList = document.getElementById('project-list');
+  projectList.innerHTML = '';
+
   scenes.forEach((scene, i) => {
+    // 상단 썸네일
     const t = document.createElement('div');
     t.className = 'thumb' + (scene.id === currentSceneId ? ' active' : '');
     const imgSrc = scene.rendered || scene.orig;
@@ -388,6 +411,18 @@ function renderThumbs() {
       checkReady();
     });
     thumbsWrap.appendChild(t);
+
+    // 왼쪽 프로젝트 목록
+    const p = document.createElement('div');
+    p.className = 'project-item' + (scene.id === currentSceneId ? ' active' : '');
+    p.innerHTML = `<img src="${imgSrc}"><div class="project-item-label">Scene ${i + 1}</div>`;
+    p.addEventListener('click', () => {
+      currentSceneId = scene.id;
+      showScene(scene);
+      renderThumbs();
+      checkReady();
+    });
+    projectList.appendChild(p);
   });
 }
 
@@ -488,7 +523,7 @@ const compareContainer = document.getElementById('compare-container');
 function setSliderPos(x) {
   const rect = compareContainer.getBoundingClientRect();
   let pct = ((x - rect.left) / rect.width) * 100;
-  pct = Math.max(2, Math.min(98, pct));
+  pct = Math.max(0, Math.min(100, pct));
   compareLine.style.left = pct + '%';
   renderedLayer.style.width = pct + '%';
 }
