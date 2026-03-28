@@ -277,7 +277,7 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
     <!-- ADDITIONAL INSTRUCTIONS -->
     <div class="opt-section">
       <div class="sec-label">Additional Instructions</div>
-      <textarea class="inst-input" id="instructions" placeholder="Enter any specific requirements or preferences" style="min-height:140px"></textarea>
+      <textarea class="inst-input" id="instructions" placeholder="Enter any specific requirements or preferences" style="min-height:200px"></textarea>
     </div>
 
     <!-- ERROR -->
@@ -424,12 +424,16 @@ function renderThumbs() {
   });
 }
 
-// OPTION BUTTONS - 모두 단일 선택
+// OPTION BUTTONS - 클릭하면 선택, 다시 클릭하면 해제
 document.querySelectorAll('.opt-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const g = btn.dataset.g;
-    document.querySelectorAll(`.opt-btn[data-g="${g}"]`).forEach(b => b.classList.remove('sel'));
-    btn.classList.add('sel');
+    if (btn.classList.contains('sel')) {
+      btn.classList.remove('sel'); // 이미 선택된거 클릭 → 해제
+    } else {
+      document.querySelectorAll(`.opt-btn[data-g="${g}"]`).forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel'); // 새로 선택
+    }
   });
 });
 
