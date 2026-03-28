@@ -13,14 +13,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch('https://api.replicate.com/v1/predictions', {
+    const response = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-depth-pro/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Token ${apiKey}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'wait'
       },
       body: JSON.stringify({
-        model: 'black-forest-labs/flux-depth-pro',
         input: {
           prompt,
           control_image: image,
