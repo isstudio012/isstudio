@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const finalPrompt = `Transform this 3D interior sketch into a photorealistic architectural render. ${prompt}. Keep the exact same camera angle, spatial layout, furniture positions, ceiling design, windows and all architectural elements unchanged. Change BOTH the interior lighting AND the exterior view outside windows to match the time of day. Apply photorealistic materials: polished concrete or tile floor with realistic light reflections, fabric sofa with soft matte texture, wood veneer surfaces with natural grain, glass windows with strong fresnel reflections, painted walls with subtle matte finish, metal track light fixtures with specular highlights. Shot on Canon EOS R5, 24mm f/8, professional architectural photography, ultra realistic 8K.`;
+  const finalPrompt = `Transform this 3D interior sketch into a photorealistic architectural render. ${prompt}. Keep the exact same camera angle, spatial layout, furniture positions, ceiling design, windows and all architectural elements unchanged. Change both the interior lighting and exterior view outside windows to match the time of day. Professional architectural photography, ultra realistic 8K.`;
 
   try {
     const response = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
