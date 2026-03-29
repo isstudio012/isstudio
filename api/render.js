@@ -11,11 +11,32 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const finalPrompt = `Transform this 3D interior sketch into a photorealistic architectural render. ${prompt}.
-Keep camera angle and geometry identical.
-Preserve layout, objects, and all material finishes exactly.
-Do not change or replace any materials or finishes. No material substitution.
-Lighting and exposure must be fully changed and replaced with a new lighting setup.Render quality must look like high-end architectural visualization,  Corona render quality, physically accurate rendering, ray-traced global illumination, realistic light bounce, advanced material shading, micro surface detail, ultra sharp, ultra realistic, 8K.`;
+  constfinalPrompt = `Transform this 3D interior sketch into a photorealistic architectural render. ${prompt}.
+
+Keep the exact same camera angle, spatial layout, furniture positions, ceiling design, windows, and all architectural geometry identical.
+
+Preserve layout, objects, and all material finishes exactly. Do not change or replace any materials or finishes. No material substitution.
+
+Make the scene much brighter with extremely strong direct sunlight entering from outside. Bright exterior environment, slightly overexposed outdoor view, strong sunlight patches on the floor and interior surfaces, hard shadows, sharp shadow edges, high contrast daylight.
+
+Direct sunlight must hit surfaces naturally. No visible light beams, no volumetric lighting, no god rays, no fog lighting.
+
+Use neutral color grading, pure white balance, 6500K daylight, no yellow tint, no orange cast, no warm color shift.
+
+Realistic interior lighting fixtures must be visible in the result:
+ceiling recessed downlights turned on, soft white light, subtle illumination on ceiling and walls, realistic light falloff;
+indirect cove lighting along ceiling edges, soft ambient glow, smooth gradient lighting;
+interior lighting balanced with daylight, not overpowering sunlight, soft fill light in shadow areas.
+
+Physically accurate materials:
+Walls: smooth white painted finish, matte, flat surface, very low reflectivity, subtle diffuse response, minimal roughness, no tile, no stone, no concrete texture.
+Floor: ceramic tile finish, realistic reflections, medium gloss, subtle roughness variation, clear specular highlights, clean joints.
+Glass: clear transparent glass, high light transmission, realistic reflections, subtle refraction, IOR 1.5.
+Metal: realistic metallic reflection, controlled gloss, sharp specular highlights.
+Fabric: soft textile material, high roughness, diffuse light absorption, visible fine fibers, no gloss.
+Wood: natural wood grain, semi-matte finish, subtle reflection, realistic roughness variation.
+
+High-end architectural visualization, V-Ray / Corona render quality, physically accurate rendering, ray-traced global illumination, realistic light bounce, advanced material shading, micro surface detail, ultra sharp, ultra realistic, 8K.`;
   try {
     const response = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
       method: 'POST',
