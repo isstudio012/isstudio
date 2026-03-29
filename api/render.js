@@ -12,15 +12,10 @@ export default async function handler(req, res) {
   }
 
   const finalPrompt = `Transform this 3D interior sketch into a photorealistic architectural render. ${prompt}.
-
 Keep camera angle and geometry identical.
-
 Preserve layout, objects, and all material finishes exactly.
-
 Do not change or replace any materials or finishes. No material substitution.
-
-Lighting and exposure must be fully changed and replaced with a new lighting setup.
-Render quality must look like high-end architectural visualization, V-Ray / Corona render quality, physically accurate rendering, ray-traced global illumination, realistic light bounce, advanced material shading, micro surface detail, ultra sharp, ultra realistic, 8K.`;
+Lighting and exposure must be fully changed and replaced with a new lighting setup.Render quality must look like high-end architectural visualization, V-Ray / Corona render quality, physically accurate rendering, ray-traced global illumination, realistic light bounce, advanced material shading, micro surface detail, ultra sharp, ultra realistic, 8K.`;
   try {
     const response = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
       method: 'POST',
