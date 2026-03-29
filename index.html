@@ -9,6 +9,8 @@
 :root{--bg:#f0f0ee;--white:#fff;--border:#e2e2de;--text:#1a1a1a;--muted:#999;--light:#ccc;--panel:260px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+
+/* HEADER */
 header{height:44px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0}
 .logo{width:26px;height:26px;background:#1a1a1a;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo span{color:#fff;font-size:11px;font-weight:700}
@@ -18,7 +20,11 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
 .avatar{width:28px;height:28px;border-radius:50%;background:#e8e8e8;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)}
 .avatar-name{font-size:12px;color:var(--text);font-weight:500}
 .avatar-email{font-size:10px;color:var(--muted)}
+
+/* APP BODY */
 .app{flex:1;display:flex;overflow:hidden}
+
+/* LEFT PROJECT PANEL */
 .lbar{width:180px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
 .lbar-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .lbar-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
@@ -34,7 +40,11 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
 .project-item.active .project-item-label{color:var(--text);font-weight:500}
 .lbar-add{margin:8px;padding:10px;border:1.5px dashed var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--muted);font-size:12px;transition:all .15s;flex-shrink:0}
 .lbar-add:hover{border-color:#999;color:var(--text)}
+
+/* CENTER */
 .center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* THUMBS BAR */
 .thumbbar{background:var(--white);border-bottom:1px solid var(--border);padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .tnav{width:22px;height:22px;border-radius:4px;border:1px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0}
 .tnav:hover{background:var(--bg)}
@@ -46,79 +56,134 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
 .thumb-num{position:absolute;bottom:3px;left:5px;font-size:9px;color:#fff;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.6);background:rgba(0,0,0,.3);padding:1px 4px;border-radius:3px}
 .thumb-badge{position:absolute;top:3px;right:4px;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.3px}
 .thumb-badge.orig{background:rgba(0,0,0,.5);color:#fff}
-.thumb-badge.rendered{background:#1a1a1a;color:#fff}
-.thumb-add{width:56px;height:56px;border-radius:6px;border:1.5px dashed var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--light);font-size:20px;flex-shrink:0;transition:all .15s}
+.thumb-badge.rendered{background:#1a1a1a;color:#fff}display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--light);font-size:20px;flex-shrink:0;transition:all .15s}
 .thumb-add:hover{border-color:#999;color:var(--muted)}
+
+/* CANVAS AREA */
 .canvas-wrap{flex:1;padding:12px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:0}
+
+/* UPLOAD STATE */
 .upload-zone{position:absolute;inset:12px;background:#e8e8e6;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;border:2px dashed transparent}
 .upload-zone:hover{border-color:#ccc;background:#e2e2e0}
 .upload-icon{width:52px;height:52px;background:#d8d8d6;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
 .upload-zone h3{font-size:14px;font-weight:600;margin-bottom:6px}
 .upload-zone p{font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
 .upload-zone small{font-size:10px;color:var(--light);margin-top:8px;text-transform:uppercase;letter-spacing:.5px}
+
+/* CANVAS WITH IMAGE */
 .canvas{position:absolute;inset:12px;border-radius:10px;overflow:hidden;background:#1a1a1a;display:none}
 .canvas.visible{display:block}
+
+/* RENDER VIEW */
 .render-view{width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center;background:#111}
 .render-view img{width:100%;height:100%;object-fit:contain;display:block}
 .render-label{position:absolute;top:12px;left:12px;font-size:10px;font-weight:600;background:rgba(0,0,0,.5);color:#fff;padding:3px 8px;border-radius:4px;backdrop-filter:blur(4px);letter-spacing:.5px;text-transform:uppercase}
+
+/* LOADING */
 .loading{display:none;position:absolute;inset:0;background:rgba(26,26,26,.8);backdrop-filter:blur(6px);flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:20}
 .loading.visible{display:flex}
 .spinner{width:36px;height:36px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:13px;color:rgba(255,255,255,.8)}
 .loading-sub{font-size:11px;color:rgba(255,255,255,.4)}
+
+/* CANVAS BOTTOM ACTIONS */
 .canvas-actions{position:absolute;bottom:20px;right:20px;display:none;gap:8px;z-index:15}
 .canvas-actions.visible{display:flex}
 .caction{background:rgba(0,0,0,.6);border:none;color:#fff;padding:7px 14px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;backdrop-filter:blur(4px);display:flex;align-items:center;gap:6px;transition:all .2s}
 .caction:hover{background:rgba(0,0,0,.8)}
+
+/* RIGHT PANEL */
 .rpanel{width:var(--panel);background:var(--white);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;scrollbar-width:none}
 .rpanel::-webkit-scrollbar{display:none}
+
+/* PROFILE */
 .profile-section{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 .profile-avatar{width:32px;height:32px;border-radius:50%;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .profile-info{flex:1}
 .profile-name{font-size:13px;font-weight:600}
 .profile-email{font-size:11px;color:var(--muted)}
+
+/* API KEY */
 .api-section{padding:12px 16px;border-bottom:1px solid var(--border)}
 .sec-label{font-size:11px;font-weight:600;color:var(--text);margin-bottom:8px;letter-spacing:.2px}
 .api-input{width:100%;background:#f5f5f3;border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:7px;font-size:11px;font-family:monospace;outline:none;transition:border-color .2s}
 .api-input:focus{border-color:#1a1a1a}
 .api-input::placeholder{color:var(--light)}
+
+/* OPTION SECTIONS */
 .opt-section{padding:14px 16px;border-bottom:1px solid var(--border)}
 .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.opt-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 .opt-btn{padding:8px 6px;border-radius:7px;border:1px solid var(--border);background:var(--white);color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;font-weight:400;white-space:nowrap}
 .opt-btn:hover{border-color:#aaa}
 .opt-btn.sel{background:#1a1a1a;border-color:#1a1a1a;color:#fff;font-weight:500}
+
+/* INSTRUCTIONS */
 .inst-input{width:100%;background:#f5f5f3;border:1px solid var(--border);color:var(--text);padding:9px 10px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;resize:none;min-height:80px;transition:border-color .2s;line-height:1.5}
 .inst-input:focus{border-color:#1a1a1a}
 .inst-input::placeholder{color:var(--light)}
+
+/* ERROR */
 .errmsg{display:none;margin:0 16px 10px;padding:9px 12px;background:#fff5f5;border:1px solid #fcd0d0;border-radius:7px;font-size:12px;color:#c0392b;line-height:1.5}
 .errmsg.visible{display:block}
+
+/* RENDER BUTTON */
 .render-wrap{padding:14px 16px;position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--border);margin-top:auto}
 .render-btn{width:100%;padding:13px;background:#1a1a1a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
 .render-btn:hover{background:#333}
 .render-btn:disabled{opacity:.35;cursor:not-allowed}
 .render-icon{font-size:14px}
+
+/* ANALYZE BUTTON */
+.analyze-btn{width:100%;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;transition:all .2s;font-weight:500}
+.analyze-btn:hover:not(:disabled){background:#e8e8e6;border-color:#aaa}
+.analyze-btn:disabled{opacity:.4;cursor:not-allowed}
+.analyze-btn.loading{background:#f0f0ee;color:var(--muted)}
+
 #fi{display:none}
+
+/* MOBILE RESPONSIVE */
 @media (max-width: 768px) {
   body{font-size:14px}
+  
+  /* 헤더 */
   .avatar-name,.avatar-email{display:none}
+  
+  /* 앱 레이아웃 - 세로 스택 */
   .app{flex-direction:column}
+  
+  /* 왼쪽 씬 패널 숨김 */
   .lbar{display:none}
+  
+  /* 상단 썸네일 바 스크롤 가능하게 */
   .thumbbar{overflow-x:auto;scrollbar-width:none}
   .thumbbar::-webkit-scrollbar{display:none}
   .thumbs-wrap{overflow-x:auto;flex-wrap:nowrap}
+  
+  /* 캔버스 */
   .canvas-wrap{min-height:280px;max-height:45vh}
   .canvas{position:absolute;inset:8px}
+  
+  /* 오른쪽 패널 → 하단 스크롤 영역 */
   .rpanel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:50vh;overflow-y:auto;flex-shrink:0}
+  
+  /* 버튼 크기 키우기 */
   .opt-btn{padding:12px 6px;font-size:13px}
   .render-btn{padding:16px;font-size:15px}
+  
+  /* 프로필 숨김 */
   .profile-section{display:none}
+
+  /* 캔버스 액션 버튼 */
   .canvas-actions{bottom:10px;right:10px}
   .caction{padding:10px 16px;font-size:13px}
 }
 </style>
 </head>
 <body>
+
+<!-- HEADER -->
 <header>
   <div class="logo"><span>R</span></div>
   <span class="logo-name">RenderAI</span>
@@ -134,24 +199,38 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
 </header>
 
 <div class="app">
+
+  <!-- LEFT PROJECT PANEL -->
   <div class="lbar">
     <div class="lbar-header">
       <span class="lbar-title">Scenes</span>
       <button class="lbtn" id="upload-lbtn" title="새 씬 추가">+</button>
     </div>
-    <div class="project-list" id="project-list"></div>
-    <div class="lbar-add" id="lbar-add-btn"><span>+</span> 씬 추가</div>
+    <div class="project-list" id="project-list">
+      <!-- populated by JS -->
+    </div>
+    <div class="lbar-add" id="lbar-add-btn">
+      <span>+</span> 씬 추가
+    </div>
   </div>
 
+  <!-- CENTER -->
   <div class="center">
+
+    <!-- THUMBNAILS -->
     <div class="thumbbar">
       <button class="tnav">‹</button>
-      <div class="thumbs-wrap" id="thumbs-wrap"></div>
+      <div class="thumbs-wrap" id="thumbs-wrap">
+        <!-- populated by JS -->
+      </div>
       <button class="thumb-add" id="thumb-add-btn">+</button>
       <button class="tnav">›</button>
     </div>
 
+    <!-- CANVAS WRAP -->
     <div class="canvas-wrap">
+
+      <!-- UPLOAD STATE -->
       <div class="upload-zone" id="upload-zone">
         <div class="upload-icon">🏠</div>
         <h3>씬을 업로드하세요</h3>
@@ -159,28 +238,35 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
         <small>Click to upload scenes</small>
       </div>
 
+      <!-- CANVAS WITH SINGLE RENDER VIEW -->
       <div class="canvas" id="canvas">
         <div class="render-view" id="render-view">
           <img id="rendered-img" src="" alt="렌더링">
           <div class="render-label" id="render-label"></div>
         </div>
 
+        <!-- LOADING -->
         <div class="loading" id="loading">
           <div class="spinner"></div>
           <div class="loading-text">렌더링 생성 중...</div>
           <div class="loading-sub">약 30~60초 소요됩니다</div>
         </div>
 
+        <!-- CANVAS ACTIONS -->
         <div class="canvas-actions" id="canvas-actions">
           <button class="caction" id="upscale-btn">⬆ 4K 업스케일</button>
           <button class="caction" id="download-btn">⬇ 다운로드</button>
           <button class="caction" id="new-render-btn">+ 새 씬</button>
         </div>
       </div>
+
     </div>
   </div>
 
+  <!-- RIGHT PANEL -->
   <div class="rpanel">
+
+    <!-- PROFILE -->
     <div class="profile-section">
       <div class="profile-avatar">🏠</div>
       <div class="profile-info">
@@ -189,54 +275,54 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
       </div>
     </div>
 
+    <!-- API KEY -->
     <div class="api-section">
       <div class="sec-label">Replicate API Key</div>
       <input type="password" class="api-input" id="api-key" placeholder="r8_xxxxxxxxxxxxxxxxxxxx">
     </div>
 
+    <!-- TIME OF DAY -->
     <div class="opt-section">
       <div class="sec-label">Time of Day</div>
       <div class="opt-grid">
-        <button class="opt-btn" data-g="time" data-v="DAY">☀️ 낮</button>
-        <button class="opt-btn" data-g="time" data-v="NIGHT">🌙 밤</button>
+        <button class="opt-btn sel" data-g="time" data-v="bright daytime, strong natural sunlight flooding through windows, bright clear blue sky outside, vivid daylight interior">☀️ 낮</button>
+        <button class="opt-btn" data-g="time" data-v="night time, interior artificial ceiling lights ON creating warm light pools, completely dark night sky outside windows, high contrast bright interior vs dark exterior">🌙 밤</button>
       </div>
-      <div style="margin-top:8px;font-size:11px;color:var(--muted)">선택 안 하면 시간대 프롬프트를 넣지 않습니다.</div>
     </div>
 
-    <div class="opt-section">
-      <div class="sec-label">Lighting</div>
-      <div class="opt-grid">
-        <button class="opt-btn" data-g="lighting" data-v="SOFT">💡 소프트 조명</button>
-        <button class="opt-btn" data-g="lighting" data-v="DRAMATIC">✨ 강조 조명</button>
-      </div>
-      <div style="margin-top:8px;font-size:11px;color:var(--muted)">선택 안 하면 조명 프롬프트를 넣지 않습니다.</div>
-    </div>
-    </div>
-
+    <!-- ADDITIONAL INSTRUCTIONS -->
     <div class="opt-section">
       <div class="sec-label">Prompt</div>
       <textarea class="inst-input" id="instructions" placeholder="원하는 스타일, 마감재, 분위기 등을 입력하세요&#10;예) 북유럽 스타일, 화이트 마블 바닥, 따뜻한 분위기" style="min-height:280px"></textarea>
     </div>
 
+    <!-- ERROR -->
     <div class="errmsg" id="errmsg"></div>
 
+    <!-- RENDER BUTTON -->
     <div class="render-wrap">
       <button class="render-btn" id="render-btn" disabled>
         <span class="render-icon">✦</span> Render
       </button>
     </div>
+
   </div>
 </div>
 
 <input type="file" id="fi" accept="image/*">
 
 <script>
-let scenes = [];
+// 씬 관리
+let scenes = []; // {id, orig, rendered, name}
 let currentSceneId = null;
+let isDragging = false;
 
 const uploadZone = document.getElementById('upload-zone');
 const canvas = document.getElementById('canvas');
+const originalImg = document.getElementById('original-img');
 const renderedImg = document.getElementById('rendered-img');
+const renderedLayer = document.getElementById('rendered-layer');
+const compareLine = document.getElementById('compare-line');
 const loading = document.getElementById('loading');
 const renderBtn = document.getElementById('render-btn');
 const fi = document.getElementById('fi');
@@ -247,14 +333,14 @@ const newRenderBtn = document.getElementById('new-render-btn');
 const canvasActions = document.getElementById('canvas-actions');
 const thumbsWrap = document.getElementById('thumbs-wrap');
 
-function currentScene() {
-  return scenes.find(s => s.id === currentSceneId);
-}
+// 현재 씬
+function currentScene() { return scenes.find(s => s.id === currentSceneId); }
 
+// UPLOAD TRIGGERS
 uploadZone.addEventListener('click', () => fi.click());
 document.getElementById('upload-lbtn').addEventListener('click', () => fi.click());
 document.getElementById('lbar-add-btn').addEventListener('click', () => fi.click());
-document.getElementById('thumb-add-btn').addEventListener('click', () => fi.click());
+document.getElementById('thumb-add-btn').addEventListener('click', () => { fi.click(); });
 
 document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => {
@@ -271,8 +357,9 @@ fi.addEventListener('change', e => {
 function loadFile(f) {
   const reader = new FileReader();
   reader.onload = e => {
+    const b64 = e.target.result;
     const id = Date.now();
-    const scene = { id, orig: e.target.result, rendered: null, name: `Scene ${scenes.length + 1}` };
+    const scene = { id, orig: b64, rendered: null, name: `Scene ${scenes.length + 1}` };
     scenes.push(scene);
     currentSceneId = id;
     showScene(scene);
@@ -286,6 +373,8 @@ function loadFile(f) {
 function showScene(scene, viewMode = 'rendered') {
   uploadZone.style.display = 'none';
   canvas.classList.add('visible');
+
+  const renderedImg = document.getElementById('rendered-img');
   const renderLabel = document.getElementById('render-label');
 
   if (viewMode === 'orig' || !scene.rendered) {
@@ -296,18 +385,24 @@ function showScene(scene, viewMode = 'rendered') {
     renderLabel.textContent = 'Rendered';
   }
 
-  canvasActions.classList.toggle('visible', !!scene.rendered);
+  if (scene.rendered) {
+    canvasActions.classList.add('visible');
+  } else {
+    canvasActions.classList.remove('visible');
+  }
 }
 
+// THUMBNAILS + PROJECT LIST
 function renderThumbs() {
   thumbsWrap.innerHTML = '';
   const projectList = document.getElementById('project-list');
   projectList.innerHTML = '';
 
   scenes.forEach((scene, i) => {
+    // 원본 썸네일
     const tOrig = document.createElement('div');
-    tOrig.className = 'thumb' + (scene.id === currentSceneId && !scene.rendered ? ' active' : '');
-    tOrig.innerHTML = `<img src="${scene.orig}"><div class="thumb-num">${i + 1}</div><div class="thumb-badge orig">원본</div>`;
+    tOrig.className = 'thumb';
+    tOrig.innerHTML = `<img src="${scene.orig}"><div class="thumb-num">${i+1}</div><div class="thumb-badge orig">원본</div>`;
     tOrig.addEventListener('click', () => {
       currentSceneId = scene.id;
       showScene(scene, 'orig');
@@ -316,10 +411,11 @@ function renderThumbs() {
     });
     thumbsWrap.appendChild(tOrig);
 
+    // 렌더링 썸네일 (있을 때만)
     if (scene.rendered) {
       const tRend = document.createElement('div');
       tRend.className = 'thumb' + (scene.id === currentSceneId ? ' active' : '');
-      tRend.innerHTML = `<img src="${scene.rendered}"><div class="thumb-num">${i + 1}</div><div class="thumb-badge rendered">렌더</div>`;
+      tRend.innerHTML = `<img src="${scene.rendered}"><div class="thumb-num">${i+1}</div><div class="thumb-badge rendered">렌더</div>`;
       tRend.addEventListener('click', () => {
         currentSceneId = scene.id;
         showScene(scene, 'rendered');
@@ -329,9 +425,11 @@ function renderThumbs() {
       thumbsWrap.appendChild(tRend);
     }
 
+    // 왼쪽 프로젝트 목록
     const p = document.createElement('div');
     p.className = 'project-item' + (scene.id === currentSceneId ? ' active' : '');
-    p.innerHTML = `<img src="${scene.rendered || scene.orig}"><div class="project-item-label">Scene ${i + 1}${scene.rendered ? ' ✓' : ''}</div>`;
+    const imgSrc = scene.rendered || scene.orig;
+    p.innerHTML = `<img src="${imgSrc}"><div class="project-item-label">Scene ${i + 1}${scene.rendered ? ' ✓' : ''}</div>`;
     p.addEventListener('click', () => {
       currentSceneId = scene.id;
       showScene(scene, scene.rendered ? 'rendered' : 'orig');
@@ -342,20 +440,20 @@ function renderThumbs() {
   });
 }
 
+// OPTION BUTTONS - 클릭하면 선택, 다시 클릭하면 해제
 document.querySelectorAll('.opt-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    const group = btn.dataset.g;
-    const isSelected = btn.classList.contains('sel');
-
-    document.querySelectorAll(`.opt-btn[data-g="${group}"]`).forEach(b => b.classList.remove('sel'));
-
-    if (!isSelected) {
-      btn.classList.add('sel');
+    const g = btn.dataset.g;
+    if (btn.classList.contains('sel')) {
+      btn.classList.remove('sel'); // 이미 선택된거 클릭 → 해제
+    } else {
+      document.querySelectorAll(`.opt-btn[data-g="${g}"]`).forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel'); // 새로 선택
     }
   });
 });
-});
 
+// API 키 자동 저장/불러오기
 const savedKey = localStorage.getItem('replicate_api_key');
 if (savedKey) apiKey.value = savedKey;
 
@@ -364,172 +462,12 @@ apiKey.addEventListener('input', () => {
   checkReady();
 });
 
-document.getElementById('instructions').addEventListener('input', checkReady);
-
 function checkReady() {
   const scene = currentScene();
   renderBtn.disabled = !(scene && apiKey.value.trim().startsWith('r8_'));
 }
 
-function getTimePrompt() {
-  const timeMode = document.querySelector('.opt-btn[data-g="time"].sel')?.dataset.v;
-
-  if (!timeMode) return '';
-
-  if (timeMode === 'NIGHT') {
-    return `
-Time of day: night interior scene.
-Outside the windows: dark night sky, dim or nearly black exterior.
-Inside the space: warm artificial lighting is the primary light source.
-Show ceiling lights clearly affecting the room with realistic light pools and falloff.
-Avoid daylight, sunset glow, blue sky, or bright sun beams.
-    `.trim();
-  }
-
-  return `
-Time of day: bright daytime interior scene.
-Outside the windows: clear bright sky with strong natural daylight.
-Inside the space: balanced natural daylight filling the room.
-Keep exposure realistic and clean.
-Avoid dark exterior, night sky, or dominant artificial night mood.
-  `.trim();
-}
-
-function getLightingPrompt() {
-  const lightingMode = document.querySelector('.opt-btn[data-g="lighting"].sel')?.dataset.v;
-
-  if (!lightingMode) return '';
-
-  if (lightingMode === 'DRAMATIC') {
-    return `
-Lighting style: architectural accent lighting.
-Visible recessed ceiling downlights turned on.
-Visible indirect cove lighting in recessed ceiling details.
-Clear shadow depth, realistic contrast, controlled highlight rolloff.
-Lighting should read clearly in the final image.
-    `.trim();
-  }
-
-  return `
-Lighting style: soft realistic architectural lighting.
-Visible recessed ceiling downlights turned on with subtle realistic falloff.
-Visible indirect cove lighting creating a soft ambient glow.
-Balanced natural bounce light, soft shadows, realistic exposure.
-No flat lighting.
-  `.trim();
-}
-
-function buildPrompt() {
-  const base = `
-Photorealistic architectural visualization.
-Real photo look, not CGI, not stylized 3D, not cartoon.
-Physically plausible lighting, global illumination, realistic camera exposure.
-Preserve the uploaded image composition and architecture.
-Enhance only realism, material quality, lighting, and render finish.
-Materials must feel real and tactile: tile texture, wall paint texture, fabric texture, wood grain, natural reflections, subtle roughness variation.
-  `.trim();
-
-  const time = getTimePrompt();
-  const lighting = getLightingPrompt();
-  const inst = document.getElementById('instructions').value.trim();
-
-  return [base, time, lighting, inst].filter(Boolean).join('\n\n');
-}
-
-async function getImageSize(dataUrl) {
-  const imgEl = new Image();
-  imgEl.src = dataUrl;
-  await new Promise(resolve => {
-    imgEl.onload = resolve;
-    imgEl.onerror = resolve;
-  });
-  return {
-    width: imgEl.naturalWidth || 1280,
-    height: imgEl.naturalHeight || 720
-  };
-}
-
-renderBtn.addEventListener('click', async () => {
-  const key = apiKey.value.trim();
-  const scene = currentScene();
-  if (!key || !scene) return;
-
-  clearErr();
-  setLoading(true);
-
-  try {
-    const { width, height } = await getImageSize(scene.orig);
-    const res = await fetch('/api/render', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        apiKey: key,
-        prompt: buildPrompt(),
-        image: scene.orig,
-        width,
-        height
-      })
-    });
-
-    const pred = await res.json();
-    if (!res.ok) throw new Error(pred.error || '렌더링 시작 실패');
-
-    if (pred.status === 'succeeded' && pred.output) {
-      const url = Array.isArray(pred.output) ? pred.output[0] : pred.output;
-      showResult(url);
-      return;
-    }
-
-    await poll(key, pred.id);
-  } catch (e) {
-    showErr('오류: ' + e.message);
-    setLoading(false);
-  }
-});
-
-async function poll(key, id) {
-  while (true) {
-    await new Promise(r => setTimeout(r, 2500));
-    const res = await fetch('/api/poll', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey: key, predictionId: id })
-    });
-
-    const d = await res.json();
-    if (d.status === 'succeeded') {
-      const url = Array.isArray(d.output) ? d.output[0] : d.output;
-      showResult(url);
-      return;
-    }
-
-    if (d.status === 'failed') {
-      setLoading(false);
-      showErr('오류: ' + (d.error || '렌더링 실패'));
-      return;
-    }
-  }
-}
-
-function showResult(url) {
-  const scene = currentScene();
-  if (!scene) return;
-
-  scene.rendered = url;
-  renderedImg.src = url;
-  renderedImg.onload = () => {
-    setLoading(false);
-    document.getElementById('render-label').textContent = 'Rendered';
-    canvasActions.classList.add('visible');
-    renderThumbs();
-  };
-
-  renderedImg.onerror = () => {
-    setLoading(false);
-    showErr('렌더 결과 이미지를 불러오지 못했습니다.');
-  };
-}
-
+// UPSCALE
 document.getElementById('upscale-btn').addEventListener('click', async () => {
   const key = apiKey.value.trim();
   const scene = currentScene();
@@ -545,14 +483,13 @@ document.getElementById('upscale-btn').addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ apiKey: key, image: scene.rendered })
     });
-
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || '업스케일 실패');
+    if (!res.ok) throw new Error(data.error);
 
     const url = Array.isArray(data.output) ? data.output[0] : data.output;
     if (url) {
       scene.rendered = url;
-      renderedImg.src = url;
+      document.getElementById('rendered-img').src = url;
       renderThumbs();
     }
   } catch (e) {
@@ -563,16 +500,92 @@ document.getElementById('upscale-btn').addEventListener('click', async () => {
   }
 });
 
+function buildPrompt() {
+  const time = document.querySelector('.opt-btn[data-g="time"].sel')?.dataset.v || '';
+  const lighting = document.querySelector('.opt-btn[data-g="lighting"].sel')?.dataset.v || '';
+  const inst = document.getElementById('instructions').value.trim();
+  return [time, lighting, inst].filter(Boolean).join(', ');
+}
+
+// RENDER
+renderBtn.addEventListener('click', async () => {
+  const key = apiKey.value.trim();
+  const scene = currentScene();
+  if (!key || !scene) return;
+  clearErr();
+  setLoading(true);
+
+  try {
+    const imgEl = new Image();
+    imgEl.src = scene.orig;
+    await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
+    const w = imgEl.naturalWidth || 1280;
+    const h = imgEl.naturalHeight || 720;
+
+    const res = await fetch('/api/render', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: key, prompt: buildPrompt(), image: scene.orig, width: w, height: h })
+    });
+    const pred = await res.json();
+    if (!res.ok) throw new Error(pred.error || '렌더링 시작 실패');
+
+    if (pred.status === 'succeeded' && pred.output) {
+      const url = Array.isArray(pred.output) ? pred.output[0] : pred.output;
+      showResult(url);
+    } else {
+      await poll(key, pred.id);
+    }
+  } catch (e) {
+    showErr('오류: ' + e.message);
+    setLoading(false);
+  }
+});
+
+async function poll(key, id) {
+  while (true) {
+    await new Promise(r => setTimeout(r, 2500));
+    const res = await fetch('/api/poll', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: key, predictionId: id })
+    });
+    const d = await res.json();
+    if (d.status === 'succeeded') {
+      const url = Array.isArray(d.output) ? d.output[0] : d.output;
+      showResult(url);
+      return;
+    } else if (d.status === 'failed') {
+      throw new Error(d.error || '렌더링 실패');
+    }
+  }
+}
+function showResult(url) {
+  const scene = currentScene();
+  if (!scene) return;
+  scene.rendered = url;
+  const renderedImg = document.getElementById('rendered-img');
+  renderedImg.src = url;
+  renderedImg.onload = () => {
+    setLoading(false);
+    document.getElementById('render-label').textContent = 'Rendered';
+    canvasActions.classList.add('visible');
+    renderThumbs();
+  };
+}
+
+// DOWNLOAD
 downloadBtn.addEventListener('click', () => {
   const scene = currentScene();
   if (!scene?.rendered) return;
   const a = document.createElement('a');
   a.href = scene.rendered;
-  a.download = `renderai-scene${scenes.indexOf(scene) + 1}.png`;
+  a.download = `renderai-scene${scenes.indexOf(scene)+1}.png`;
   a.target = '_blank';
   a.click();
 });
 
+// NEW SCENE
 newRenderBtn.addEventListener('click', () => fi.click());
 
 function setLoading(on) {
@@ -582,21 +595,14 @@ function setLoading(on) {
     renderBtn.innerHTML = '<span>⏳</span> 렌더링 중...';
   } else {
     loading.classList.remove('visible');
+    renderBtn.disabled = false;
     renderBtn.innerHTML = '<span class="render-icon">✦</span> Render';
-    checkReady();
   }
 }
 
-function showErr(message) {
-  errmsg.textContent = message;
-  errmsg.classList.add('visible');
-}
-
-function clearErr() {
-  errmsg.classList.remove('visible');
-  errmsg.textContent = '';
-}
+function showErr(m) { errmsg.textContent = m; errmsg.classList.add('visible'); }
+function clearErr() { errmsg.classList.remove('visible'); }
 </script>
 </body>
 </html>
-ㅈ
+HTMLEOF
