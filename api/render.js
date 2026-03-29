@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  constfinalPrompt = `Transform this 3D interior sketch into a photorealistic architectural render. ${prompt}.
+ const finalPrompt = `Transform this 3D interior sketch into a photorealistic architectural render. ${prompt}.
 
 Keep the exact same camera angle, spatial layout, furniture positions, ceiling design, windows, and all architectural geometry identical.
 
