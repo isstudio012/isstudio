@@ -135,7 +135,50 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
 .render-btn:disabled{opacity:.35;cursor:not-allowed}
 .render-icon{font-size:14px}
 
+/* ANALYZE BUTTON */
+.analyze-btn{width:100%;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;transition:all .2s;font-weight:500}
+.analyze-btn:hover:not(:disabled){background:#e8e8e6;border-color:#aaa}
+.analyze-btn:disabled{opacity:.4;cursor:not-allowed}
+.analyze-btn.loading{background:#f0f0ee;color:var(--muted)}
+
 #fi{display:none}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  body{font-size:14px}
+  
+  /* 헤더 */
+  .avatar-name,.avatar-email{display:none}
+  
+  /* 앱 레이아웃 - 세로 스택 */
+  .app{flex-direction:column}
+  
+  /* 왼쪽 씬 패널 숨김 */
+  .lbar{display:none}
+  
+  /* 상단 썸네일 바 스크롤 가능하게 */
+  .thumbbar{overflow-x:auto;scrollbar-width:none}
+  .thumbbar::-webkit-scrollbar{display:none}
+  .thumbs-wrap{overflow-x:auto;flex-wrap:nowrap}
+  
+  /* 캔버스 */
+  .canvas-wrap{min-height:280px;max-height:45vh}
+  .canvas{position:absolute;inset:8px}
+  
+  /* 오른쪽 패널 → 하단 스크롤 영역 */
+  .rpanel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:50vh;overflow-y:auto;flex-shrink:0}
+  
+  /* 버튼 크기 키우기 */
+  .opt-btn{padding:12px 6px;font-size:13px}
+  .render-btn{padding:16px;font-size:15px}
+  
+  /* 프로필 숨김 */
+  .profile-section{display:none}
+
+  /* 캔버스 액션 버튼 */
+  .canvas-actions{bottom:10px;right:10px}
+  .caction{padding:10px 16px;font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -211,6 +254,7 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
 
         <!-- CANVAS ACTIONS -->
         <div class="canvas-actions" id="canvas-actions">
+          <button class="caction" id="upscale-btn">⬆ 4K 업스케일</button>
           <button class="caction" id="download-btn">⬇ 다운로드</button>
           <button class="caction" id="new-render-btn">+ 새 씬</button>
         </div>
@@ -241,43 +285,15 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
     <div class="opt-section">
       <div class="sec-label">Time of Day</div>
       <div class="opt-grid">
-        <button class="opt-btn" data-g="time" data-v="morning 7AM warm golden sunlight at low angle streaming through windows, long interior shadows, outside windows: bright blue morning sky with soft golden sunrise light, green landscape lit by morning sun">🌅 Morning</button>
-        <button class="opt-btn" data-g="time" data-v="noon 12PM intense white overhead sunlight flooding interior, sharp shadows, outside windows: bright clear blue sky, harsh midday sunlight on exterior landscape, vivid green grass">☀️ Noon</button>
-        <button class="opt-btn" data-g="time" data-v="sunset evening 6PM deep golden orange warm light, long dramatic shadows inside, outside windows: dramatic orange red sunset sky, golden hour light on exterior, warm amber atmosphere">🌆 Evening</button>
-        <button class="opt-btn" data-g="time" data-v="night time, interior track lights and artificial ceiling lights ON creating warm light pools, outside windows: completely dark night black sky, dark exterior landscape, no sunlight outside, high contrast bright interior vs dark exterior">🌙 Night</button>
-      </div>
-    </div>
-
-    <!-- LIGHTING -->
-    <div class="opt-section">
-      <div class="sec-label">Lighting</div>
-      <div class="opt-grid-3">
-        <button class="opt-btn sel" data-g="lighting" data-v="natural daylight through windows">Daylight</button>
-        <button class="opt-btn" data-g="lighting" data-v="soft ambient lighting, diffused">Ambient</button>
-        <button class="opt-btn" data-g="lighting" data-v="cove lighting, indirect LED">Cove</button>
-        <button class="opt-btn" data-g="lighting" data-v="spot lighting, accent spotlights">Spot</button>
-        <button class="opt-btn" data-g="lighting" data-v="track lighting, directional">Track</button>
-        <button class="opt-btn" data-g="lighting" data-v="profile lighting, wall-mounted">Profile</button>
-      </div>
-    </div>
-
-    <!-- FLOORING -->
-    <div class="opt-section">
-      <div class="sec-label">Flooring</div>
-      <div class="opt-grid-3">
-        <button class="opt-btn" data-g="floor" data-v="marble flooring, polished white marble">Marble</button>
-        <button class="opt-btn sel" data-g="floor" data-v="hardwood flooring, oak wood planks">Wood</button>
-        <button class="opt-btn" data-g="floor" data-v="ceramic tile flooring, large format">Tile</button>
-        <button class="opt-btn" data-g="floor" data-v="granite flooring, polished granite">Granite</button>
-        <button class="opt-btn" data-g="floor" data-v="carpet flooring, soft area rug">Carpet</button>
-        <button class="opt-btn" data-g="floor" data-v="polished concrete flooring">Concrete</button>
+        <button class="opt-btn sel" data-g="time" data-v="bright daytime, strong natural sunlight flooding through windows, bright clear blue sky outside, vivid daylight interior">☀️ 낮</button>
+        <button class="opt-btn" data-g="time" data-v="night time, interior artificial ceiling lights ON creating warm light pools, completely dark night sky outside windows, high contrast bright interior vs dark exterior">🌙 밤</button>
       </div>
     </div>
 
     <!-- ADDITIONAL INSTRUCTIONS -->
     <div class="opt-section">
-      <div class="sec-label">Additional Instructions</div>
-      <textarea class="inst-input" id="instructions" placeholder="Enter any specific requirements or preferences" style="min-height:200px"></textarea>
+      <div class="sec-label">Prompt</div>
+      <textarea class="inst-input" id="instructions" placeholder="원하는 스타일, 마감재, 분위기 등을 입력하세요&#10;예) 북유럽 스타일, 화이트 마블 바닥, 따뜻한 분위기" style="min-height:280px"></textarea>
     </div>
 
     <!-- ERROR -->
@@ -451,12 +467,44 @@ function checkReady() {
   renderBtn.disabled = !(scene && apiKey.value.trim().startsWith('r8_'));
 }
 
+// UPSCALE
+document.getElementById('upscale-btn').addEventListener('click', async () => {
+  const key = apiKey.value.trim();
+  const scene = currentScene();
+  if (!key || !scene?.rendered) return;
+
+  const btn = document.getElementById('upscale-btn');
+  btn.textContent = '⏳ 업스케일 중...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/upscale', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: key, image: scene.rendered })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    const url = Array.isArray(data.output) ? data.output[0] : data.output;
+    if (url) {
+      scene.rendered = url;
+      document.getElementById('rendered-img').src = url;
+      renderThumbs();
+    }
+  } catch (e) {
+    showErr('업스케일 오류: ' + e.message);
+  } finally {
+    btn.textContent = '⬆ 4K 업스케일';
+    btn.disabled = false;
+  }
+});
+
 function buildPrompt() {
   const time = document.querySelector('.opt-btn[data-g="time"].sel')?.dataset.v || '';
-  const lights = [...document.querySelectorAll('.opt-btn[data-g="lighting"].sel')].map(b => b.dataset.v).join(', ');
-  const floor = document.querySelector('.opt-btn[data-g="floor"].sel')?.dataset.v || '';
+  const lighting = document.querySelector('.opt-btn[data-g="lighting"].sel')?.dataset.v || '';
   const inst = document.getElementById('instructions').value.trim();
-  return ['photorealistic architectural interior rendering, professional photography, ultra realistic, 8K', 'strong bright sunlight streaming through windows, intense natural light from exterior, sun rays entering interior, bright window light creating dramatic shadows on floor and walls, high contrast natural lighting', time, lights, floor, inst, 'high quality, sharp details, professional interior design visualization'].filter(Boolean).join(', ');
+  return [time, lighting, inst].filter(Boolean).join(', ');
 }
 
 // RENDER
@@ -468,7 +516,6 @@ renderBtn.addEventListener('click', async () => {
   setLoading(true);
 
   try {
-    // 원본 이미지 크기 읽기
     const imgEl = new Image();
     imgEl.src = scene.orig;
     await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
@@ -478,11 +525,17 @@ renderBtn.addEventListener('click', async () => {
     const res = await fetch('/api/render', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey: key, prompt: buildPrompt(), image: scene.orig, strength: 0.75, width: w, height: h })
+      body: JSON.stringify({ apiKey: key, prompt: buildPrompt(), image: scene.orig, width: w, height: h })
     });
     const pred = await res.json();
     if (!res.ok) throw new Error(pred.error || '렌더링 시작 실패');
-    await poll(key, pred.id);
+
+    if (pred.status === 'succeeded' && pred.output) {
+      const url = Array.isArray(pred.output) ? pred.output[0] : pred.output;
+      showResult(url);
+    } else {
+      await poll(key, pred.id);
+    }
   } catch (e) {
     showErr('오류: ' + e.message);
     setLoading(false);
@@ -507,7 +560,6 @@ async function poll(key, id) {
     }
   }
 }
-
 function showResult(url) {
   const scene = currentScene();
   if (!scene) return;
