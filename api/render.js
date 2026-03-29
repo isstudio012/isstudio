@@ -19,7 +19,7 @@ Preserve layout, objects, and all material finishes exactly. Do not change or re
 
 Make the scene much brighter with extremely strong direct sunlight entering from outside. Bright exterior environment, slightly overexposed outdoor view, strong sunlight patches on the floor and interior surfaces, hard shadows, sharp shadow edges, high contrast daylight.
 
-real photograph, DSLR camera, natural lighting, realistic exposure, photographic dynamic range, real lens optics, natural color response, subtle imperfections, no CGI, no render look, ultra realistic, 8K.`;
+real photograph, DSLR camera, natural lighting, realistic exposure, photographic dynamic range, real lens optics, natural color response, subtle imperfections, no CGI, no render look, ultra realistic, 8K`;
   try {
     const response = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
       method: 'POST',
