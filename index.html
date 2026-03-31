@@ -15,7 +15,7 @@ button,input,select,textarea{font:inherit}
 #canvas{position:absolute;inset:0 0 108px 0;overflow:hidden;background:var(--bg)}
 #canvas.panning{cursor:grabbing}
 #world{position:absolute;top:0;left:0;width:4000px;height:4000px;transform-origin:top left;}
-#connections{position:absolute;inset:0;pointer-events:auto;z-index:2;width:100%;height:100%}
+#connections{position:absolute;inset:0;pointer-events:none;z-index:999;width:100%;height:100%}
 .toolbar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:20}
 .tb{height:36px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;cursor:pointer}.tb:hover{background:var(--panel2)}
 .source-launcher{position:absolute;left:16px;top:16px;height:42px;min-width:120px;padding:0 18px;border:1px solid #d2b100;background:#ffd400;color:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:grab;z-index:30;user-select:none;box-shadow:0 8px 24px rgba(0,0,0,.25)}
@@ -45,7 +45,7 @@ button,input,select,textarea{font:inherit}
 .make:disabled{opacity:.45;cursor:not-allowed}
 .loading{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;display:none}
 
-.port{position:absolute;width:16px;height:16px;border-radius:999px;background:#fff;border:2px solid #1b1b1b;z-index:3;cursor:pointer}
+.port{position:absolute;width:16px;height:16px;border-radius:999px;background:#fff;border:2px solid #1b1b1b;z-index:200;cursor:crosshair}
 .port.in{left:-8px;top:50%;transform:translateY(-50%)}
 .port.ref{left:-8px;top:65%;transform:translateY(-50%);background:#fff;border-color:#1b1b1b;outline:2px solid rgba(255,255,255,.25)}
 .port.out{right:-8px;top:50%;transform:translateY(-50%)}
@@ -417,7 +417,7 @@ function bindNodeEvents(node, el){
     el.querySelector('.engine-preview').addEventListener('click', e=>{
       e.stopPropagation();
       selectNode(node.id);
-      if(node.previewImage) openImagePopup(node.previewImage, 'Node Preview');
+      if(node.previewImage) openImagePopup(node.previewImage, 'Preview');
     });
     const sel = el.querySelector('.engine-select');
     const ta = el.querySelector('.prompt');
@@ -444,21 +444,31 @@ function bindNodeEvents(node, el){
 
   // Ports
   el.querySelectorAll('.port').forEach(port=>{
-    port.addEventListener('mousedown', e=>{e.stopPropagation(); selectedLink=null; connectStart={nodeId:node.id, port:port.dataset.port};});
-    port.addEventListener('mouseup', e=>{
+    port.addEventListener('pointerdown', e=>{
       e.stopPropagation();
+      e.preventDefault();
+      selectedLink = null;
+      connectStart = {nodeId: node.id, port: port.dataset.port};
+    });
+    port.addEventListener('mouseenter', ()=>{
+      if(connectStart && connectStart.nodeId !== node.id) port.style.background = '#ffd400';
+    });
+    port.addEventListener('mouseleave', ()=>{ port.style.background = ''; });
+    port.addEventListener('pointerup', e=>{
+      e.stopPropagation();
+      e.preventDefault();
+      port.style.background = '';
       if(!connectStart) return;
-      if(connectStart.nodeId===node.id){ connectStart=null; tempMouse=null; redraw(); return; }
+      if(connectStart.nodeId === node.id){ connectStart=null; tempMouse=null; redraw(); return; }
       const fromPort = connectStart.port;
       const toPort = port.dataset.port;
-      // Allow out -> in / out -> ref
       if(fromPort==='out' && (toPort==='in' || toPort==='ref')){
-        // single link per (to, toPort)
         links = links.filter(l => !(l.to===node.id && l.toPort===toPort));
         links.push({id:uid('ln_'), from:connectStart.nodeId, to:node.id, toPort});
       }
-      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); saveWorkspace();
-    });
+      connectStart=null; tempMouse=null;
+      syncAllEnginePreviews(); redraw(); saveWorkspace();
+    }, true);
   });
 }
 
@@ -535,19 +545,21 @@ function removeLink(id){
 
 function getNodeRect(node){
   const el=document.getElementById(node.id);
+  if(!el) return {w:360,h:300};
   return {w:el.offsetWidth,h:el.offsetHeight};
 }
 
 function getPortPos(nodeId, kind){
   const node=nodes.find(n=>n.id===nodeId);
+  if(!node) return {x:0,y:0};
   const rect=getNodeRect(node);
   if(kind==='out') return {x:node.x+rect.w, y:node.y+rect.h/2};
-  // in
   return {x:node.x, y:node.y+rect.h/2};
 }
 
 function getPortPosTo(nodeId, toPort){
   const node=nodes.find(n=>n.id===nodeId);
+  if(!node) return {x:0,y:0};
   const rect=getNodeRect(node);
   const y = toPort==='ref' ? (node.y + rect.h*0.65) : (node.y + rect.h*0.5);
   return {x:node.x, y};
@@ -608,30 +620,29 @@ function redraw(){
     const from = getPortPos(link.from, 'out');
     const to = getPortPosTo(link.to, link.toPort);
     const mx = (from.x + to.x) / 2;
-
     const d = `M ${from.x} ${from.y} C ${mx} ${from.y}, ${mx} ${to.y}, ${to.x} ${to.y}`;
-    const fat = document.createElementNS('http://www.w3.org/2000/svg','path');
-    fat.setAttribute('d', d);
-    fat.setAttribute('fill','none');
-    fat.setAttribute('stroke','transparent');
-    fat.setAttribute('stroke-width','18');
-    fat.setAttribute('class','line-hit-fat');
-    fat.style.pointerEvents='stroke';
-    fat.addEventListener('click', e=>{e.stopPropagation(); selectedLink=link.id; redraw();});
-    fat.addEventListener('dblclick', e=>{ e.preventDefault(); e.stopPropagation(); removeLink(link.id); });
-    fat.addEventListener('mouseenter', e=>{ path.setAttribute('stroke','#ffffff'); });
-    fat.addEventListener('mouseleave', e=>{ path.setAttribute('stroke', selectedLink===link.id ? '#ffffff' : '#ffd400'); });
-    svg.appendChild(fat);
 
+    // visible line
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d', d);
     path.setAttribute('fill','none');
     path.setAttribute('stroke', selectedLink===link.id ? '#ffffff' : '#ffd400');
     path.setAttribute('stroke-width', selectedLink===link.id ? '3' : '2');
-    path.setAttribute('class','line-hit');
     path.style.pointerEvents='none';
-    path.addEventListener('dblclick', e=>{ e.preventDefault(); e.stopPropagation(); removeLink(link.id); });
     svg.appendChild(path);
+
+    // fat invisible hit area — must come after so it's on top
+    const fat = document.createElementNS('http://www.w3.org/2000/svg','path');
+    fat.setAttribute('d', d);
+    fat.setAttribute('fill','none');
+    fat.setAttribute('stroke','transparent');
+    fat.setAttribute('stroke-width','24');
+    fat.style.pointerEvents='stroke';
+    fat.style.cursor='pointer';
+    fat.addEventListener('mouseenter', ()=>{ path.setAttribute('stroke','#ffffff'); });
+    fat.addEventListener('mouseleave', ()=>{ path.setAttribute('stroke', selectedLink===link.id ? '#ffffff' : '#ffd400'); });
+    fat.addEventListener('click', e=>{ e.stopPropagation(); selectedLink=link.id; redraw(); });
+    svg.appendChild(fat);
   });
 
   // temp line
@@ -694,39 +705,64 @@ async function runEngine(engineId){
 
   bottomMake.disabled = true;
   loading.style.display = 'block';
-  if(selectedNodeId===engineId) showPreview(main);
 
   try{
-    let outputImage = main;
-    try{
-      const res = await fetch(API_RENDER, {
-        method:'POST',
-        headers:{'Content-Type':'application/json; charset=utf-8'},
-        body: JSON.stringify({ apiKey: apiCodeInput.value.trim(), engine: engineNode.engine, prompt: String(engineNode.prompt||''), image: main, refImage: ref })
-      });
-      if(res.ok){
-        const data = await res.json();
-        outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image || main);
-      }
-    } catch(_e) {}
+    const apiKey = apiCodeInput.value.trim();
+    if(!apiKey){ alert('API 코드를 입력해줘.'); return; }
 
-    // stage rule: if input is a Result node => create/update Final only; else create/update Result
-    const targetType = (mainType === 'result') ? 'final' : 'result';
-    const existing = findDownstream(engineId, targetType);
-    if(existing){
-      existing.image = outputImage;
-      const exEl = document.getElementById(existing.id);
-      const box = exEl.querySelector('.image-box');
-      const img = exEl.querySelector('img');
-      img.src = outputImage;
-      box.classList.add('has-image');
-      selectNode(existing.id);
-    } else {
-      const newNode = addImageNode(targetType, engineNode.x + 420, engineNode.y + (targetType==='final'? 0: 10), outputImage);
-      links.push({id: uid('ln_'), from: engineId, to: newNode.id, toPort: 'in'});
-      selectNode(newNode.id);
+    let outputImage = null;
+
+    // Start prediction
+    const startRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'wait'
+      },
+      body: JSON.stringify({
+        input: {
+          prompt: String(engineNode.prompt || ''),
+          input_image: main,
+          ...(ref ? { reference_image: ref } : {})
+        }
+      })
+    });
+
+    if(!startRes.ok){
+      const err = await startRes.json().catch(()=>({}));
+      alert('API 오류: ' + (err.detail || startRes.status));
+      return;
     }
 
+    const prediction = await startRes.json();
+
+    // Poll until done
+    let result = prediction;
+    while(result.status !== 'succeeded' && result.status !== 'failed'){
+      await new Promise(r => setTimeout(r, 1500));
+      const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+      });
+      result = await pollRes.json();
+    }
+
+    if(result.status === 'failed'){
+      alert('렌더링 실패: ' + (result.error || 'unknown error'));
+      return;
+    }
+
+    outputImage = Array.isArray(result.output) ? result.output[0] : result.output;
+
+    // Show result
+    engineNode.previewImage = outputImage;
+    const engEl = document.getElementById(engineId);
+    if(engEl){
+      const box = engEl.querySelector('.engine-preview');
+      const im  = engEl.querySelector('.engine-preview img');
+      if(im) im.src = outputImage;
+      if(box){ box.classList.add('has-image'); applyEnginePreviewAspect(engineNode, outputImage); }
+    }
     showPreview(outputImage);
     syncAllEnginePreviews();
     redraw();
@@ -751,12 +787,6 @@ function selectNode(id){
   const node = nodes.find(n=>n.id===id);
   const el = node ? document.getElementById(id) : null;
   if(el) el.classList.add('selected');
-  if(node){
-    const img = getNodePreviewImage(node);
-    if(img) showPreview(img); else clearPreview();
-  } else {
-    clearPreview();
-  }
   saveWorkspace();
 }
 
@@ -855,7 +885,7 @@ document.addEventListener('mousedown', e=>{ if(e.button===1) e.preventDefault();
 
 // Drag & connect
 
-document.addEventListener('mousemove', e=>{
+document.addEventListener('pointermove', e=>{
   if(drag){
     const node = nodes.find(n=>n.id===drag.id);
     const left = parseFloat(world.style.left || '0') || 0;
@@ -870,7 +900,7 @@ document.addEventListener('mousemove', e=>{
   if(connectStart){
     const left = parseFloat(world.style.left || '0') || 0;
     const top  = parseFloat(world.style.top  || '0') || 0;
-    const canvasRect = canvas.getBoundingClientRect();
+    const canvasRect = canvas.parentElement.getBoundingClientRect();
     tempMouse = {
       x: (e.clientX - canvasRect.left - left) / canvasZoom,
       y: (e.clientY - canvasRect.top  - top)  / canvasZoom
@@ -894,20 +924,20 @@ document.addEventListener('mousemove', e=>{
   }
 });
 
-document.addEventListener('mouseup', (e)=>{
+document.addEventListener('pointerup', (e)=>{
   const launcherDrag = sourceLauncherDrag;
   const changed = !!drag || !!panMode || !!(launcherDrag && launcherDrag.moved);
   if(drag){ const el = document.getElementById(drag.id); if(el) el.classList.remove('dragging'); }
   drag = null;
-  connectStart = null;
-  tempMouse = null;
   panMode = null;
   sourceLauncherDrag = null;
   canvas.classList.remove('panning');
-  redraw();
+  setTimeout(()=>{
+    connectStart = null;
+    tempMouse = null;
+    redraw();
+  }, 0);
   if(changed) saveWorkspace();
-
-
 });
 
 document.addEventListener('keydown', e=>{
