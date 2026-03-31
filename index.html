@@ -59,7 +59,7 @@ button,input,select,textarea{font:inherit}
 .bottom-prompt::placeholder{color:#f2f2f2}
 .bottom-make{width:128px;border:none;border-radius:14px;background:#ffd400;color:#111;cursor:pointer;font-weight:700}
 .bottom-make:hover{filter:brightness(1.03)}
-.bottom-make:disabled{opacity:.45;cursor:not-allowed}
+.bottom-make:disabled{opacity:.45;cursor:not-allowed;filter:none}
 
 /* Right preview */
 .previewTop{padding:14px 14px 10px;border-bottom:1px solid #2b2b2b}
@@ -233,6 +233,13 @@ function restoreWorkspace(){
       bottomPrompt.value = data.bottomPrompt || '';
       bottomPrompt.disabled = true;
       bottomMake.disabled = true;
+      bottomMake.style.opacity = '.45';
+    }
+
+    if (firstEngine) {
+      bottomPrompt.disabled = false;
+      bottomMake.disabled = false;
+      bottomMake.style.opacity = '1';
     }
 
     saveWorkspace();
@@ -355,6 +362,9 @@ function addEngineNode(x=760,y=150){
   renderNode(n);
   selectNode(n.id);
   selectEngine(n.id);
+  bottomPrompt.disabled = false;
+  bottomMake.disabled = false;
+  bottomMake.style.opacity = '1';
   saveWorkspace();
 }
 
@@ -368,7 +378,12 @@ function addImageNode(type, x, y, image){
 function bindNodeEvents(node, el){
   el.addEventListener('mousedown', ()=>{
     selectNode(node.id);
-    if(node.type==='engine') selectEngine(node.id);
+    if(node.type==='engine') {
+      selectEngine(node.id);
+      bottomPrompt.disabled = false;
+      bottomMake.disabled = false;
+      bottomMake.style.opacity = '1';
+    }
   });
 
   const startNodeDrag = (e) => {
@@ -495,6 +510,9 @@ function duplicateEngineNode(id){
 
   selectNode(copy.id);
   selectEngine(copy.id);
+  bottomPrompt.disabled = false;
+  bottomMake.disabled = false;
+  bottomMake.style.opacity = '1';
   redraw();
   saveWorkspace();
 }
@@ -505,10 +523,28 @@ function removeNode(id){
   links = links.filter(l=>l.from!==id && l.to!==id);
   nodes = nodes.filter(n=>n.id!==id);
   document.getElementById(id)?.remove();
-  if(selectedEngineId===id) selectEngine(null);
+
   if(selectedNodeId===id) selectedNodeId = null;
+  if(selectedEngineId===id) selectedEngineId = null;
+
   syncAllEnginePreviews();
   redraw();
+
+  const fallbackEngine = nodes.find(n=>n.type==='engine') || null;
+  if(fallbackEngine){
+    selectNode(fallbackEngine.id);
+    selectEngine(fallbackEngine.id);
+    bottomPrompt.disabled = false;
+    bottomMake.disabled = false;
+    bottomMake.style.opacity = '1';
+  } else {
+    clearPreview();
+    bottomPrompt.value = '';
+    bottomPrompt.disabled = true;
+    bottomMake.disabled = true;
+    bottomMake.style.opacity = '.45';
+  }
+
   saveWorkspace();
 }
 
@@ -780,16 +816,18 @@ function clearPreview(){
 }
 
 function selectEngine(id){
-  selectedEngineId = id;
-  const node = nodes.find(n=>n.id===id);
-  if(node && node.type==='engine'){
+  selectedEngineId = id || null;
+  const node = nodes.find(n=>n.id===selectedEngineId && n.type==='engine');
+  if(node){
     bottomPrompt.value = node.prompt || '';
     bottomPrompt.disabled = false;
     bottomMake.disabled = false;
+    bottomMake.style.opacity = '1';
   } else {
     bottomPrompt.value = '';
     bottomPrompt.disabled = true;
     bottomMake.disabled = true;
+    bottomMake.style.opacity = '.45';
   }
   saveWorkspace();
 }
