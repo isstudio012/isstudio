@@ -12,7 +12,7 @@ button,input,select,textarea{font:inherit}
 #app{width:100%;height:100%;display:grid;grid-template-columns:1fr 420px;grid-template-rows:1fr;}
 #left{position:relative;overflow:hidden}
 #right{border-left:1px solid #2b2b2b;background:#151515;display:flex;flex-direction:column}
-#canvas{position:absolute;top:0;left:0;overflow:visible;background:var(--bg);zoom:1}
+#canvas{position:absolute;inset:0 0 108px 0;overflow:hidden;background:var(--bg);zoom:1}
 #canvas.panning{cursor:grabbing}
 #connections{position:absolute;inset:0;pointer-events:auto;z-index:2}
 .toolbar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:20}
@@ -148,77 +148,20 @@ let canvasZoom = 1;
 let panMode = null;
 let sourceLauncherDrag = null;
 
-function resizeWorld(){
-  const leftPane = document.getElementById('left');
-  const bottomBar = document.querySelector('.bottom-bar');
-  const viewportW = leftPane.clientWidth;
-  const viewportH = leftPane.clientHeight - (bottomBar ? bottomBar.offsetHeight : 108);
-
-  // When zooming out, enlarge the internal world so the visible range expands instead of shrinking.
-  canvas.style.width = (viewportW / canvasZoom) + 'px';
-  canvas.style.height = (viewportH / canvasZoom) + 'px';
-}
-
-window.addEventListener('resize', ()=>{
-  resizeWorld();
-  redraw();
-});
-
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
-const LS_WORKSPACE = 'vizmaker_workspace_v3';
-const DB_NAME = 'vizmaker_db';
-const DB_STORE = 'kv';
+const LS_WORKSPACE = 'vizmaker_workspace_v2';
 apiCodeInput.value = localStorage.getItem(LS_API_KEY) || '';
 apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
 
-function openDB(){
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE);
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function dbSet(key, value){
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(DB_STORE, 'readwrite');
-    tx.objectStore(DB_STORE).put(value, key);
-    tx.oncomplete = () => { db.close(); resolve(true); };
-    tx.onerror = () => { db.close(); reject(tx.error); };
-  });
-}
-
-async function dbGet(key){
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(DB_STORE, 'readonly');
-    const req = tx.objectStore(DB_STORE).get(key);
-    req.onsuccess = () => { db.close(); resolve(req.result); };
-    req.onerror = () => { db.close(); reject(req.error); };
-  });
-}
-
-let saveTimer = null;
-function scheduleWorkspaceSave(){
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { scheduleWorkspaceSave(); }, 120);
-}
-
-async function saveWorkspace(){
+function saveWorkspace(){
   try{
     const payload = {
-      nodes: JSON.parse(JSON.stringify(nodes)),
-      links: JSON.parse(JSON.stringify(links)),
+      nodes,
+      links,
       zCounter,
       selectedNodeId,
       selectedEngineId,
-      selectedLink,
       canvasZoom,
       canvasLeft: canvas.style.left || '0px',
       canvasTop: canvas.style.top || '0px',
@@ -226,49 +169,69 @@ async function saveWorkspace(){
       sourceLauncherLeft: sourceLauncher.style.left || '16px',
       sourceLauncherTop: sourceLauncher.style.top || '16px'
     };
-    await dbSet(LS_WORKSPACE, payload);
+    localStorage.setItem(LS_WORKSPACE, JSON.stringify(payload));
   }catch(_e){}
 }
 
-async function restoreWorkspace(){
+function restoreWorkspace(){
   try{
-    const data = await dbGet(LS_WORKSPACE);
-    if(!data || !Array.isArray(data.nodes) || !Array.isArray(data.links) || !data.nodes.length) return false;
+    const raw = localStorage.getItem(LS_WORKSPACE);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) return false;
 
     nodes = data.nodes || [];
     links = data.links || [];
     zCounter = Number(data.zCounter || 5);
     selectedNodeId = data.selectedNodeId || null;
     selectedEngineId = data.selectedEngineId || null;
-    selectedLink = data.selectedLink || null;
+
+    // Safety: if workspace lost the engine node, recreate one so Make never stays dead.
+    const engineExists = nodes.some(n => n.type === 'engine');
+    if (!engineExists) {
+      nodes.push({
+        id: uid('eng_'),
+        type: 'engine',
+        x: 760,
+        y: 150,
+        engine: 'Flux Kontext Pro',
+        prompt: data.bottomPrompt || '',
+        previewImage: null
+      });
+    }
 
     canvas.style.left = data.canvasLeft || '0px';
     canvas.style.top = data.canvasTop || '0px';
     sourceLauncher.style.left = data.sourceLauncherLeft || '16px';
     sourceLauncher.style.top = data.sourceLauncherTop || '16px';
 
-    document.querySelectorAll('.node').forEach(el => el.remove());
-    nodes.forEach(node => renderNode(node));
-
+    nodes.forEach(renderNode);
     syncAllEnginePreviews();
     redraw();
+
     setCanvasZoom(typeof data.canvasZoom === 'number' ? data.canvasZoom : 1);
 
-    const existingSelectedNode = selectedNodeId && nodes.find(n => n.id === selectedNodeId);
-    const existingSelectedEngine = selectedEngineId && nodes.find(n => n.id === selectedEngineId && n.type === 'engine');
     const firstEngine = nodes.find(n => n.type === 'engine') || null;
 
-    if(existingSelectedNode) selectNode(existingSelectedNode.id);
-    else if(firstEngine) selectNode(firstEngine.id);
-    else clearPreview();
+    if (selectedNodeId && nodes.find(n => n.id === selectedNodeId)) {
+      selectNode(selectedNodeId);
+    } else if (firstEngine) {
+      selectNode(firstEngine.id);
+    } else {
+      clearPreview();
+    }
 
-    if(existingSelectedEngine) selectEngine(existingSelectedEngine.id);
-    else if(firstEngine) selectEngine(firstEngine.id);
-    else {
+    if (selectedEngineId && nodes.find(n => n.id === selectedEngineId && n.type === 'engine')) {
+      selectEngine(selectedEngineId);
+    } else if (firstEngine) {
+      selectEngine(firstEngine.id);
+    } else {
       bottomPrompt.value = data.bottomPrompt || '';
       bottomPrompt.disabled = true;
       bottomMake.disabled = true;
     }
+
+    saveWorkspace();
     return true;
   }catch(_e){
     return false;
@@ -379,7 +342,7 @@ function addSourceNode(x,y){
   nodes.push(n);
   renderNode(n);
   selectNode(n.id);
-  scheduleWorkspaceSave();
+  saveWorkspace();
 }
 
 function addEngineNode(x=760,y=150){
@@ -388,14 +351,13 @@ function addEngineNode(x=760,y=150){
   renderNode(n);
   selectNode(n.id);
   selectEngine(n.id);
-  scheduleWorkspaceSave();
+  saveWorkspace();
 }
 
 function addImageNode(type, x, y, image){
   const n={id:uid(type==='final'?'fin_':'res_'),type,x,y,image};
   nodes.push(n);
   renderNode(n);
-  scheduleWorkspaceSave();
   return n;
 }
 
@@ -479,7 +441,7 @@ function bindNodeEvents(node, el){
         links = links.filter(l => !(l.to===node.id && l.toPort===toPort));
         links.push({id:uid('ln_'), from:connectStart.nodeId, to:node.id, toPort});
       }
-      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); scheduleWorkspaceSave();
+      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); saveWorkspace();
     });
   });
 }
@@ -506,7 +468,7 @@ function duplicateEngineNode(id){
   selectNode(copy.id);
   selectEngine(copy.id);
   redraw();
-  scheduleWorkspaceSave();
+  saveWorkspace();
 }
 
 function removeNode(id){
@@ -517,7 +479,7 @@ function removeNode(id){
   if(selectedNodeId===id) selectedNodeId = null;
   syncAllEnginePreviews();
   redraw();
-  scheduleWorkspaceSave();
+  saveWorkspace();
 }
 
 function removeLink(id){
@@ -525,7 +487,7 @@ function removeLink(id){
   if(selectedLink===id) selectedLink=null;
   syncAllEnginePreviews();
   redraw();
-  scheduleWorkspaceSave();
+  saveWorkspace();
 }
 
 function getNodeRect(node){
@@ -772,7 +734,7 @@ function selectNode(id){
   } else {
     clearPreview();
   }
-  scheduleWorkspaceSave();
+  saveWorkspace();
 }
 
 function showPreview(src){
@@ -799,7 +761,7 @@ function selectEngine(id){
     bottomPrompt.disabled = true;
     bottomMake.disabled = true;
   }
-  scheduleWorkspaceSave();
+  saveWorkspace();
 }
 
 bottomPrompt.addEventListener('input', ()=>{
@@ -809,7 +771,7 @@ bottomPrompt.addEventListener('input', ()=>{
   node.prompt = bottomPrompt.value;
   const el = document.getElementById(selectedEngineId);
   el.querySelector('.prompt').value = node.prompt;
-  scheduleWorkspaceSave();
+  saveWorkspace();
 });
 
 bottomMake.addEventListener('click', ()=>{
@@ -851,7 +813,7 @@ fileInput.addEventListener('change', e=>{
     syncAllEnginePreviews();
     selectNode(node.id);
     redraw();
-    scheduleWorkspaceSave();
+    saveWorkspace();
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -865,17 +827,9 @@ document.addEventListener('mousemove', e=>{
   if(drag){
     const node = nodes.find(n=>n.id===drag.id);
     const rect = canvas.getBoundingClientRect();
+    node.x = Math.max(20, (e.clientX - rect.left)/canvasZoom - drag.offsetX);
+    node.y = Math.max(20, (e.clientY - rect.top)/canvasZoom - drag.offsetY);
     const el = document.getElementById(node.id);
-
-    const rawX = (e.clientX - rect.left)/canvasZoom - drag.offsetX;
-    const rawY = (e.clientY - rect.top)/canvasZoom - drag.offsetY;
-
-    const maxX = Math.max(20, canvas.clientWidth - el.offsetWidth - 20);
-    const maxY = Math.max(20, canvas.clientHeight - el.offsetHeight - 20);
-
-    node.x = Math.max(20, Math.min(maxX, rawX));
-    node.y = Math.max(20, Math.min(maxY, rawY));
-
     el.style.left = node.x + 'px';
     el.style.top = node.y + 'px';
     redraw();
@@ -911,7 +865,7 @@ document.addEventListener('mouseup', ()=>{
   sourceLauncherDrag = null;
   canvas.classList.remove('panning');
   redraw();
-  if(changed) scheduleWorkspaceSave();
+  if(changed) saveWorkspace();
 });
 
 document.addEventListener('keydown', e=>{
@@ -957,12 +911,12 @@ canvas.addEventListener('wheel', (e)=>{
   setCanvasZoom(canvasZoom + step);
 }, { passive:false });
 function setCanvasZoom(v){
-  canvasZoom = Math.max(0.1, Math.min(1.6, Math.round(v*10)/10));
+  canvasZoom = Math.max(0.7, Math.min(1.6, Math.round(v*10)/10));
   canvas.style.zoom = '';
   canvas.style.transformOrigin = 'center center';
   canvas.style.transform = `scale(${canvasZoom})`;
   document.getElementById('zoomReset').textContent = Math.round(canvasZoom*100) + '%';
-  scheduleWorkspaceSave();
+  saveWorkspace();
 }
 
 
@@ -990,26 +944,14 @@ function toggleFullscreen(src){
 fullscreen.addEventListener('click', ()=>{ fullscreen.classList.remove('on'); fullscreenImg.src=''; });
 previewBox.addEventListener('click', ()=>{ if(previewImg.src) openImagePopup(previewImg.src, 'Preview'); });
 
-document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') saveWorkspace(); });
-window.addEventListener('beforeunload', ()=>{ saveWorkspace(); });
-
-
 // Initial
-(async ()=>{
-  const restored = await restoreWorkspace();
-  if(!restored){
-    sourceLauncher.style.left = '16px';
-    sourceLauncher.style.top = '16px';
-    addSourceNode();
-    addEngineNode();
-    const firstEngine = nodes.find(n=>n.type==='engine');
-    if(firstEngine){
-      selectNode(firstEngine.id);
-      selectEngine(firstEngine.id);
-    }
-    saveWorkspace();
-  }
-})();
+if(!restoreWorkspace()){
+  sourceLauncher.style.left = '16px';
+  sourceLauncher.style.top = '16px';
+  addSourceNode();
+  addEngineNode();
+  setTimeout(()=>{ saveWorkspace(); }, 0);
+}
 </script>
 </body>
 </html>
