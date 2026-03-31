@@ -3,268 +3,248 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VizMaker - 1차/2차/최종 워크플로우</title>
+<title>VizMaker - Final Stage Workflow</title>
 <style>
   :root{
     --bg:#07111f;
-    --panel:#0f1d33;
-    --panel2:#13243f;
-    --panel3:#0b1629;
-    --line:#40a9ff;
-    --line2:#8d61ff;
-    --text:#eef4ff;
-    --muted:#8ea0c6;
-    --accent:#2ea7ff;
-    --accent2:#8458ff;
-    --ok:#2dd4bf;
-    --border:rgba(255,255,255,.12);
-    --shadow:0 18px 55px rgba(0,0,0,.32);
+    --panel:#0f1c30;
+    --panel2:#13243d;
+    --line:#28486f;
+    --text:#e8f0ff;
+    --muted:#9bb0d1;
+    --blue:#44b7ff;
+    --purple:#a970ff;
+    --green:#2de2a6;
+    --btn:#163154;
+    --btn2:#1c406d;
+    --danger:#a94052;
+    --shadow:0 12px 40px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box}
   body{
     margin:0;
-    font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background:radial-gradient(circle at top,#0a1730 0%, var(--bg) 50%);
     color:var(--text);
-    background:radial-gradient(circle at 20% 10%, rgba(32,74,138,.18), transparent 26%), var(--bg);
+    height:100vh;
     overflow:hidden;
   }
-  .app{display:flex; height:100vh;}
-  .canvas{
-    position:relative; flex:1; overflow:auto;
-    background-image:radial-gradient(rgba(110,148,208,.18) 1px, transparent 1px);
-    background-size:24px 24px;
-  }
+  .app{display:grid;grid-template-columns:1fr 320px;height:100vh}
+  .main{position:relative;overflow:hidden}
   .toolbar{
-    position:absolute; top:14px; left:16px; z-index:30; display:flex; gap:8px; align-items:center;
+    position:absolute;left:14px;top:14px;z-index:20;display:flex;gap:8px;flex-wrap:wrap;align-items:center
   }
   .btn{
-    border:1px solid var(--border); background:rgba(10,20,36,.9); color:var(--text); height:38px;
-    padding:0 14px; border-radius:12px; cursor:pointer; font-weight:600; font-size:13px;
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(10,22,40,.88);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:700;
+    font-size:14px;
+    box-shadow:var(--shadow);
   }
-  .btn:hover{background:#13253f}
-  .hint{padding:10px 12px; border-radius:12px; background:rgba(10,20,36,.78); border:1px solid var(--border); color:#d9e6ff; font-size:12px}
-
-  .stage-label{
-    position:absolute; font-size:56px; font-weight:900; letter-spacing:-2px; color:rgba(255,255,255,.06); user-select:none;
+  .btn:hover{background:rgba(17,32,57,.96)}
+  .btn.primary{background:var(--btn2)}
+  .btn.small{padding:8px 11px;font-size:12px;border-radius:10px}
+  .chip{
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(10,22,40,.72);
+    color:var(--muted);
+    padding:10px 14px;border-radius:12px;font-size:13px
   }
-  .s1{left:320px; top:95px}
-  .s2{left:820px; top:95px}
-  .sf{left:1330px; top:95px}
-
+  .canvas{
+    position:absolute;inset:0;
+    background-image:radial-gradient(rgba(92,145,215,.22) 1px, transparent 1px);
+    background-size:28px 28px;
+  }
+  .stage-title{
+    position:absolute;top:84px;font-size:62px;font-weight:900;color:rgba(173,201,242,.15);letter-spacing:-2px;user-select:none
+  }
+  .t1{left:250px}.t2{left:660px}.t3{left:1065px}
+  #links{position:absolute;inset:0;pointer-events:none}
   .node{
-    position:absolute; width:290px; border-radius:26px; overflow:hidden; background:linear-gradient(180deg, rgba(18,34,59,.96), rgba(12,24,42,.98));
-    border:1px solid var(--border); box-shadow:var(--shadow);
+    position:absolute;
+    width:255px;
+    background:linear-gradient(180deg, rgba(19,36,61,.95), rgba(12,24,41,.96));
+    border:1px solid rgba(110,161,237,.18);
+    border-radius:26px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
   }
-  .node.disabled{opacity:.38; filter:saturate(.75)}
-  .node.source{left:210px; top:235px}
-  .node.ref{left:210px; top:520px; width:240px}
-  .node.stage1{left:760px; top:235px}
-  .node.stage2{left:1260px; top:235px}
-  .node.final{left:1260px; top:600px; width:360px}
-
-  .thumb{
-    position:relative; height:210px; background:#0b1629; display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:pointer;
+  .node.placeholder{opacity:.34;filter:saturate(.7)}
+  .node .top{
+    height:170px;background:#091321;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;
   }
-  .ref .thumb{height:170px}
-  .final .thumb{height:250px}
-  .thumb img{width:100%; height:100%; object-fit:cover; display:none}
-  .thumb img.show{display:block}
-  .placeholder{display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:var(--muted); text-align:center; padding:18px}
-  .placeholder .big{font-size:46px}
-  .placeholder small{line-height:1.5}
-
-  .node-body{padding:16px}
-  .title-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px}
-  .node-title{font-size:16px; font-weight:800}
-  .node-sub{font-size:12px; color:var(--muted)}
-  .mini-tag{padding:5px 9px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(46,167,255,.12); color:#7dcfff; border:1px solid rgba(46,167,255,.22)}
-  .mini-tag.purple{background:rgba(132,88,255,.12); color:#c7b5ff; border-color:rgba(132,88,255,.22)}
-
-  .prompt{width:100%; min-height:82px; resize:vertical; border-radius:14px; border:1px solid var(--border); background:#0a162a; color:var(--text); padding:12px; font:inherit; margin-top:10px}
-  .prompt::placeholder{color:#7184ab}
-  .node-actions{display:flex; gap:8px; margin-top:10px}
-  .node-actions .btn{height:36px; flex:1; border-radius:10px; padding:0 12px}
-  .btn.primary{background:linear-gradient(180deg, #2ea7ff, #1687db); border:none}
-  .btn.primary:hover{filter:brightness(1.08)}
-
+  .node img{width:100%;height:100%;object-fit:cover;display:block}
+  .emptyicon{font-size:54px;opacity:.55}
+  .label{padding:12px 16px 4px;font-size:30px;font-weight:900;letter-spacing:-1px}
+  .sub{padding:0 16px 14px;color:var(--muted);font-size:14px}
+  .tag{
+    position:absolute;right:14px;bottom:12px;background:rgba(68,183,255,.16);color:#9fe2ff;
+    padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid rgba(68,183,255,.2)
+  }
+  .tag.purple{background:rgba(169,112,255,.16);color:#dcc7ff;border-color:rgba(169,112,255,.24)}
   .port{
-    position:absolute; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    background:#1d2940; border:1px solid rgba(255,255,255,.18); color:#fff; font-size:18px; font-weight:700;
-    box-shadow:0 10px 26px rgba(0,0,0,.26);
+    width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.18);
+    background:#16253d;display:flex;align-items:center;justify-content:center;position:absolute;color:white;font-weight:900;
+    box-shadow:0 6px 18px rgba(0,0,0,.28)
   }
-  .port.out{right:-18px; top:50%; transform:translateY(-50%)}
-  .port.in{left:-18px; top:50%; transform:translateY(-50%)}
-  .port.refin{left:-18px; top:68%; transform:translateY(-50%); border-color:rgba(141,97,255,.45); background:#241a44}
-  .port.smallout{right:-18px; top:50%; transform:translateY(-50%)}
-
-  svg.lines{position:absolute; inset:0; width:1700px; height:980px; pointer-events:none}
-  .line-blue{stroke:var(--line); stroke-width:4; fill:none; stroke-linecap:round}
-  .line-purple{stroke:var(--line2); stroke-width:4; fill:none; stroke-linecap:round}
-
-  .side{
-    width:330px; border-left:1px solid var(--border); background:linear-gradient(180deg, #0c1830, #091423); padding:18px; overflow:auto;
+  .port.out{right:-15px;top:50%;transform:translateY(-50%);background:#1c3454}
+  .port.in{left:-15px;top:50%;transform:translateY(-50%);background:#1c3454}
+  .port.ref{left:-15px;top:65%;transform:translateY(-50%);background:#32204f}
+  .bottom-box{padding:12px 14px 16px;border-top:1px solid rgba(255,255,255,.06)}
+  textarea{
+    width:100%;height:94px;resize:none;border:none;outline:none;border-radius:14px;
+    background:#0a1730;color:var(--text);padding:12px 13px;font-size:14px;line-height:1.4
   }
-  .panel{background:rgba(18,34,59,.92); border:1px solid var(--border); border-radius:18px; padding:14px; margin-bottom:16px}
-  .panel h3{margin:0 0 12px; font-size:18px}
-  .preview-box{height:260px; border-radius:18px; overflow:hidden; background:#091321; display:flex; align-items:center; justify-content:center; cursor:pointer}
-  .preview-box img{width:100%; height:100%; object-fit:cover; display:none}
-  .preview-box img.show{display:block}
-  .preview-empty{color:var(--muted); text-align:center; padding:16px; font-size:13px; line-height:1.6}
-  .field{margin-top:12px}
-  .field label{display:block; margin-bottom:6px; font-size:12px; color:#b6c5e8; font-weight:700}
-  .field input, .field select, .field textarea{width:100%; background:#0a162a; border:1px solid var(--border); color:var(--text); border-radius:12px; padding:10px 12px; font:inherit}
-  .field textarea{min-height:92px; resize:vertical}
-  .info{font-size:12px; color:#b6c5e8; line-height:1.7}
-  .ok{color:#8ff5d1}
-  .warn{color:#ffdb8b}
-  .error{position:absolute; left:18px; bottom:18px; background:rgba(140,20,20,.24); border:1px solid rgba(255,100,100,.3); color:#ffd4d4; border-radius:14px; padding:12px 14px; max-width:760px; display:none; z-index:30}
-  .error.show{display:block}
-
-  .fs{
-    position:fixed; inset:0; background:rgba(0,0,0,.92); display:none; align-items:center; justify-content:center; z-index:999;
+  .actions{display:flex;gap:8px;margin-top:10px}
+  .actions .btn{flex:1;padding:11px 12px}
+  .make{background:#1c73d3}
+  .make:hover{background:#2680e3}
+  .make:disabled{opacity:.45;cursor:not-allowed}
+  .hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45}
+  .sidebar{
+    border-left:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(180deg, #0d1a31, #091423);
+    padding:14px;display:flex;flex-direction:column;gap:14px
   }
-  .fs.show{display:flex}
-  .fs img{max-width:92vw; max-height:90vh; object-fit:contain; border-radius:16px; box-shadow:0 30px 80px rgba(0,0,0,.45)}
-  .fs-close{position:absolute; top:18px; right:18px; width:44px; height:44px; border-radius:999px; border:none; background:rgba(255,255,255,.12); color:#fff; font-size:20px; cursor:pointer}
-
-  .assets-box{position:absolute; left:18px; bottom:18px; z-index:20; width:330px; background:rgba(10,20,36,.88); border:1px solid var(--border); border-radius:18px; padding:14px}
-  .assets-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px}
-  .asset-card{background:#101d34; border:1px solid var(--border); border-radius:14px; padding:14px; text-align:center; cursor:pointer}
-  .asset-card:hover{background:#152441}
-  .asset-card strong{display:block; margin-bottom:5px}
-  .asset-card span{font-size:12px; color:var(--muted)}
+  .panel{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px}
+  .panel h3{margin:0 0 12px;font-size:18px}
+  .preview-box{
+    height:220px;border-radius:16px;background:#091321;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer
+  }
+  .preview-box img{width:100%;height:100%;object-fit:cover}
+  .preview-empty{color:var(--muted);font-size:14px;padding:20px;text-align:center;line-height:1.45}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700}
+  .field select,.field input{
+    width:100%;border:none;outline:none;border-radius:12px;background:#081221;color:var(--text);padding:12px 12px;font-size:14px
+  }
+  .guide{font-size:13px;color:#b7c9e7;line-height:1.55}
+  .assets-box{position:absolute;left:18px;bottom:18px;z-index:20;background:rgba(12,24,41,.92);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+  .assets-title{font-weight:900;margin-bottom:4px}
+  .assets-sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+  .asset-row{display:flex;gap:10px}
+  .asset-btn{min-width:132px}
+  .hidden{display:none!important}
+  .fullscreen{
+    position:fixed;inset:0;background:rgba(2,7,15,.94);display:none;align-items:center;justify-content:center;z-index:999;
+    cursor:zoom-out
+  }
+  .fullscreen.show{display:flex}
+  .fullscreen img{max-width:92vw;max-height:90vh;border-radius:20px;box-shadow:0 20px 80px rgba(0,0,0,.6)}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;background:#0b1730;border:1px solid rgba(255,255,255,.08);
+    border-radius:999px;padding:8px 12px;font-size:12px;color:var(--muted)
+  }
+  .status{color:#8fe4bc;font-weight:800}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="canvas" id="canvas">
+  <div class="main">
+    <div class="canvas"></div>
+    <svg id="links"></svg>
+
     <div class="toolbar">
       <button class="btn" id="resetBtn">초기화</button>
-      <button class="btn" id="sourceBtn">Source 불러오기</button>
+      <button class="btn primary" id="sourceBtn">Source 불러오기</button>
       <button class="btn" id="refBtn">Reference 불러오기</button>
-      <div class="hint">구조: Source + 1차 프롬프트 → 1차 결과 / 1차 결과 + Reference + 2차 프롬프트 → 최종 결과</div>
+      <div class="chip">구조: Source + 1차 프롬프트 → 1차 결과 / 1차 결과 + Reference + 2차 프롬프트 → 최종 결과</div>
     </div>
 
-    <div class="stage-label s1">1차</div>
-    <div class="stage-label s2">2차</div>
-    <div class="stage-label sf">최종</div>
+    <div class="stage-title t1">1차</div>
+    <div class="stage-title t2">2차</div>
+    <div class="stage-title t3">최종</div>
 
-    <svg class="lines" viewBox="0 0 1700 980">
-      <path id="lineS1" class="line-blue" opacity="0.95"></path>
-      <path id="lineR2" class="line-purple" opacity="0.9"></path>
-      <path id="line12" class="line-blue" opacity="0.95"></path>
-      <path id="line2F" class="line-blue" opacity="0.95"></path>
-    </svg>
-
-    <div class="node source" id="sourceNode">
-      <div class="thumb" id="sourceThumb">
-        <img id="sourceImg" alt="source" />
-        <div class="placeholder" id="sourcePh">
-          <div class="big">🖼️</div>
-          <strong>Source 이미지</strong>
-          <small>처음엔 여기만 눌러서<br>이미지를 불러오면 돼</small>
-        </div>
+    <div class="node" id="sourceNode" style="left:165px;top:190px;">
+      <div class="top" id="sourceTop">
+        <div class="emptyicon" id="sourceEmpty">🖼️</div>
+        <img id="sourceImg" class="hidden" alt="source">
       </div>
+      <div class="label">Source</div>
+      <div class="sub">원본 이미지 업로드</div>
+      <div class="tag">입력</div>
       <div class="port out">›</div>
-      <div class="node-body">
-        <div class="title-row"><div class="node-title">Source</div><span class="mini-tag">입력</span></div>
-        <div class="node-sub">원본 이미지 업로드</div>
-      </div>
     </div>
 
-    <div class="node ref" id="refNode">
-      <div class="thumb" id="refThumb">
-        <img id="refImg" alt="reference" />
-        <div class="placeholder" id="refPh">
-          <div class="big">🎨</div>
-          <strong>Reference 이미지</strong>
-          <small>2차 수정용 참고 이미지</small>
-        </div>
+    <div class="node hidden" id="refNode" style="left:165px;top:420px;">
+      <div class="top" id="refTop">
+        <div class="emptyicon" id="refEmpty">🧩</div>
+        <img id="refImg" class="hidden" alt="reference">
       </div>
-      <div class="port out" style="background:#241a44;border-color:rgba(141,97,255,.45)">›</div>
-      <div class="node-body">
-        <div class="title-row"><div class="node-title">Reference</div><span class="mini-tag purple">2차용</span></div>
-        <div class="node-sub">스타일 / 재질 기준</div>
-      </div>
+      <div class="label">Reference</div>
+      <div class="sub">2차용 스타일 / 재질 기준</div>
+      <div class="tag purple">2차용</div>
+      <div class="port out">›</div>
     </div>
 
-    <div class="node stage1 disabled" id="stage1Node">
-      <div class="thumb" id="stage1Thumb">
-        <img id="stage1Img" alt="stage1 result" />
-        <div class="placeholder" id="stage1Ph">
-          <div class="big">⚡</div>
-          <strong>1차 렌더 결과</strong>
-          <small>Source 불러오고 프롬프트 입력 후<br>Make 누르면 여기 생성</small>
-        </div>
+    <div class="node placeholder" id="stage1Node" style="left:610px;top:190px;">
+      <div class="top" id="stage1Top">
+        <div class="emptyicon" id="stage1Empty">⚡</div>
+        <img id="stage1Img" class="hidden" alt="stage1">
       </div>
+      <div class="label">1차 Result</div>
+      <div class="sub">Source + 1차 프롬프트</div>
       <div class="port in">‹</div>
       <div class="port out">›</div>
-      <div class="node-body">
-        <div class="title-row"><div class="node-title">1차 Result</div><span class="mini-tag">Flux / Replicate</span></div>
-        <div class="node-sub">Source + 1차 프롬프트</div>
-        <textarea class="prompt" id="prompt1" placeholder="1차 프롬프트 입력&#10;예: clear sunny 1 PM daylight, realistic materials, no yellow tint"></textarea>
-        <div class="node-actions">
-          <button class="btn primary" id="make1Btn">1차 Make</button>
+      <div class="bottom-box">
+        <textarea id="stage1Prompt" placeholder="예: clear sunny 1 PM daylight, realistic materials, no yellow tint"></textarea>
+        <div class="actions">
+          <button class="btn make" id="stage1Make" disabled>1차 Make</button>
         </div>
+        <div class="hint">1차 결과 이미지는 클릭하면 전체화면 / 다시 클릭하면 닫힘</div>
       </div>
     </div>
 
-    <div class="node stage2 disabled" id="stage2Node">
-      <div class="thumb" id="stage2Thumb">
-        <img id="stage2Img" alt="stage2 result" />
-        <div class="placeholder" id="stage2Ph">
-          <div class="big">✨</div>
-          <strong>2차 렌더 결과</strong>
-          <small>1차 결과 + Reference + 2차 프롬프트</small>
-        </div>
+    <div class="node placeholder" id="stage2Node" style="left:1010px;top:190px;">
+      <div class="top" id="stage2Top">
+        <div class="emptyicon" id="stage2Empty">✨</div>
+        <img id="stage2Img" class="hidden" alt="stage2">
       </div>
-      <div class="port in" style="top:42%">‹</div>
-      <div class="port refin">‹</div>
-      <div class="port out">›</div>
-      <div class="node-body">
-        <div class="title-row"><div class="node-title">2차 Result</div><span class="mini-tag purple">수정</span></div>
-        <div class="node-sub">1차 결과 + Reference + 2차 프롬프트</div>
-        <textarea class="prompt" id="prompt2" placeholder="2차 프롬프트 입력&#10;예: darker luxury bathroom mood, stronger contrast, elegant stone texture"></textarea>
-        <div class="node-actions">
-          <button class="btn primary" id="make2Btn">2차 Make</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="node final disabled" id="finalNode">
-      <div class="thumb" id="finalThumb">
-        <img id="finalImg" alt="final viewer" />
-        <div class="placeholder" id="finalPh">
-          <div class="big">🖥️</div>
-          <strong>최종 결과</strong>
-          <small>2차에서 수정된 내용이<br>여기 최종으로 표시됨</small>
-        </div>
-      </div>
+      <div class="label">2차 Result</div>
+      <div class="sub">1차 결과 + Reference + 2차 프롬프트</div>
       <div class="port in">‹</div>
-      <div class="node-body">
-        <div class="title-row"><div class="node-title">Final Viewer</div><span class="mini-tag">뷰어</span></div>
-        <div class="node-sub">이미지 전용 창 · 클릭하면 크게 보기 / 다시 클릭하면 닫힘</div>
+      <div class="port ref">‹</div>
+      <div class="bottom-box">
+        <textarea id="stage2Prompt" placeholder="예: darker luxury bathroom mood, stronger contrast, premium stone, refined lighting"></textarea>
+        <div class="actions">
+          <button class="btn make" id="stage2Make" disabled>2차 Make</button>
+        </div>
+        <div class="hint">2차 결과가 최종창으로 그대로 반영됨</div>
       </div>
+    </div>
+
+    <div class="node placeholder" id="finalNode" style="left:1010px;top:485px;width:290px;">
+      <div class="top" id="finalTop" style="height:190px;">
+        <div class="emptyicon" id="finalEmpty">🖥️</div>
+        <img id="finalImg" class="hidden" alt="final">
+      </div>
+      <div class="label">Final Viewer</div>
+      <div class="sub">최종 이미지만 표시 · 클릭하면 크게 보기 / 다시 클릭하면 닫힘</div>
     </div>
 
     <div class="assets-box">
-      <strong>Assets</strong>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px">Source / Reference는 여기서만 다시 불러오면 돼</div>
-      <div class="assets-grid">
-        <div class="asset-card" id="assetSource"><strong>+ Source</strong><span>소스 이미지 불러오기</span></div>
-        <div class="asset-card" id="assetRef"><strong>+ Reference</strong><span>참고 이미지 불러오기</span></div>
+      <div class="assets-title">Assets</div>
+      <div class="assets-sub">Source / Reference는 여기서만 불러오면 됨</div>
+      <div class="asset-row">
+        <button class="btn asset-btn" id="assetSourceBtn">+ Source</button>
+        <button class="btn asset-btn" id="assetRefBtn">+ Reference</button>
       </div>
     </div>
 
-    <div class="error" id="errorBox"></div>
+    <input type="file" id="sourceInput" accept="image/*" class="hidden">
+    <input type="file" id="refInput" accept="image/*" class="hidden">
   </div>
 
-  <aside class="side">
+  <aside class="sidebar">
     <div class="panel">
       <h3>Preview</h3>
-      <div class="preview-box" id="sidePreview">
-        <img id="sidePreviewImg" alt="preview" />
-        <div class="preview-empty" id="sidePreviewEmpty">1차, 2차, 최종 이미지를 클릭하면<br>여기에도 같이 표시돼</div>
+      <div class="preview-box" id="previewBox">
+        <div class="preview-empty" id="previewEmpty">아직 결과가 없음<br>1차 또는 2차 결과를 클릭하면 여기 표시</div>
+        <img id="previewImg" class="hidden" alt="preview">
       </div>
     </div>
 
@@ -273,252 +253,289 @@
       <div class="field">
         <label>Engine</label>
         <select id="engineSel">
-          <option value="flux">Flux Kontext Pro</option>
-          <option value="nano">Nano Banana 2</option>
+          <option>Flux Kontext Pro</option>
+          <option>Nano Banana 2</option>
         </select>
       </div>
       <div class="field">
         <label>Replicate API key</label>
-        <input id="apiKey" type="password" placeholder="r8_xxx" />
+        <input id="apiKey" placeholder="r8_xxx">
       </div>
       <div class="field">
         <label>Time of day</label>
         <select id="todSel">
-          <option value="daytime, bright daylight, realistic white balance">Day</option>
-          <option value="night time, interior lights on, dark exterior">Night</option>
-          <option value="sunset golden hour, warm evening light">Sunset</option>
+          <option value="Day">Day</option>
+          <option value="Night">Night</option>
+          <option value="Sunset">Sunset</option>
         </select>
       </div>
+      <div class="badge"><span class="status" id="statusText">대기 중</span><span id="statusSub">준비되면 Make</span></div>
     </div>
 
-    <div class="panel info">
-      <div><strong class="ok">동작 방식</strong></div>
-      <div>1) <strong>Source</strong> 클릭해서 이미지 업로드</div>
-      <div>2) 1차 프롬프트 입력 후 <strong>1차 Make</strong></div>
-      <div>3) 필요하면 <strong>Reference</strong> 업로드</div>
-      <div>4) 2차 프롬프트 입력 후 <strong>2차 Make</strong></div>
-      <div>5) 2차 결과가 <strong>Final Viewer</strong>에 자동 반영</div>
-      <div style="margin-top:10px"><span class="warn">참고:</span> 백엔드 <code>/api/render</code>가 없으면 데모 모드로 입력 이미지를 그대로 넘겨서 흐름만 확인하게 돼.</div>
+    <div class="panel guide">
+      <b>동작 방식</b><br>
+      1) Source 클릭해서 이미지 업로드<br>
+      2) 1차 프롬프트 입력 후 1차 Make<br>
+      3) 필요하면 Reference 로드<br>
+      4) 2차 프롬프트 입력 후 2차 Make<br>
+      5) 2차 결과가 Final Viewer에 자동 반영<br><br>
+      참고: 실제 <code>/api/render</code>가 없으면 데모 모드로 입력 이미지를 그대로 넘겨서 흐름만 확인됨.
     </div>
   </aside>
 </div>
 
-<input type="file" id="sourceFile" accept="image/*" hidden />
-<input type="file" id="refFile" accept="image/*" hidden />
-
-<div class="fs" id="fullscreen">
-  <button class="fs-close" id="fsClose">✕</button>
-  <img id="fsImg" alt="fullscreen" />
+<div class="fullscreen" id="fullscreen">
+  <img id="fullscreenImg" alt="fullscreen">
 </div>
 
 <script>
-  const $ = (id) => document.getElementById(id);
-  const state = {
-    source:null,
-    ref:null,
-    stage1:null,
-    stage2:null,
-    final:null
+const els = {
+  sourceNode: document.getElementById('sourceNode'),
+  refNode: document.getElementById('refNode'),
+  stage1Node: document.getElementById('stage1Node'),
+  stage2Node: document.getElementById('stage2Node'),
+  finalNode: document.getElementById('finalNode'),
+  sourceImg: document.getElementById('sourceImg'),
+  refImg: document.getElementById('refImg'),
+  stage1Img: document.getElementById('stage1Img'),
+  stage2Img: document.getElementById('stage2Img'),
+  finalImg: document.getElementById('finalImg'),
+  sourceEmpty: document.getElementById('sourceEmpty'),
+  refEmpty: document.getElementById('refEmpty'),
+  stage1Empty: document.getElementById('stage1Empty'),
+  stage2Empty: document.getElementById('stage2Empty'),
+  finalEmpty: document.getElementById('finalEmpty'),
+  sourceInput: document.getElementById('sourceInput'),
+  refInput: document.getElementById('refInput'),
+  stage1Prompt: document.getElementById('stage1Prompt'),
+  stage2Prompt: document.getElementById('stage2Prompt'),
+  stage1Make: document.getElementById('stage1Make'),
+  stage2Make: document.getElementById('stage2Make'),
+  previewBox: document.getElementById('previewBox'),
+  previewImg: document.getElementById('previewImg'),
+  previewEmpty: document.getElementById('previewEmpty'),
+  fullscreen: document.getElementById('fullscreen'),
+  fullscreenImg: document.getElementById('fullscreenImg'),
+  links: document.getElementById('links'),
+  statusText: document.getElementById('statusText'),
+  statusSub: document.getElementById('statusSub'),
+  apiKey: document.getElementById('apiKey'),
+  todSel: document.getElementById('todSel'),
+  engineSel: document.getElementById('engineSel')
+};
+
+const state = {
+  source:null,
+  reference:null,
+  stage1:null,
+  stage2:null,
+  selected:null
+};
+
+function setStatus(main, sub=''){
+  els.statusText.textContent = main;
+  els.statusSub.textContent = sub;
+}
+
+function showImage(targetImg, emptyEl, dataUrl){
+  targetImg.src = dataUrl;
+  targetImg.classList.remove('hidden');
+  emptyEl.classList.add('hidden');
+}
+function clearImage(targetImg, emptyEl){
+  targetImg.src='';
+  targetImg.classList.add('hidden');
+  emptyEl.classList.remove('hidden');
+}
+
+function selectPreview(dataUrl){
+  if(!dataUrl) return;
+  els.previewImg.src = dataUrl;
+  els.previewImg.classList.remove('hidden');
+  els.previewEmpty.classList.add('hidden');
+}
+
+function toggleFullscreen(src){
+  if(!src) return;
+  const isSame = els.fullscreen.classList.contains('show') && els.fullscreenImg.src === src;
+  if(isSame){
+    els.fullscreen.classList.remove('show');
+    return;
+  }
+  els.fullscreenImg.src = src;
+  els.fullscreen.classList.add('show');
+}
+
+els.fullscreen.addEventListener('click', () => {
+  els.fullscreen.classList.remove('show');
+});
+
+function fileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+}
+
+function sanitizePrompt(v){
+  return String(v||'').normalize('NFKC').replace(/[\u0000-\u001F\u007F]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+async function tryRender({image, refImage, prompt}){
+  const apiKey = els.apiKey.value.trim();
+  const body = {
+    apiKey,
+    image,
+    refImage,
+    prompt: sanitizePrompt(prompt),
+    timeOfDay: els.todSel.value,
+    engine: els.engineSel.value
   };
-
-  function showError(msg){
-    const box = $('errorBox');
-    box.textContent = msg;
-    box.classList.add('show');
-    setTimeout(() => box.classList.remove('show'), 4200);
-  }
-
-  function drawLines(){
-    $('lineS1').setAttribute('d', 'M 500 340 C 620 340, 640 340, 760 340');
-    $('lineR2').setAttribute('d', 'M 450 605 C 700 605, 940 560, 1260 560');
-    $('line12').setAttribute('d', 'M 1050 340 C 1140 340, 1170 340, 1260 340');
-    $('line2F').setAttribute('d', 'M 1550 340 C 1625 340, 1625 725, 1260 725');
-
-    $('lineS1').style.opacity = state.source ? '1' : '.22';
-    $('lineR2').style.opacity = state.ref ? '1' : '.15';
-    $('line12').style.opacity = state.stage1 ? '1' : '.2';
-    $('line2F').style.opacity = state.stage2 ? '1' : '.2';
-  }
-
-  function setImage(key, dataUrl){
-    state[key] = dataUrl;
-    const map = {
-      source:['sourceImg','sourcePh','sourceNode'],
-      ref:['refImg','refPh','refNode'],
-      stage1:['stage1Img','stage1Ph','stage1Node'],
-      stage2:['stage2Img','stage2Ph','stage2Node'],
-      final:['finalImg','finalPh','finalNode']
-    };
-    const [imgId, phId, nodeId] = map[key];
-    const img = $(imgId);
-    img.src = dataUrl;
-    img.classList.add('show');
-    $(phId).style.display = 'none';
-    $(nodeId).classList.remove('disabled');
-    drawLines();
-  }
-
-  function clearImage(key){
-    state[key] = null;
-    const map = {
-      source:['sourceImg','sourcePh','sourceNode'],
-      ref:['refImg','refPh','refNode'],
-      stage1:['stage1Img','stage1Ph','stage1Node'],
-      stage2:['stage2Img','stage2Ph','stage2Node'],
-      final:['finalImg','finalPh','finalNode']
-    };
-    const [imgId, phId, nodeId] = map[key];
-    const img = $(imgId);
-    img.src = '';
-    img.classList.remove('show');
-    $(phId).style.display = 'flex';
-    if (key !== 'source' && key !== 'ref') $(nodeId).classList.add('disabled');
-    drawLines();
-  }
-
-  function readFile(file, cb){
-    const reader = new FileReader();
-    reader.onload = e => cb(e.target.result);
-    reader.readAsDataURL(file);
-  }
-
-  function openFullscreen(src){
-    if(!src) return;
-    $('fsImg').src = src;
-    $('fullscreen').classList.add('show');
-  }
-  function closeFullscreen(){ $('fullscreen').classList.remove('show'); }
-
-  function updateSidePreview(src){
-    if(!src) return;
-    $('sidePreviewImg').src = src;
-    $('sidePreviewImg').classList.add('show');
-    $('sidePreviewEmpty').style.display = 'none';
-  }
-
-  async function renderRequest({image, refImage, prompt}){
-    const apiKey = $('apiKey').value.trim();
-    const tod = $('todSel').value;
-    const engine = $('engineSel').value;
-    const fullPrompt = [tod, prompt].filter(Boolean).join(', ');
-
-    if(!apiKey){
-      await new Promise(r => setTimeout(r, 700));
-      return image;
-    }
-
-    try{
-      const res = await fetch('/api/render', {
-        method:'POST',
-        headers:{'Content-Type':'application/json; charset=utf-8'},
-        body: JSON.stringify({ apiKey, engine, prompt: fullPrompt, image, refImage })
-      });
-      const data = await res.json();
-      if(!res.ok) throw new Error(data.error || '렌더 실패');
-      if(data.output) return Array.isArray(data.output) ? data.output[0] : data.output;
-      if(data.url) return data.url;
-      if(data.image) return data.image;
-      if(data.id){
-        for(let i=0;i<60;i++){
-          await new Promise(r => setTimeout(r, 2500));
-          const poll = await fetch('/api/poll', {
-            method:'POST',
-            headers:{'Content-Type':'application/json; charset=utf-8'},
-            body: JSON.stringify({ apiKey, predictionId:data.id })
-          });
-          const p = await poll.json();
-          if(p.status === 'succeeded') return Array.isArray(p.output) ? p.output[0] : p.output;
-          if(p.status === 'failed') throw new Error(p.error || '렌더 실패');
-        }
-        throw new Error('렌더 타임아웃');
-      }
-      throw new Error('결과 없음');
-    }catch(err){
-      showError('백엔드 연결 실패. 데모 모드로 입력 이미지를 표시함. (' + err.message + ')');
-      return image;
-    }
-  }
-
-  async function makeStage1(){
-    if(!state.source){ showError('먼저 Source 이미지를 불러와야 돼.'); return; }
-    $('make1Btn').textContent = '1차 렌더링...';
-    $('make1Btn').disabled = true;
-    try{
-      const out = await renderRequest({ image:state.source, prompt:$('prompt1').value.trim() });
-      setImage('stage1', out);
-      updateSidePreview(out);
-      if(!state.stage2) clearImage('final');
-    } finally {
-      $('make1Btn').textContent = '1차 Make';
-      $('make1Btn').disabled = false;
-    }
-  }
-
-  async function makeStage2(){
-    if(!state.stage1){ showError('먼저 1차 Make로 1차 결과를 만들어야 돼.'); return; }
-    $('make2Btn').textContent = '2차 렌더링...';
-    $('make2Btn').disabled = true;
-    try{
-      const out = await renderRequest({ image:state.stage1, refImage:state.ref, prompt:$('prompt2').value.trim() });
-      setImage('stage2', out);
-      setImage('final', out);
-      updateSidePreview(out);
-    } finally {
-      $('make2Btn').textContent = '2차 Make';
-      $('make2Btn').disabled = false;
-    }
-  }
-
-  $('sourceThumb').addEventListener('click', () => $('sourceFile').click());
-  $('refThumb').addEventListener('click', () => $('refFile').click());
-  $('sourceBtn').addEventListener('click', () => $('sourceFile').click());
-  $('refBtn').addEventListener('click', () => $('refFile').click());
-  $('assetSource').addEventListener('click', () => $('sourceFile').click());
-  $('assetRef').addEventListener('click', () => $('refFile').click());
-
-  $('sourceFile').addEventListener('change', e => {
-    const file = e.target.files[0]; if(!file) return;
-    readFile(file, url => {
-      setImage('source', url);
-      clearImage('stage1'); clearImage('stage2'); clearImage('final');
-      $('prompt1').value = '';
-      $('prompt2').value = '';
-      updateSidePreview(url);
+  try{
+    const res = await fetch('/api/render', {
+      method:'POST',
+      headers:{'Content-Type':'application/json; charset=utf-8'},
+      body: JSON.stringify(body)
     });
-    e.target.value = '';
+    if(!res.ok) throw new Error('render api unavailable');
+    const data = await res.json();
+    if(data?.output) return Array.isArray(data.output) ? data.output[0] : data.output;
+    if(data?.image) return data.image;
+    throw new Error('no output');
+  }catch(err){
+    return image; // demo fallback
+  }
+}
+
+function updateButtons(){
+  els.stage1Make.disabled = !state.source;
+  els.stage2Make.disabled = !state.stage1;
+  els.stage1Node.classList.toggle('placeholder', !state.source && !state.stage1);
+  els.stage2Node.classList.toggle('placeholder', !state.stage1 && !state.stage2);
+  els.finalNode.classList.toggle('placeholder', !state.stage2);
+}
+
+function centerOf(el, side='right', yRatio=.5){
+  const rect = el.getBoundingClientRect();
+  const mainRect = document.querySelector('.main').getBoundingClientRect();
+  let x = side==='left' ? rect.left : rect.right;
+  let y = rect.top + rect.height*yRatio;
+  return { x:x-mainRect.left, y:y-mainRect.top };
+}
+
+function curve(p1, p2, color, dashed=false){
+  const dx = Math.max(120, Math.abs(p2.x-p1.x)*0.5);
+  return `<path d="M ${p1.x} ${p1.y} C ${p1.x+dx} ${p1.y}, ${p2.x-dx} ${p2.y}, ${p2.x} ${p2.y}" stroke="${color}" stroke-width="4" fill="none" stroke-linecap="round" ${dashed?'stroke-dasharray="10 10"':''}/>`;
+}
+
+function drawLinks(){
+  const w = document.querySelector('.main').clientWidth;
+  const h = document.querySelector('.main').clientHeight;
+  els.links.setAttribute('width', w);
+  els.links.setAttribute('height', h);
+  let out = '';
+  if(state.source){
+    out += curve(centerOf(els.sourceNode,'right',.5), centerOf(els.stage1Node,'left',.5), '#3db6ff');
+  }
+  if(state.reference){
+    out += curve(centerOf(els.refNode,'right',.5), centerOf(els.stage2Node,'left',.65), '#a970ff');
+  }
+  if(state.stage1){
+    out += curve(centerOf(els.stage1Node,'right',.5), centerOf(els.stage2Node,'left',.5), '#3db6ff');
+  }
+  if(state.stage2){
+    out += curve(centerOf(els.stage2Node,'right',.5), centerOf(els.finalNode,'left',.5), '#3db6ff');
+  }
+  els.links.innerHTML = out;
+}
+
+async function loadSource(file){
+  state.source = await fileToDataURL(file);
+  showImage(els.sourceImg, els.sourceEmpty, state.source);
+  updateButtons();
+  drawLinks();
+  setStatus('Source 로드 완료', '1차 Make 가능');
+}
+
+async function loadReference(file){
+  state.reference = await fileToDataURL(file);
+  els.refNode.classList.remove('hidden');
+  showImage(els.refImg, els.refEmpty, state.reference);
+  updateButtons();
+  drawLinks();
+  setStatus('Reference 로드 완료', '2차에서 사용 가능');
+}
+
+async function makeStage1(){
+  if(!state.source) return;
+  setStatus('1차 렌더 중', '잠시만');
+  const prompt = els.stage1Prompt.value;
+  const result = await tryRender({ image: state.source, refImage:null, prompt });
+  state.stage1 = result;
+  showImage(els.stage1Img, els.stage1Empty, result);
+  selectPreview(result);
+  updateButtons();
+  drawLinks();
+  setStatus('1차 완료', '2차 Make 가능');
+}
+
+async function makeStage2(){
+  if(!state.stage1) return;
+  setStatus('2차 렌더 중', '잠시만');
+  const prompt = els.stage2Prompt.value;
+  const result = await tryRender({ image: state.stage1, refImage: state.reference, prompt });
+  state.stage2 = result;
+  showImage(els.stage2Img, els.stage2Empty, result);
+  showImage(els.finalImg, els.finalEmpty, result);
+  selectPreview(result);
+  updateButtons();
+  drawLinks();
+  setStatus('최종 완료', 'Final Viewer 확인');
+}
+
+function resetAll(){
+  state.source = null; state.reference = null; state.stage1 = null; state.stage2 = null; state.selected = null;
+  clearImage(els.sourceImg, els.sourceEmpty);
+  clearImage(els.refImg, els.refEmpty);
+  clearImage(els.stage1Img, els.stage1Empty);
+  clearImage(els.stage2Img, els.stage2Empty);
+  clearImage(els.finalImg, els.finalEmpty);
+  els.refNode.classList.add('hidden');
+  els.stage1Prompt.value = '';
+  els.stage2Prompt.value = '';
+  els.previewImg.classList.add('hidden');
+  els.previewImg.src='';
+  els.previewEmpty.classList.remove('hidden');
+  els.links.innerHTML='';
+  updateButtons();
+  setStatus('대기 중', '준비되면 Make');
+}
+
+document.getElementById('resetBtn').addEventListener('click', resetAll);
+document.getElementById('sourceBtn').addEventListener('click', ()=> els.sourceInput.click());
+document.getElementById('refBtn').addEventListener('click', ()=> els.refInput.click());
+document.getElementById('assetSourceBtn').addEventListener('click', ()=> els.sourceInput.click());
+document.getElementById('assetRefBtn').addEventListener('click', ()=> els.refInput.click());
+document.getElementById('sourceTop').addEventListener('click', ()=> els.sourceInput.click());
+document.getElementById('refTop').addEventListener('click', ()=> els.refInput.click());
+els.sourceInput.addEventListener('change', async e => { if(e.target.files[0]) await loadSource(e.target.files[0]); e.target.value=''; });
+els.refInput.addEventListener('change', async e => { if(e.target.files[0]) await loadReference(e.target.files[0]); e.target.value=''; });
+els.stage1Make.addEventListener('click', makeStage1);
+els.stage2Make.addEventListener('click', makeStage2);
+
+['stage1Top','stage2Top','finalTop'].forEach(id => {
+  document.getElementById(id).addEventListener('click', ()=>{
+    const map = { stage1Top: state.stage1, stage2Top: state.stage2, finalTop: state.stage2 };
+    const src = map[id];
+    if(src){ selectPreview(src); toggleFullscreen(src); }
   });
+});
 
-  $('refFile').addEventListener('change', e => {
-    const file = e.target.files[0]; if(!file) return;
-    readFile(file, url => {
-      setImage('ref', url);
-      updateSidePreview(url);
-    });
-    e.target.value = '';
-  });
-
-  $('make1Btn').addEventListener('click', makeStage1);
-  $('make2Btn').addEventListener('click', makeStage2);
-
-  ['stage1Thumb','stage2Thumb','finalThumb','sidePreview'].forEach(id => {
-    $(id).addEventListener('click', () => {
-      const src = id === 'stage1Thumb' ? state.stage1 : id === 'stage2Thumb' ? state.stage2 : id === 'finalThumb' ? state.final : $('sidePreviewImg').src;
-      if(src) openFullscreen(src);
-    });
-  });
-
-  $('fullscreen').addEventListener('click', e => {
-    if(e.target.id === 'fullscreen' || e.target.id === 'fsImg') closeFullscreen();
-  });
-  $('fsClose').addEventListener('click', closeFullscreen);
-
-  $('resetBtn').addEventListener('click', () => {
-    clearImage('source'); clearImage('ref'); clearImage('stage1'); clearImage('stage2'); clearImage('final');
-    $('prompt1').value=''; $('prompt2').value='';
-    $('sidePreviewImg').src=''; $('sidePreviewImg').classList.remove('show'); $('sidePreviewEmpty').style.display='block';
-  });
-
-  drawLines();
+window.addEventListener('resize', drawLinks);
+updateButtons();
+setTimeout(drawLinks, 50);
 </script>
 </body>
 </html>
