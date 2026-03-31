@@ -875,7 +875,8 @@ canvas.addEventListener('click', ()=>{
 
 // Toolbar
 
-document.getElementById('addSource').addEventListener('click', ()=>addSourceNode());
+const addSourceLegacy = document.getElementById('addSource');
+if(addSourceLegacy) addSourceLegacy.addEventListener('click', ()=>addSourceNode());
 document.getElementById('zoomOut').addEventListener('click', ()=> setCanvasZoom(canvasZoom - 0.1));
 document.getElementById('zoomIn').addEventListener('click', ()=> setCanvasZoom(canvasZoom + 0.1));
 document.getElementById('zoomReset').addEventListener('click', ()=> setCanvasZoom(1));
