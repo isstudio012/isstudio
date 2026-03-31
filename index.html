@@ -157,11 +157,12 @@ apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, api
 function saveWorkspace(){
   try{
     const payload = {
-      nodes,
-      links,
+      nodes: JSON.parse(JSON.stringify(nodes)),
+      links: JSON.parse(JSON.stringify(links)),
       zCounter,
       selectedNodeId,
       selectedEngineId,
+      selectedLink,
       canvasZoom,
       canvasLeft: canvas.style.left || '0px',
       canvasTop: canvas.style.top || '0px',
@@ -179,59 +180,42 @@ function restoreWorkspace(){
     if(!raw) return false;
     const data = JSON.parse(raw);
     if(!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) return false;
+    if(!data.nodes.length) return false;
 
     nodes = data.nodes || [];
     links = data.links || [];
     zCounter = Number(data.zCounter || 5);
     selectedNodeId = data.selectedNodeId || null;
     selectedEngineId = data.selectedEngineId || null;
-
-    // Safety: if workspace lost the engine node, recreate one so Make never stays dead.
-    const engineExists = nodes.some(n => n.type === 'engine');
-    if (!engineExists) {
-      nodes.push({
-        id: uid('eng_'),
-        type: 'engine',
-        x: 760,
-        y: 150,
-        engine: 'Flux Kontext Pro',
-        prompt: data.bottomPrompt || '',
-        previewImage: null
-      });
-    }
+    selectedLink = data.selectedLink || null;
 
     canvas.style.left = data.canvasLeft || '0px';
     canvas.style.top = data.canvasTop || '0px';
     sourceLauncher.style.left = data.sourceLauncherLeft || '16px';
     sourceLauncher.style.top = data.sourceLauncherTop || '16px';
 
-    nodes.forEach(renderNode);
+    document.querySelectorAll('.node').forEach(el => el.remove());
+    nodes.forEach(node => renderNode(node));
+
     syncAllEnginePreviews();
     redraw();
-
     setCanvasZoom(typeof data.canvasZoom === 'number' ? data.canvasZoom : 1);
 
+    const existingSelectedNode = selectedNodeId && nodes.find(n => n.id === selectedNodeId);
+    const existingSelectedEngine = selectedEngineId && nodes.find(n => n.id === selectedEngineId && n.type === 'engine');
     const firstEngine = nodes.find(n => n.type === 'engine') || null;
 
-    if (selectedNodeId && nodes.find(n => n.id === selectedNodeId)) {
-      selectNode(selectedNodeId);
-    } else if (firstEngine) {
-      selectNode(firstEngine.id);
-    } else {
-      clearPreview();
-    }
+    if(existingSelectedNode) selectNode(existingSelectedNode.id);
+    else if(firstEngine) selectNode(firstEngine.id);
+    else clearPreview();
 
-    if (selectedEngineId && nodes.find(n => n.id === selectedEngineId && n.type === 'engine')) {
-      selectEngine(selectedEngineId);
-    } else if (firstEngine) {
-      selectEngine(firstEngine.id);
-    } else {
+    if(existingSelectedEngine) selectEngine(existingSelectedEngine.id);
+    else if(firstEngine) selectEngine(firstEngine.id);
+    else {
       bottomPrompt.value = data.bottomPrompt || '';
       bottomPrompt.disabled = true;
       bottomMake.disabled = true;
     }
-
-    saveWorkspace();
     return true;
   }catch(_e){
     return false;
@@ -358,6 +342,7 @@ function addImageNode(type, x, y, image){
   const n={id:uid(type==='final'?'fin_':'res_'),type,x,y,image};
   nodes.push(n);
   renderNode(n);
+  saveWorkspace();
   return n;
 }
 
@@ -948,7 +933,12 @@ if(!restoreWorkspace()){
   sourceLauncher.style.top = '16px';
   addSourceNode();
   addEngineNode();
-  setTimeout(()=>{ saveWorkspace(); }, 0);
+  const firstEngine = nodes.find(n=>n.type==='engine');
+  if(firstEngine){
+    selectNode(firstEngine.id);
+    selectEngine(firstEngine.id);
+  }
+  saveWorkspace();
 }
 </script>
 </body>
