@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VizMaker - chain workflow</title>
+<title>VizMaker - result + final workflow</title>
 <style>
 :root{
   --bg:#0b0f16; --panel:#121926; --panel2:#172133; --border:#22324d; --text:#e7eefc; --muted:#8ea2c9;
-  --blue:#34a8ff; --purple:#9564ff; --green:#2ad39b; --red:#ff6b6b; --line:#6b7f9d;
+  --blue:#34a8ff; --purple:#9564ff; --green:#2ad39b; --red:#ff6b6b;
 }
 *{box-sizing:border-box} html,body{margin:0;height:100%;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
 .app{display:grid;grid-template-columns:64px 1fr 320px;height:100%}
@@ -18,35 +18,34 @@
 .main{position:relative;overflow:hidden}
 .canvas{position:absolute;inset:0;background-image:radial-gradient(circle, rgba(120,140,180,.25) 1px, transparent 1px);background-size:28px 28px}
 svg{position:absolute;inset:0;pointer-events:auto;z-index:1}
-.toolbar{position:absolute;left:14px;top:14px;display:flex;gap:8px;z-index:5;align-items:center}
+.toolbar{position:absolute;left:14px;top:14px;display:flex;gap:8px;z-index:5;align-items:center;flex-wrap:wrap}
 .btn{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;cursor:pointer}
 .btn:hover{background:var(--panel2)}
 .tip{padding:10px 12px;border-radius:10px;background:#101a29;border:1px solid var(--border);font-size:12px;color:#cfe0ff}
 .bottomDock{position:absolute;left:14px;right:14px;bottom:14px;z-index:5;display:flex;gap:10px;align-items:flex-end}
-.assetBar{width:330px;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.assetBar{width:340px;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .assetHeader{display:flex;justify-content:space-between;align-items:center;font-weight:700}
 .assetRow{display:flex;gap:8px}
 .assetItem{flex:1;background:var(--panel2);border:1px dashed #36527a;border-radius:12px;padding:10px;min-height:86px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
-.assetItem img{width:100%;height:70px;object-fit:cover;border-radius:8px}
+.assetItem:hover{border-color:#4a6a98}
 .reopenPrompt{display:none}
 .nodesWrap{position:absolute;inset:0;z-index:2}
 .node{position:absolute;width:250px;background:linear-gradient(180deg,#161f2f,#101827);border:1px solid var(--border);border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .node.selected{outline:2px solid rgba(52,168,255,.7)}
-.node .thumb{height:150px;border-radius:23px 23px 0 0;background:#1b2638;display:grid;place-items:center;overflow:hidden}
+.node .thumb{height:150px;border-radius:23px 23px 0 0;background:#1b2638;display:grid;place-items:center;overflow:hidden;cursor:pointer;position:relative}
 .node .thumb img{width:100%;height:100%;object-fit:cover}
 .node .meta{padding:12px 14px 14px}
 .node .title{font-weight:800;font-size:14px}
 .node .sub{font-size:12px;color:var(--muted);margin-top:4px}
-.node .topActions{position:absolute;top:-14px;right:12px;display:flex;gap:8px}
+.node .topActions{position:absolute;top:-14px;right:12px;display:flex;gap:8px;z-index:4}
 .iconBtn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer}
 .iconBtn:hover{background:var(--panel2)}
 .port{position:absolute;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#1b2432;border:1px solid #385173;color:white;cursor:pointer;z-index:3}
 .port.out{right:-14px;top:50%;transform:translateY(-50%)}
-.port.in{left:-14px;top:46%;transform:translateY(-50%)}
-.port.ref{left:-14px;top:64%;transform:translateY(-50%);border-color:#734bdf;color:#d6c7ff}
-.port.source{left:-14px;top:28%;transform:translateY(-50%);border-color:#2a88ff;color:#b9ddff}
-.resultNode{width:310px}
-.resultNode .thumb{height:170px}
+.port.in{left:-14px;top:40%;transform:translateY(-50%);border-color:#2a88ff;color:#b9ddff}
+.port.ref{left:-14px;top:61%;transform:translateY(-50%);border-color:#734bdf;color:#d6c7ff}
+.resultNode{width:320px}
+.resultNode .thumb,.finalNode .thumb{height:178px}
 .promptBox{padding:0 14px 14px}
 .promptBox textarea{width:100%;min-height:82px;resize:vertical;border-radius:14px;border:1px solid var(--border);background:#0d1523;color:var(--text);padding:12px;font-size:12px;line-height:1.45}
 .promptActions{display:flex;gap:8px;margin-top:10px}
@@ -58,10 +57,15 @@ svg{position:absolute;inset:0;pointer-events:auto;z-index:1}
 .previewBox{background:var(--panel2);border:1px solid var(--border);border-radius:16px;overflow:hidden;min-height:180px;display:grid;place-items:center}
 .previewBox img{width:100%;height:220px;object-fit:cover}
 .small{font-size:12px;color:var(--muted)}
-.status{padding:10px 12px;border-radius:12px;background:#0f1a2a;border:1px solid var(--border);font-size:12px;color:#cfe0ff}
+.status{padding:10px 12px;border-radius:12px;background:#0f1a2a;border:1px solid var(--border);font-size:12px;color:#cfe0ff;line-height:1.6}
 .hidden{display:none !important}
 .lineLabel{fill:#dfe9ff;font-size:11px;pointer-events:none}
-.notice{position:absolute;top:56px;left:14px;z-index:5;font-size:12px;color:#b8cdf1}
+.notice{position:absolute;top:94px;left:14px;z-index:5;font-size:12px;color:#b8cdf1}
+.fullscreen{position:fixed;inset:0;background:rgba(4,8,15,.92);display:none;align-items:center;justify-content:center;z-index:50;flex-direction:column;gap:16px}
+.fullscreen.on{display:flex}
+.fullscreen img{max-width:90vw;max-height:82vh;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.fsActions{display:flex;gap:10px}
+.badge{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.15);padding:6px 10px;border-radius:999px;font-size:11px}
 </style>
 </head>
 <body>
@@ -82,19 +86,20 @@ svg{position:absolute;inset:0;pointer-events:auto;z-index:1}
     <div class="toolbar">
       <button class="btn" id="fitBtn">Fit</button>
       <button class="btn" id="clearLinksBtn">Clear Links</button>
-      <button class="btn" id="addResultBtn">+ Result Node</button>
+      <button class="btn" id="addResultBtn">+ 1차 Result</button>
+      <button class="btn" id="addFinalBtn">+ Final</button>
       <button class="btn" id="toggleAssetBtn">Assets</button>
       <button class="btn hidden reopenPrompt" id="reopenPromptBtn">입력창 다시 열기</button>
-      <div class="tip" id="connectTip">Asset 한군데에서 Source / Reference 만들고, Source→Result→Result 체인 가능.</div>
+      <div class="tip">최종 노드는 이미지창만 표시. 클릭하면 크게 열림.</div>
     </div>
     <div class="notice">선 제거: 선 클릭 후 Delete 또는 선 더블클릭</div>
 
     <div class="bottomDock">
       <div class="assetBar" id="assetBar">
-        <div class="assetHeader"><span>Assets</span><span class="small">한군데에서 Source / Reference 생성</span></div>
+        <div class="assetHeader"><span>Assets</span><span class="small">Source / Reference 생성</span></div>
         <div class="assetRow">
-          <div class="assetItem" id="makeSourceBox"><span>＋ Source</span><span>소스 이미지 만들기</span></div>
-          <div class="assetItem" id="makeRefBox"><span>＋ Reference</span><span>레퍼런스 이미지 만들기</span></div>
+          <div class="assetItem" id="makeSourceBox"><span>＋ Source</span><span>소스 이미지 추가</span></div>
+          <div class="assetItem" id="makeRefBox"><span>＋ Reference</span><span>레퍼런스 추가</span></div>
         </div>
       </div>
     </div>
@@ -106,15 +111,16 @@ svg{position:absolute;inset:0;pointer-events:auto;z-index:1}
   <aside class="right">
     <div class="panelSec">
       <div class="panelTitle">Preview</div>
-      <div class="previewBox" id="previewBox"><div class="small">결과 노드를 선택하면 여기 표시됨</div></div>
+      <div class="previewBox" id="previewBox"><div class="small">노드를 선택하면 여기 표시됨</div></div>
     </div>
     <div class="panelSec">
       <div class="panelTitle">Workflow 설명</div>
       <div class="status">
-        1) Source를 Result에 연결<br>
-        2) Result 하단 프롬프트 입력 후 Make<br>
-        3) 생성된 Result를 다시 다른 Result에 Source처럼 연결<br>
-        4) Reference는 보라 포트로 연결
+        1) Source → 1차 Result 연결<br>
+        2) 1차 Result 하단 프롬프트 입력 후 Make<br>
+        3) 1차 Result → Final 연결<br>
+        4) Final은 이미지창만 표시, 클릭 시 크게 보기<br>
+        5) Result / Final 노드는 이미지 업로드 기능 없음
       </div>
     </div>
     <div class="panelSec">
@@ -124,6 +130,13 @@ svg{position:absolute;inset:0;pointer-events:auto;z-index:1}
   </aside>
 </div>
 
+<div class="fullscreen" id="fullscreen">
+  <img id="fullscreenImg" src="" alt="">
+  <div class="fsActions">
+    <button class="btn" id="fsCloseBtn">닫기</button>
+  </div>
+</div>
+
 <script>
 const nodesWrap = document.getElementById('nodesWrap');
 const wires = document.getElementById('wires');
@@ -131,27 +144,22 @@ const previewBox = document.getElementById('previewBox');
 const selectionInfo = document.getElementById('selectionInfo');
 const assetBar = document.getElementById('assetBar');
 const reopenPromptBtn = document.getElementById('reopenPromptBtn');
+const fullscreen = document.getElementById('fullscreen');
+const fullscreenImg = document.getElementById('fullscreenImg');
 const state = {
-  nodes: [],
-  links: [],
-  selectedLine: null,
-  selectedNode: null,
-  connecting: null,
-  tempMouse: null,
-  nextId: 1,
+  nodes: [], links: [], selectedLine: null, selectedNode: null,
+  connecting: null, tempMouse: null, nextId: 1, hiddenPromptNode: null,
 };
 
 function uid(prefix='n'){ return prefix + (state.nextId++); }
 function getNode(id){ return state.nodes.find(n=>n.id===id); }
 function getPortCenter(el){ const r = el.getBoundingClientRect(); const host = document.querySelector('.main').getBoundingClientRect(); return { x:r.left-host.left+r.width/2, y:r.top-host.top+r.height/2 }; }
-function escapeHtml(s=''){ return s.replace(/[&<>\"]/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m])); }
+function escapeHtml(s=''){ return String(s).replace(/[&<>\"]/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m])); }
+function openFullscreen(src){ if(!src) return; fullscreenImg.src = src; fullscreen.classList.add('on'); }
 
 function makeNode({type, x, y, title, subtitle, image=null, prompt=''}){
   const node = { id: uid(type[0]), type, x, y, title, subtitle, image, prompt, collapsed:false };
-  state.nodes.push(node);
-  renderNode(node);
-  redraw();
-  return node;
+  state.nodes.push(node); renderNode(node); redraw(); return node;
 }
 
 function renderNode(node){
@@ -159,21 +167,33 @@ function renderNode(node){
   if(!el){
     el = document.createElement('div');
     el.id = node.id;
-    el.className = 'node' + (node.type==='result' ? ' resultNode' : '');
+    el.className = 'node' + (node.type==='result' ? ' resultNode' : '') + (node.type==='final' ? ' resultNode finalNode' : '');
     el.style.left = node.x+'px';
     el.style.top = node.y+'px';
     nodesWrap.appendChild(el);
   }
+
   const canOutput = ['source','reference','result'].includes(node.type);
+  const inputPorts = (node.type==='result' || node.type==='final') ? `<div class="port in" data-port="inSource">↘</div><div class="port ref" data-port="inRef">↘</div>` : '';
   const resultBody = node.type==='result' ? `
     <div class="promptBox ${node.collapsed?'hidden':''}">
-      <textarea placeholder="이 Result 노드 전용 프롬프트를 입력">${escapeHtml(node.prompt||'')}</textarea>
+      <textarea placeholder="1차 Result 전용 프롬프트를 입력">${escapeHtml(node.prompt||'')}</textarea>
       <div class="promptActions">
         <button class="btn makeNodeBtn">Make</button>
-        <button class="btn duplicateNodeBtn">Clone Result</button>
         <button class="btn hidePromptBtn">입력창 숨기기</button>
       </div>
-      <div class="minibar">이 노드 결과를 다시 다른 Result의 source로 연결 가능</div>
+      <div class="minibar">이 결과 이미지를 다음 Final 노드 source로 연결 가능</div>
+    </div>` : '';
+  const finalBody = node.type==='final' ? `
+    <div class="meta ${node.collapsed?'hidden':''}">
+      <div class="title">${node.title}</div>
+      <div class="sub">${node.subtitle}</div>
+    </div>` : '';
+
+  const metaBlock = (node.type==='result' || node.type==='source' || node.type==='reference') ? `
+    <div class="meta ${node.collapsed?'hidden':''}">
+      <div class="title">${node.title}</div>
+      <div class="sub">${node.subtitle}</div>
     </div>` : '';
 
   el.innerHTML = `
@@ -181,14 +201,14 @@ function renderNode(node){
       <button class="iconBtn collapseBtn">${node.collapsed?'▸':'▾'}</button>
       <button class="iconBtn deleteBtn">✕</button>
     </div>
-    <div class="thumb ${node.collapsed?'hidden':''}">${node.image?`<img src="${node.image}">`:`<div class="small">${node.type==='result'?'결과 없음':'이미지 업로드'}</div>`}</div>
-    <div class="meta ${node.collapsed?'hidden':''}">
-      <div class="title">${node.title}</div>
-      <div class="sub">${node.subtitle}</div>
+    <div class="thumb ${node.collapsed?'hidden':''}">
+      ${node.image?`<img src="${node.image}">`:`<div class="small">${node.type==='result'?'1차 렌더 결과 없음':node.type==='final'?'최종 이미지 없음':'이미지 업로드'}</div>`}
+      ${(node.type==='result' || node.type==='final') ? `<div class="badge">클릭하면 크게 보기</div>` : ''}
     </div>
+    ${node.type==='final' ? finalBody : metaBlock}
     ${resultBody}
     ${canOutput ? `<div class="port out" data-port="out">➜</div>`:''}
-    ${node.type==='result' ? `<div class="port source" data-port="inSource">↘</div><div class="port ref" data-port="inRef">↘</div>` : ''}
+    ${inputPorts}
   `;
 
   bindNodeEvents(el, node);
@@ -206,9 +226,12 @@ function bindNodeEvents(el, node){
   el.querySelector('.collapseBtn').onclick = ()=>{ node.collapsed = !node.collapsed; renderNode(node); redraw(); };
   el.querySelector('.deleteBtn').onclick = ()=> deleteNode(node.id);
 
+  const thumb = el.querySelector('.thumb');
+  if(thumb) thumb.onclick = (e)=>{ e.stopPropagation(); if(node.image){ previewBox.innerHTML = `<img src="${node.image}">`; openFullscreen(node.image); } selectNode(node.id); };
+
   const out = el.querySelector('.port.out');
   if(out) out.onclick = ()=> startConnect(node.id, 'out');
-  const inSource = el.querySelector('.port.source');
+  const inSource = el.querySelector('.port.in');
   if(inSource) inSource.onclick = ()=> finishConnect(node.id, 'source');
   const inRef = el.querySelector('.port.ref');
   if(inRef) inRef.onclick = ()=> finishConnect(node.id, 'ref');
@@ -217,18 +240,11 @@ function bindNodeEvents(el, node){
     const ta = el.querySelector('textarea');
     if(ta) ta.oninput = ()=> node.prompt = ta.value;
     el.querySelector('.makeNodeBtn').onclick = ()=> makeResult(node.id);
-    el.querySelector('.duplicateNodeBtn').onclick = ()=> {
-      const nn = makeNode({ type:'result', x:node.x+340, y:node.y+30, title:'Result', subtitle:'체인용 결과 노드', prompt:node.prompt });
-      const outLink = state.links.find(l=>l.to===node.id && l.kind==='source');
-      if(outLink) state.links.push({id:uid('l'), from:node.id, to:nn.id, kind:'source'});
-      redraw();
-    };
     el.querySelector('.hidePromptBtn').onclick = ()=> {
       el.querySelector('.promptBox').classList.add('hidden');
       reopenPromptBtn.classList.remove('hidden');
       state.hiddenPromptNode = node.id;
     };
-    el.onclick = ()=> { if(node.image){ previewBox.innerHTML = `<img src="${node.image}">`; } selectNode(node.id); };
   }
 }
 
@@ -237,6 +253,7 @@ function selectNode(id){
   document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));
   const el = document.getElementById(id); if(el) el.classList.add('selected');
   const node = getNode(id); selectionInfo.textContent = node ? `${node.title} (${node.id})` : '없음';
+  if(node?.image) previewBox.innerHTML = `<img src="${node.image}">`;
 }
 
 function deleteNode(id){
@@ -247,53 +264,50 @@ function deleteNode(id){
   redraw();
 }
 
-function startConnect(fromId, outPort){
-  state.connecting = { fromId, outPort };
-}
+function startConnect(fromId){ state.connecting = { fromId }; }
 function finishConnect(toId, kind){
   if(!state.connecting) return;
   if(state.connecting.fromId===toId) { state.connecting=null; redraw(); return; }
   const fromNode = getNode(state.connecting.fromId);
   const toNode = getNode(toId);
-  if(!fromNode || !toNode || toNode.type!=='result'){ state.connecting=null; redraw(); return; }
+  if(!fromNode || !toNode || !['result','final'].includes(toNode.type)){ state.connecting=null; redraw(); return; }
   if(kind==='ref' && fromNode.type!=='reference'){ alert('보라 입력은 Reference만 연결 가능'); state.connecting=null; redraw(); return; }
   if(kind==='source' && fromNode.type==='reference'){ alert('Reference는 보라 입력으로 연결'); state.connecting=null; redraw(); return; }
   state.links = state.links.filter(l => !(l.to===toId && l.kind===kind));
   state.links.push({ id:uid('l'), from:fromNode.id, to:toId, kind });
-  state.connecting = null; redraw();
+  state.connecting = null;
+  if(toNode.type==='final') syncFinalNode(toNode.id);
+  redraw();
 }
 
 function redraw(){
   wires.innerHTML='';
   const mainRect = document.querySelector('.main').getBoundingClientRect();
   wires.setAttribute('width', mainRect.width); wires.setAttribute('height', mainRect.height);
-
   for(const link of state.links){
     const fromEl = document.querySelector(`#${link.from} .port.out`);
-    const toSelector = link.kind==='ref' ? '.port.ref' : '.port.source';
+    const toSelector = link.kind==='ref' ? '.port.ref' : '.port.in';
     const toEl = document.querySelector(`#${link.to} ${toSelector}`);
     if(!fromEl || !toEl) continue;
     const a = getPortCenter(fromEl), b = getPortCenter(toEl);
     const c1x = a.x + 110, c1y = a.y, c2x = b.x - 110, c2y = b.y;
-    const color = link.kind==='ref' ? getComputedStyle(document.documentElement).getPropertyValue('--purple') : getComputedStyle(document.documentElement).getPropertyValue('--blue');
+    const color = link.kind==='ref' ? getComputedStyle(document.documentElement).getPropertyValue('--purple').trim() : getComputedStyle(document.documentElement).getPropertyValue('--blue').trim();
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d', `M ${a.x} ${a.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${b.x} ${b.y}`);
-    path.setAttribute('stroke', color.trim()); path.setAttribute('stroke-width', state.selectedLine===link.id ? '5' : '4'); path.setAttribute('fill','none'); path.style.cursor='pointer'; path.dataset.id = link.id;
+    path.setAttribute('stroke', color); path.setAttribute('stroke-width', state.selectedLine===link.id ? '5' : '4'); path.setAttribute('fill','none'); path.style.cursor='pointer';
     path.onclick = (e)=>{ e.stopPropagation(); state.selectedLine = link.id; redraw(); };
     path.ondblclick = (e)=>{ e.stopPropagation(); removeLink(link.id); };
     wires.appendChild(path);
-
     const midX = (a.x+b.x)/2, midY=(a.y+b.y)/2;
     const pill = document.createElementNS('http://www.w3.org/2000/svg','g');
     const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x', midX-28); rect.setAttribute('y', midY-12); rect.setAttribute('rx','10'); rect.setAttribute('width','56'); rect.setAttribute('height','24'); rect.setAttribute('fill','#0f1726'); rect.setAttribute('stroke', color.trim()); rect.style.cursor='pointer';
+    rect.setAttribute('x', midX-28); rect.setAttribute('y', midY-12); rect.setAttribute('rx','10'); rect.setAttribute('width','56'); rect.setAttribute('height','24'); rect.setAttribute('fill','#0f1726'); rect.setAttribute('stroke', color); rect.style.cursor='pointer';
     rect.onclick = ()=>{ state.selectedLine = link.id; redraw(); };
     rect.ondblclick = ()=> removeLink(link.id);
     const text = document.createElementNS('http://www.w3.org/2000/svg','text');
     text.setAttribute('x', midX); text.setAttribute('y', midY+4); text.setAttribute('text-anchor','middle'); text.setAttribute('class','lineLabel'); text.textContent='× remove';
     pill.append(rect,text); wires.appendChild(pill);
   }
-
   if(state.connecting && state.tempMouse){
     const fromEl = document.querySelector(`#${state.connecting.fromId} .port.out`);
     if(fromEl){
@@ -306,69 +320,72 @@ function redraw(){
   }
 }
 
-function removeLink(id){ state.links = state.links.filter(l=>l.id!==id); if(state.selectedLine===id) state.selectedLine=null; redraw(); }
-
-function getIncoming(nodeId, kind){ return state.links.find(l=>l.to===nodeId && l.kind===kind); }
-function resolveSourceImage(nodeId){
-  const srcLink = getIncoming(nodeId,'source');
-  if(!srcLink) return null;
-  const from = getNode(srcLink.from);
-  return from?.image || null;
+function removeLink(id){
+  const link = state.links.find(l=>l.id===id);
+  state.links = state.links.filter(l=>l.id!==id); if(state.selectedLine===id) state.selectedLine=null;
+  if(link && getNode(link.to)?.type==='final') syncFinalNode(link.to);
+  redraw();
 }
-function resolveReferenceImage(nodeId){
-  const refLink = getIncoming(nodeId,'ref');
-  if(!refLink) return null;
-  return getNode(refLink.from)?.image || null;
+function getIncoming(nodeId, kind){ return state.links.find(l=>l.to===nodeId && l.kind===kind); }
+function resolveIncomingImage(nodeId, kind){ const link = getIncoming(nodeId, kind); return link ? getNode(link.from)?.image || null : null; }
+
+function syncFinalNode(finalId){
+  const node = getNode(finalId); if(!node) return;
+  node.image = resolveIncomingImage(finalId, 'source');
+  const srcFrom = getIncoming(finalId,'source')?.from || '없음';
+  const refFrom = getIncoming(finalId,'ref')?.from || '없음';
+  node.subtitle = `최종 이미지 뷰어 · source ${srcFrom} / ref ${refFrom}`;
+  renderNode(node);
 }
 
 function makeResult(resultId){
   const node = getNode(resultId); if(!node) return;
-  const src = resolveSourceImage(resultId);
-  const ref = resolveReferenceImage(resultId);
+  const src = resolveIncomingImage(resultId,'source');
+  const ref = resolveIncomingImage(resultId,'ref');
   if(!src){ alert('먼저 Source 또는 이전 Result를 이 Result에 연결해줘.'); return; }
-
-  // UI demo: backend 없을 때는 source 이미지를 결과로 우선 보여줌 + subtitle에 chain info 기록
+  // 데모 동작: source 이미지를 결과 이미지로 사용하고 프롬프트/레퍼런스 상태만 기록
   node.image = src;
-  node.subtitle = `source ${getIncoming(resultId,'source')?.from || '-'} / ref ${getIncoming(resultId,'ref')?.from || '없음'} / prompt 적용 준비`;
+  node.subtitle = `1차 렌더 결과 · source ${getIncoming(resultId,'source')?.from || '-'} / ref ${getIncoming(resultId,'ref')?.from || '없음'} / prompt 적용`;
   renderNode(node);
   previewBox.innerHTML = `<img src="${src}">`;
   selectNode(node.id);
+  // 이 Result를 source로 쓰는 Final 노드들 자동 갱신
+  state.links.filter(l=>l.from===resultId && getNode(l.to)?.type==='final').forEach(l=>syncFinalNode(l.to));
   redraw();
 }
 
-// files
 function fileToDataURL(file){ return new Promise((resolve,reject)=>{ const r = new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); }); }
 document.getElementById('makeSourceBox').onclick = ()=> document.getElementById('fileSource').click();
 document.getElementById('makeRefBox').onclick = ()=> document.getElementById('fileRef').click();
 document.getElementById('fileSource').onchange = async (e)=>{
   const f = e.target.files[0]; if(!f) return; const img = await fileToDataURL(f);
-  makeNode({ type:'source', x:120, y:120 + state.nodes.filter(n=>n.type==='source').length*220, title:'Source', subtitle:'입력 이미지', image:img });
-  e.target.value='';
+  makeNode({ type:'source', x:120, y:120 + state.nodes.filter(n=>n.type==='source').length*240, title:'Source', subtitle:'입력 이미지', image:img }); e.target.value='';
 };
 document.getElementById('fileRef').onchange = async (e)=>{
   const f = e.target.files[0]; if(!f) return; const img = await fileToDataURL(f);
-  makeNode({ type:'reference', x:120, y:380 + state.nodes.filter(n=>n.type==='reference').length*220, title:'Reference', subtitle:'스타일 / 재질 기준', image:img });
-  e.target.value='';
+  makeNode({ type:'reference', x:120, y:400 + state.nodes.filter(n=>n.type==='reference').length*240, title:'Reference', subtitle:'스타일 / 재질 기준', image:img }); e.target.value='';
 };
 
-// add result
-function addResultNode(){ return makeNode({ type:'result', x:520 + state.nodes.filter(n=>n.type==='result').length*340, y:160, title:'Result', subtitle:'체인 가능한 최종 노드', prompt:'' }); }
+function addResultNode(){ return makeNode({ type:'result', x:540 + state.nodes.filter(n=>n.type==='result').length*360, y:150, title:'1차 Result', subtitle:'프롬프트 입력 후 Make', prompt:'' }); }
+function addFinalNode(){ return makeNode({ type:'final', x:930 + state.nodes.filter(n=>n.type==='final').length*340, y:150, title:'Final', subtitle:'최종 이미지창', prompt:'' }); }
 document.getElementById('addResultBtn').onclick = addResultNode;
-document.getElementById('clearLinksBtn').onclick = ()=>{ state.links=[]; state.selectedLine=null; redraw(); };
-document.getElementById('toggleAssetBtn').onclick = ()=>{ assetBar.classList.toggle('hidden'); reopenPromptBtn.classList.toggle('hidden', !assetBar.classList.contains('hidden')); };
+document.getElementById('addFinalBtn').onclick = addFinalNode;
+document.getElementById('clearLinksBtn').onclick = ()=>{ state.links=[]; state.selectedLine=null; state.nodes.filter(n=>n.type==='final').forEach(syncFinalNode); redraw(); };
+document.getElementById('toggleAssetBtn').onclick = ()=>{ assetBar.classList.toggle('hidden'); reopenPromptBtn.classList.toggle('hidden', !assetBar.classList.contains('hidden') && !state.hiddenPromptNode); };
 reopenPromptBtn.onclick = ()=>{
   assetBar.classList.remove('hidden');
-  reopenPromptBtn.classList.add('hidden');
   if(state.hiddenPromptNode){ const n = document.getElementById(state.hiddenPromptNode); n?.querySelector('.promptBox')?.classList.remove('hidden'); state.hiddenPromptNode=null; }
+  reopenPromptBtn.classList.add('hidden');
 };
 document.getElementById('fitBtn').onclick = ()=> location.reload();
-
 window.addEventListener('mousemove', (e)=>{ const main = document.querySelector('.main').getBoundingClientRect(); state.tempMouse = { x:e.clientX-main.left, y:e.clientY-main.top }; redraw(); });
-window.addEventListener('keydown', (e)=>{ if((e.key==='Delete' || e.key==='Backspace') && state.selectedLine){ removeLink(state.selectedLine); } });
+window.addEventListener('keydown', (e)=>{ if((e.key==='Delete' || e.key==='Backspace') && state.selectedLine){ removeLink(state.selectedLine); } if(e.key==='Escape'){ fullscreen.classList.remove('on'); } });
 document.querySelector('.main').addEventListener('click', (e)=>{ if(e.target===wires){ state.selectedLine=null; redraw(); } });
+document.getElementById('fsCloseBtn').onclick = ()=> fullscreen.classList.remove('on');
+fullscreen.onclick = (e)=>{ if(e.target===fullscreen) fullscreen.classList.remove('on'); };
 
-// seed first result node so workflow is obvious
 addResultNode();
+addFinalNode();
 </script>
 </body>
 </html>
