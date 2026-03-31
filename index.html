@@ -150,73 +150,9 @@ let sourceLauncherDrag = null;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
-const LS_WORKSPACE = 'vizmaker_workspace_v4';
 const LS_WORKSPACE = 'vizmaker_workspace_v2';
 apiCodeInput.value = localStorage.getItem(LS_API_KEY) || '';
 apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
-
-function saveWorkspace(){
-  try{
-    localStorage.setItem(LS_WORKSPACE, JSON.stringify({
-      nodes,
-      links,
-      zCounter,
-      selectedNodeId,
-      selectedEngineId,
-      canvasZoom,
-      canvasLeft: canvas.style.left || '0px',
-      canvasTop: canvas.style.top || '0px',
-      bottomPrompt: bottomPrompt.value || '',
-      sourceLauncherLeft: sourceLauncher.style.left || '16px',
-      sourceLauncherTop: sourceLauncher.style.top || '16px'
-    }));
-  }catch(_e){}
-}
-
-function restoreWorkspace(){
-  try{
-    const raw = localStorage.getItem(LS_WORKSPACE);
-    if(!raw) return false;
-    const data = JSON.parse(raw);
-    if(!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) return false;
-
-    nodes = data.nodes || [];
-    links = data.links || [];
-    zCounter = Number(data.zCounter || 5);
-    selectedNodeId = data.selectedNodeId || null;
-    selectedEngineId = data.selectedEngineId || null;
-
-    canvas.style.left = data.canvasLeft || '0px';
-    canvas.style.top = data.canvasTop || '0px';
-    sourceLauncher.style.left = data.sourceLauncherLeft || '16px';
-    sourceLauncher.style.top = data.sourceLauncherTop || '16px';
-
-    nodes.forEach(renderNode);
-    syncAllEnginePreviews();
-    redraw();
-
-    if (typeof data.canvasZoom === 'number') {
-      setCanvasZoom(data.canvasZoom);
-    }
-
-    if (selectedNodeId) {
-      selectNode(selectedNodeId);
-    } else {
-      clearPreview();
-    }
-
-    if (selectedEngineId) {
-      selectEngine(selectedEngineId);
-    } else {
-      bottomPrompt.value = data.bottomPrompt || '';
-      bottomPrompt.disabled = true;
-      bottomMake.disabled = true;
-    }
-    return true;
-  }catch(_e){
-    return false;
-  }
-}
 
 function saveWorkspace(){
   try{
@@ -249,6 +185,7 @@ function restoreWorkspace(){
     zCounter = Number(data.zCounter || 5);
     selectedNodeId = data.selectedNodeId || null;
     selectedEngineId = data.selectedEngineId || null;
+
     canvas.style.left = data.canvasLeft || '0px';
     canvas.style.top = data.canvasTop || '0px';
     sourceLauncher.style.left = data.sourceLauncherLeft || '16px';
@@ -258,9 +195,7 @@ function restoreWorkspace(){
     syncAllEnginePreviews();
     redraw();
 
-    if (typeof data.canvasZoom === 'number') {
-      setCanvasZoom(data.canvasZoom);
-    }
+    setCanvasZoom(typeof data.canvasZoom === 'number' ? data.canvasZoom : 1);
 
     if (selectedNodeId) {
       selectNode(selectedNodeId);
@@ -275,7 +210,6 @@ function restoreWorkspace(){
       bottomPrompt.disabled = true;
       bottomMake.disabled = true;
     }
-
     return true;
   }catch(_e){
     return false;
@@ -483,7 +417,7 @@ function bindNodeEvents(node, el){
         links = links.filter(l => !(l.to===node.id && l.toPort===toPort));
         links.push({id:uid('ln_'), from:connectStart.nodeId, to:node.id, toPort});
       }
-      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); saveWorkspace(); saveWorkspace();
+      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); saveWorkspace();
     });
   });
 }
@@ -821,7 +755,9 @@ bottomMake.addEventListener('click', ()=>{
 });
 
 
-sourceLauncher.addEventListener('click', (e)=>{
+sourceLauncher.addEventListener('dblclick', (e)=>{
+  e.preventDefault();
+  e.stopPropagation();
   if(sourceLauncherDrag && sourceLauncherDrag.moved) return;
   addSourceNode();
 });
@@ -989,11 +925,7 @@ if(!restoreWorkspace()){
   sourceLauncher.style.top = '16px';
   addSourceNode();
   addEngineNode();
-  setTimeout(()=>{
-    const firstEngine = nodes.find(n=>n.type==='engine');
-    if(firstEngine){ selectNode(firstEngine.id); selectEngine(firstEngine.id); }
-    saveWorkspace();
-  }, 0);
+  setTimeout(()=>{ saveWorkspace(); }, 0);
 }
 </script>
 </body>
