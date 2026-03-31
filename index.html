@@ -7,166 +7,111 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#141414;--surface:#1e1e1e;--surface2:#252525;--border:#2e2e2e;
-  --text:#f0f0f0;--muted:#666;--accent:#4a9eff;--accent2:#7c5cfc;
-  --green:#22c55e;--orange:#f97316;
+  --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--surface3:#2a2a2a;
+  --border:#2e2e2e;--text:#f0f0f0;--muted:#555;--accent:#4a9eff;--accent2:#7c5cfc;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px;user-select:none}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
 
 /* HEADER */
-header{height:46px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0}
+header{height:44px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:100;position:relative}
 .logo{display:flex;align-items:center;gap:8px}
-.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
-.logo-name{font-size:14px;font-weight:600;color:var(--text)}
+.logo-icon{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+.logo-name{font-size:14px;font-weight:600}
 .hright{margin-left:auto;display:flex;gap:8px;align-items:center}
-.hbtn{height:28px;padding:0 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.hbtn{height:28px;padding:0 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
 .hbtn:hover{color:var(--text);border-color:#444}
-.avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff}
-
-/* APP */
-.app{flex:1;display:flex;overflow:hidden}
-
-/* LEFT PANEL */
-.lbar{width:200px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
-.lbar-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.lbar-title{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.lbtn{width:22px;height:22px;border-radius:5px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
-.lbtn:hover{background:var(--surface2);color:var(--text)}
-.project-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:4px}
-.project-item{border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .15s;background:var(--surface2)}
-.project-item:hover{border-color:#3a3a3a}
-.project-item.active{border-color:var(--accent)}
-.project-item img{width:100%;height:80px;object-fit:cover;display:block}
-.project-item-label{padding:5px 8px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.project-item.active .project-item-label{color:var(--text)}
-.lbar-add{margin:8px;padding:10px;border:1.5px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--muted);font-size:12px;transition:all .15s;flex-shrink:0}
-.lbar-add:hover{border-color:#555;color:var(--text)}
-
-/* CENTER */
-.center{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
-
-/* THUMBS BAR */
-.thumbbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
-.thumbs-wrap{display:flex;gap:8px;flex:1;overflow-x:auto;scrollbar-width:none}
-.thumbs-wrap::-webkit-scrollbar{display:none}
-.thumb{width:80px;height:52px;border-radius:6px;border:2px solid transparent;overflow:hidden;cursor:pointer;flex-shrink:0;background:#2a2a2a;position:relative;transition:all .15s}
-.thumb:hover{border-color:#444}
-.thumb.active{border-color:var(--accent)}
-.thumb img{width:100%;height:100%;object-fit:cover}
-.thumb-badge{position:absolute;top:3px;right:3px;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;text-transform:uppercase}
-.thumb-badge.orig{background:rgba(0,0,0,.7);color:#aaa}
-.thumb-badge.rendered{background:var(--accent);color:#fff}
-.thumb-add-btn{width:80px;height:52px;border-radius:6px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:18px;flex-shrink:0;transition:all .15s;background:none}
-.thumb-add-btn:hover{border-color:#555;color:var(--text)}
+.hbtn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;font-weight:500}
+.hbtn.primary:hover{opacity:.9}
 
 /* CANVAS */
-.canvas-wrap{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.upload-zone{position:absolute;inset:16px;background:var(--surface);border-radius:12px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;gap:12px}
-.upload-zone:hover{border-color:#444;background:var(--surface2)}
-.upload-icon{width:56px;height:56px;background:var(--surface2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px}
-.upload-zone h3{font-size:15px;font-weight:600;color:var(--text)}
-.upload-zone p{font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
+#node-canvas{flex:1;position:relative;overflow:hidden;cursor:default}
+#node-canvas.panning{cursor:grab}
+#node-canvas.panning:active{cursor:grabbing}
+#canvas-bg{position:absolute;inset:0;pointer-events:none}
 
-/* RENDER VIEW */
-.canvas{position:absolute;inset:16px;border-radius:12px;overflow:hidden;background:#000;display:none}
-.canvas.visible{display:block}
-.render-view{width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center}
-.render-view img{width:100%;height:100%;object-fit:contain;display:block}
-.render-label{position:absolute;top:10px;left:10px;font-size:10px;font-weight:600;background:rgba(0,0,0,.7);color:#fff;padding:3px 8px;border-radius:4px;letter-spacing:.5px;text-transform:uppercase;backdrop-filter:blur(4px)}
+/* NODE */
+.node{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:12px;width:220px;cursor:grab;transition:box-shadow .2s;z-index:10}
+.node:active{cursor:grabbing}
+.node.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(74,158,255,.2)}
+.node.rendered{border-color:var(--accent2)}
+.node-header{padding:10px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);border-radius:12px 12px 0 0}
+.node-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.node-icon.source{background:rgba(74,158,255,.15)}
+.node-icon.ref{background:rgba(124,92,252,.15)}
+.node-icon.render{background:rgba(34,197,94,.15)}
+.node-icon.output{background:rgba(249,115,22,.15)}
+.node-title{font-size:12px;font-weight:600;flex:1}
+.node-status{font-size:10px;color:var(--muted)}
+.node-body{padding:10px 12px}
+.node-preview{width:100%;height:120px;border-radius:8px;overflow:hidden;background:var(--surface3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;border:1.5px dashed var(--border);position:relative}
+.node-preview:hover{border-color:#444}
+.node-preview img{width:100%;height:100%;object-fit:cover;display:none;border-radius:6px}
+.node-preview img.visible{display:block}
+.node-preview-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted)}
+.node-preview-placeholder span{font-size:22px}
+.node-preview-placeholder p{font-size:11px;text-align:center;line-height:1.4}
+.node-port{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);cursor:crosshair;transition:all .15s;z-index:20}
+.node-port:hover{transform:scale(1.3)}
+.node-port.out{right:-7px;top:50%}
+.node-port.in{left:-7px;top:50%}
+.node-port.in2{left:-7px;top:70%}
+.node-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600;margin-top:6px}
+.node-tag.blue{background:rgba(74,158,255,.15);color:var(--accent)}
+.node-tag.purple{background:rgba(124,92,252,.15);color:#a78bfa}
+.node-tag.green{background:rgba(34,197,94,.15);color:#4ade80}
+.node-tag.orange{background:rgba(249,115,22,.15);color:#fb923c}
 
-/* COMPARE VIEW */
-.compare-wrap{width:100%;height:100%;position:relative;overflow:hidden;user-select:none;display:none}
-.compare-wrap.visible{display:block}
-.compare-orig{position:absolute;inset:0;z-index:1}
-.compare-orig img{width:100%;height:100%;object-fit:contain;display:block}
-.compare-rend{position:absolute;inset:0;z-index:2;clip-path:inset(0 50% 0 0)}
-.compare-rend img{width:100%;height:100%;object-fit:contain;display:block}
-.compare-line{position:absolute;top:0;bottom:0;left:50%;width:2px;background:#fff;transform:translateX(-50%);cursor:ew-resize;z-index:10;box-shadow:0 0 8px rgba(0,0,0,.6)}
-.compare-handle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:ew-resize;box-shadow:0 2px 12px rgba(0,0,0,.4)}
-.compare-handle svg{width:14px;height:14px;fill:#555}
+/* SVG CONNECTIONS */
+#connections-svg{position:absolute;inset:0;pointer-events:none;z-index:5}
 
-/* LOADING */
-.loading{display:none;position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:20;border-radius:12px}
-.loading.visible{display:flex}
-.spinner{width:38px;height:38px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:13px;color:rgba(255,255,255,.8)}
-.loading-sub{font-size:11px;color:rgba(255,255,255,.4)}
-
-/* CANVAS ACTIONS */
-.canvas-actions{position:absolute;bottom:12px;right:12px;display:none;gap:6px;z-index:15;flex-wrap:wrap;justify-content:flex-end}
-.canvas-actions.visible{display:flex}
-.caction{background:rgba(20,20,20,.85);border:1px solid rgba(255,255,255,.1);color:#fff;padding:6px 12px;border-radius:7px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;gap:5px;transition:all .2s}
-.caction:hover{background:rgba(40,40,40,.95);border-color:rgba(255,255,255,.2)}
-
-/* VIEW TOGGLE */
-.view-toggle{position:absolute;top:12px;right:12px;display:none;gap:4px;z-index:15}
-.view-toggle.visible{display:flex}
-.vtbtn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:rgba(20,20,20,.8);color:var(--muted);font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;backdrop-filter:blur(4px);transition:all .15s}
-.vtbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-
-/* RIGHT PANEL */
-.rpanel{width:270px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;scrollbar-width:thin}
-
-/* SECTION */
-.rsec{padding:14px 16px;border-bottom:1px solid var(--border)}
-.sec-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
-
-/* API KEY */
-.api-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:7px;font-size:11px;font-family:monospace;outline:none;transition:border-color .2s}
-.api-input:focus{border-color:var(--accent)}
-.api-input::placeholder{color:var(--muted)}
-
-/* TIME BUTTONS */
+/* SIDE PANEL */
+.side-panel{position:fixed;right:0;top:44px;bottom:0;width:280px;background:var(--surface);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .25s;z-index:50;display:flex;flex-direction:column;overflow:hidden}
+.side-panel.open{transform:translateX(0)}
+.sp-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sp-title{font-size:13px;font-weight:600}
+.sp-close{width:24px;height:24px;border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;border-radius:5px}
+.sp-close:hover{background:var(--surface2);color:var(--text)}
+.sp-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.sp-sec-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.sp-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:7px;font-size:11px;font-family:monospace;outline:none;transition:border-color .2s}
+.sp-input:focus{border-color:var(--accent)}
+.sp-input::placeholder{color:var(--muted)}
+.sp-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;outline:none;resize:none;min-height:150px;line-height:1.6;transition:border-color .2s}
+.sp-textarea:focus{border-color:var(--accent)}
+.sp-textarea::placeholder{color:var(--muted)}
 .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.opt-btn{padding:9px 6px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;font-weight:400}
+.opt-btn{padding:9px 6px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
 .opt-btn:hover{border-color:#444}
 .opt-btn.sel{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
-
-/* PRESETS */
 .presets-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.preset-btn{padding:8px 6px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;text-align:center;line-height:1.4}
+.preset-btn{padding:8px 6px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;text-align:center}
 .preset-btn:hover{border-color:#444;color:var(--text)}
 .preset-btn.active{border-color:var(--accent2);color:var(--accent2)}
-
-/* REFERENCE IMAGE */
-.ref-upload{border:1.5px dashed var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .2s;background:var(--surface2)}
-.ref-upload:hover{border-color:#444}
-.ref-upload p{font-size:11px;color:var(--muted);text-align:center}
-.ref-preview{width:100%;height:80px;border-radius:7px;object-fit:cover;display:none;border:1px solid var(--border)}
-.ref-preview.visible{display:block}
-.ref-clear{width:100%;padding:5px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;margin-top:4px;display:none;font-family:'Inter',sans-serif}
-.ref-clear.visible{display:block}
-
-/* PROMPT */
-.prompt-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;outline:none;resize:none;min-height:160px;transition:border-color .2s;line-height:1.6}
-.prompt-input:focus{border-color:var(--accent)}
-.prompt-input::placeholder{color:var(--muted)}
-
-/* ERROR */
-.errmsg{display:none;margin:0 16px 10px;padding:9px 12px;background:rgba(220,50,50,.1);border:1px solid rgba(220,50,50,.3);border-radius:7px;font-size:12px;color:#f87171;line-height:1.5}
+.sp-render-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;flex-shrink:0;margin:14px 16px;width:calc(100% - 32px)}
+.sp-render-btn:hover{opacity:.9}
+.sp-render-btn:disabled{opacity:.3;cursor:not-allowed}
+.errmsg{display:none;padding:9px 12px;background:rgba(220,50,50,.1);border:1px solid rgba(220,50,50,.3);border-radius:7px;font-size:12px;color:#f87171;line-height:1.5;margin:0 16px}
 .errmsg.visible{display:block}
 
-/* RENDER BUTTON */
-.render-wrap{padding:14px 16px;position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);margin-top:auto}
-.render-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
-.render-btn:hover{opacity:.9;transform:translateY(-1px)}
-.render-btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+/* TOOLBAR */
+.toolbar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 12px;display:flex;gap:6px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.tbtn{height:32px;padding:0 12px;border-radius:7px;border:none;background:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:6px;transition:all .15s}
+.tbtn:hover{background:var(--surface2);color:var(--text)}
+.tbtn.active{background:var(--surface3);color:var(--text)}
+.tbtn-sep{width:1px;background:var(--border);margin:4px 2px}
 
-#fi{display:none}
-#fi-ref{display:none}
+/* LOADING OVERLAY */
+.node-loading{position:absolute;inset:0;background:rgba(0,0,0,.7);border-radius:11px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;z-index:30}
+.node-loading.visible{display:flex}
+.node-spinner{width:28px;height:28px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* MOBILE */
-@media(max-width:768px){
-  .lbar{display:none}
-  .app{flex-direction:column}
-  .rpanel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:50vh;overflow-y:auto}
-  .canvas-wrap{min-height:260px;max-height:45vh}
-}
+/* ZOOM */
+.zoom-badge{position:fixed;bottom:70px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-size:11px;color:var(--muted);z-index:100}
+
+#fi{display:none}#fi-ref{display:none}
 </style>
 </head>
 <body>
@@ -177,187 +122,272 @@ header{height:46px;background:var(--surface);border-bottom:1px solid var(--borde
     <span class="logo-name">RenderAI</span>
   </div>
   <div class="hright">
-    <span style="font-size:11px;color:var(--muted)" id="credit-display"></span>
-    <div class="avatar">IS</div>
+    <button class="hbtn" id="add-source-btn">+ Source</button>
+    <button class="hbtn" id="add-ref-btn">+ Reference</button>
+    <button class="hbtn primary" id="open-settings-btn">⚙ Settings</button>
   </div>
 </header>
 
-<div class="app">
-
-  <!-- LEFT PANEL -->
-  <div class="lbar">
-    <div class="lbar-header">
-      <span class="lbar-title">Scenes</span>
-      <button class="lbtn" id="upload-lbtn">+</button>
-    </div>
-    <div class="project-list" id="project-list"></div>
-    <div class="lbar-add" id="lbar-add-btn">+ 씬 추가</div>
-  </div>
-
-  <!-- CENTER -->
-  <div class="center">
-    <div class="thumbbar">
-      <div class="thumbs-wrap" id="thumbs-wrap"></div>
-      <button class="thumb-add-btn" id="thumb-add-btn">+</button>
-    </div>
-
-    <div class="canvas-wrap">
-      <div class="upload-zone" id="upload-zone">
-        <div class="upload-icon">🏠</div>
-        <h3>씬을 업로드하세요</h3>
-        <p>SketchUp, Revit, 3ds Max, Rhino<br>스케치 또는 사진을 드래그하거나 클릭</p>
-      </div>
-
-      <div class="canvas" id="canvas">
-        <!-- SINGLE VIEW -->
-        <div class="render-view" id="render-view">
-          <img id="rendered-img" src="" alt="">
-          <div class="render-label" id="render-label"></div>
-        </div>
-        <!-- COMPARE VIEW -->
-        <div class="compare-wrap" id="compare-wrap">
-          <div class="compare-orig"><img id="compare-orig-img" src="" alt=""></div>
-          <div class="compare-rend" id="compare-rend-layer">
-            <img id="compare-rend-img" src="" alt="">
-          </div>
-          <div class="compare-line" id="compare-line" style="left:50%">
-            <div class="compare-handle">
-              <svg viewBox="0 0 24 24"><path d="M8 5l-5 7 5 7M16 5l5 7-5 7"/></svg>
-            </div>
-          </div>
-        </div>
-        <!-- LOADING -->
-        <div class="loading" id="loading">
-          <div class="spinner"></div>
-          <div class="loading-text">렌더링 생성 중...</div>
-          <div class="loading-sub">약 30~60초 소요됩니다</div>
-        </div>
-        <!-- VIEW TOGGLE -->
-        <div class="view-toggle" id="view-toggle">
-          <button class="vtbtn active" id="vt-render">Render</button>
-          <button class="vtbtn" id="vt-compare">Compare</button>
-        </div>
-        <!-- ACTIONS -->
-        <div class="canvas-actions" id="canvas-actions">
-          <button class="caction" id="upscale-btn">⬆ 4K</button>
-          <button class="caction" id="download-btn">⬇ 저장</button>
-          <button class="caction" id="new-render-btn">+ 새 씬</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT PANEL -->
-  <div class="rpanel">
-
-    <!-- API KEY -->
-    <div class="rsec">
-      <div class="sec-label">Replicate API Key</div>
-      <input type="password" class="api-input" id="api-key" placeholder="r8_xxxxxxxxxxxxxxxxxxxx">
-    </div>
-
-    <!-- TIME OF DAY -->
-    <div class="rsec">
-      <div class="sec-label">Time of Day</div>
-      <div class="opt-grid">
-        <button class="opt-btn sel" data-g="time" data-v="daytime, bright exterior daylight visible through windows">☀️ 낮</button>
-        <button class="opt-btn" data-g="time" data-v="night time, dark exterior outside windows">🌙 밤</button>
-      </div>
-    </div>
-
-    <!-- PRESETS -->
-    <div class="rsec">
-      <div class="sec-label">Presets</div>
-      <div class="presets-grid">
-        <button class="preset-btn" data-prompt="photorealistic render, add realism to all surfaces and materials">✨ Add Realism</button>
-        <button class="preset-btn" data-prompt="heavy rain outside, wet surfaces, rain streaks on windows, dramatic stormy atmosphere">🌧 Rain</button>
-        <button class="preset-btn" data-prompt="warm sunset golden hour lighting, orange glow through windows">🌅 Sunset</button>
-        <button class="preset-btn" data-prompt="minimalist nordic style, white walls, light wood, clean simple interior">🪵 Nordic</button>
-        <button class="preset-btn" data-prompt="luxury high-end interior, marble surfaces, gold accents, premium materials">💎 Luxury</button>
-        <button class="preset-btn" data-prompt="industrial loft style, exposed concrete, raw metal, brick walls">🏭 Industrial</button>
-      </div>
-    </div>
-
-    <!-- REFERENCE IMAGE (MOODBOARD) -->
-    <div class="rsec">
-      <div class="sec-label">Reference / Moodboard</div>
-      <img class="ref-preview" id="ref-preview" src="" alt="">
-      <button class="ref-clear" id="ref-clear">✕ 레퍼런스 제거</button>
-      <div class="ref-upload" id="ref-upload" style="margin-top:6px">
-        <span style="font-size:20px">🎨</span>
-        <p>마감재 사진이나 무드보드를<br>업로드하면 스타일 참고</p>
-      </div>
-    </div>
-
-    <!-- PROMPT -->
-    <div class="rsec">
-      <div class="sec-label">Prompt</div>
-      <textarea class="prompt-input" id="instructions" placeholder="원하는 스타일, 마감재, 조명, 분위기 등&#10;&#10;예) clear sunny 1PM, neutral white daylight, all ceiling downlights ON, recessed lights glowing, marble floor, warm cozy atmosphere"></textarea>
-    </div>
-
-    <div class="errmsg" id="errmsg"></div>
-
-    <div class="render-wrap">
-      <button class="render-btn" id="render-btn" disabled>
-        ✦ Render
-      </button>
-    </div>
-
-  </div>
+<div id="node-canvas">
+  <svg id="connections-svg"></svg>
 </div>
+
+<!-- SIDE PANEL -->
+<div class="side-panel" id="side-panel">
+  <div class="sp-header">
+    <span class="sp-title" id="sp-title">Settings</span>
+    <button class="sp-close" id="sp-close">✕</button>
+  </div>
+  <div class="sp-body" id="sp-body">
+    <!-- dynamic content -->
+  </div>
+  <div class="errmsg" id="errmsg"></div>
+  <button class="sp-render-btn" id="render-btn" disabled>✦ Render</button>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <button class="tbtn" id="tb-fit">⊞ Fit</button>
+  <div class="tbtn-sep"></div>
+  <button class="tbtn" id="tb-zoom-in">+</button>
+  <button class="tbtn" id="tb-zoom-out">−</button>
+  <div class="tbtn-sep"></div>
+  <button class="tbtn" id="tb-clear">🗑 Clear</button>
+</div>
+
+<div class="zoom-badge" id="zoom-badge">100%</div>
 
 <input type="file" id="fi" accept="image/*">
 <input type="file" id="fi-ref" accept="image/*">
 
 <script>
-let scenes = [];
-let currentSceneId = null;
-let isDragging = false;
-let refImage = null;
-let viewMode = 'render'; // 'render' | 'compare'
+// ── STATE ──
+let nodes = [];
+let connections = [];
+let zoom = 1;
+let panX = 0, panY = 0;
+let draggingNode = null, dragOffX = 0, dragOffY = 0;
+let isPanning = false, panStartX = 0, panStartY = 0;
+let selectedNodeId = null;
+let pendingFileNodeId = null;
+let apiKey = localStorage.getItem('replicate_api_key') || '';
 
-const uploadZone = document.getElementById('upload-zone');
-const canvas = document.getElementById('canvas');
-const renderedImg = document.getElementById('rendered-img');
-const loading = document.getElementById('loading');
-const renderBtn = document.getElementById('render-btn');
-const fi = document.getElementById('fi');
-const fiRef = document.getElementById('fi-ref');
-const apiKey = document.getElementById('api-key');
-const errmsg = document.getElementById('errmsg');
-const downloadBtn = document.getElementById('download-btn');
-const newRenderBtn = document.getElementById('new-render-btn');
-const canvasActions = document.getElementById('canvas-actions');
-const thumbsWrap = document.getElementById('thumbs-wrap');
-const compareWrap = document.getElementById('compare-wrap');
-const renderView = document.getElementById('render-view');
+const canvas = document.getElementById('node-canvas');
+const svg = document.getElementById('connections-svg');
+const sidePanel = document.getElementById('side-panel');
 
-function currentScene() { return scenes.find(s => s.id === currentSceneId); }
+// ── INIT: create default nodes ──
+function init() {
+  addNode('source', { x: 160, y: 200 });
+  addNode('render', { x: 500, y: 200 });
+  addNode('output', { x: 840, y: 200 });
+  // Auto-connect
+  const s = nodes.find(n => n.type === 'source');
+  const r = nodes.find(n => n.type === 'render');
+  const o = nodes.find(n => n.type === 'output');
+  if (s && r) connections.push({ from: s.id, to: r.id, port: 'in' });
+  if (r && o) connections.push({ from: r.id, to: o.id, port: 'in' });
+  renderAll();
+  openSettingsPanel();
+}
 
-// UPLOAD TRIGGERS
-uploadZone.addEventListener('click', () => fi.click());
-document.getElementById('upload-lbtn').addEventListener('click', () => fi.click());
-document.getElementById('lbar-add-btn').addEventListener('click', () => fi.click());
-document.getElementById('thumb-add-btn').addEventListener('click', () => fi.click());
-document.getElementById('ref-upload').addEventListener('click', () => fiRef.click());
-document.getElementById('ref-clear').addEventListener('click', () => {
-  refImage = null;
-  document.getElementById('ref-preview').classList.remove('visible');
-  document.getElementById('ref-clear').classList.remove('visible');
-  document.getElementById('ref-upload').style.display = 'flex';
+// ── NODE FACTORY ──
+function addNode(type, pos) {
+  const id = 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+  const node = { id, type, x: pos.x, y: pos.y, image: null, rendered: null };
+  nodes.push(node);
+  createNodeEl(node);
+  return node;
+}
+
+function createNodeEl(node) {
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.id = node.id;
+  el.style.left = node.x + 'px';
+  el.style.top = node.y + 'px';
+
+  const cfg = nodeConfig(node.type);
+  el.innerHTML = `
+    <div class="node-header">
+      <div class="node-icon ${node.type}">${cfg.icon}</div>
+      <span class="node-title">${cfg.title}</span>
+      <span class="node-status" id="${node.id}-status"></span>
+    </div>
+    <div class="node-body">
+      <div class="node-preview" id="${node.id}-preview">
+        <img id="${node.id}-img" src="" alt="">
+        <div class="node-preview-placeholder" id="${node.id}-ph">
+          <span>${cfg.phIcon}</span>
+          <p>${cfg.phText}</p>
+        </div>
+      </div>
+      <div class="node-loading" id="${node.id}-loading">
+        <div class="node-spinner"></div>
+        <span style="font-size:11px;color:rgba(255,255,255,.6)">렌더링 중...</span>
+      </div>
+      <div style="margin-top:8px">
+        <span class="node-tag ${cfg.tagColor}">${cfg.tag}</span>
+      </div>
+    </div>
+    ${cfg.portIn ? `<div class="node-port in" data-node="${node.id}" data-port="in"></div>` : ''}
+    ${cfg.portIn2 ? `<div class="node-port in2" data-node="${node.id}" data-port="in2" style="background:#a78bfa"></div>` : ''}
+    ${cfg.portOut ? `<div class="node-port out" data-node="${node.id}" data-port="out"></div>` : ''}
+  `;
+
+  canvas.appendChild(el);
+
+  // Click to select / open panel
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('node-port')) return;
+    e.stopPropagation();
+    startDragNode(node.id, e);
+    selectNode(node.id);
+  });
+
+  // Preview click to upload image
+  if (node.type === 'source' || node.type === 'ref') {
+    const preview = el.querySelector('.node-preview');
+    preview.addEventListener('click', e => { e.stopPropagation(); pendingFileNodeId = node.id; if (node.type === 'ref') document.getElementById('fi-ref').click(); else document.getElementById('fi').click(); });
+  }
+
+  // Output node actions
+  if (node.type === 'output') {
+    const preview = el.querySelector('.node-preview');
+    preview.addEventListener('click', e => e.stopPropagation());
+  }
+
+  applyTransform();
+}
+
+function nodeConfig(type) {
+  const cfgs = {
+    source: { icon:'📐', title:'Source', phIcon:'🏠', phText:'클릭하여 이미지 업로드', tag:'Image Input', tagColor:'blue', portOut:true, portIn:false, portIn2:false },
+    ref:    { icon:'🎨', title:'Reference', phIcon:'🖼', phText:'무드보드/마감재 이미지', tag:'Style Reference', tagColor:'purple', portOut:true, portIn:false, portIn2:false },
+    render: { icon:'✨', title:'Render', phIcon:'⚡', phText:'렌더링 결과', tag:'AI Render', tagColor:'green', portOut:true, portIn:true, portIn2:true },
+    output: { icon:'💾', title:'Output', phIcon:'📥', phText:'최종 결과물', tag:'Export', tagColor:'orange', portOut:false, portIn:true, portIn2:false },
+  };
+  return cfgs[type];
+}
+
+// ── DRAG NODES ──
+function startDragNode(id, e) {
+  draggingNode = id;
+  const node = nodes.find(n => n.id === id);
+  dragOffX = (e.clientX - panX) / zoom - node.x;
+  dragOffY = (e.clientY - panY) / zoom - node.y;
+}
+
+document.addEventListener('mousemove', e => {
+  if (draggingNode) {
+    const node = nodes.find(n => n.id === draggingNode);
+    node.x = (e.clientX - panX) / zoom - dragOffX;
+    node.y = (e.clientY - panY) / zoom - dragOffY;
+    const el = document.getElementById(node.id);
+    el.style.left = node.x + 'px';
+    el.style.top = node.y + 'px';
+    drawConnections();
+  }
+  if (isPanning) {
+    panX += e.clientX - panStartX;
+    panY += e.clientY - panStartY;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+    applyTransform();
+    drawConnections();
+  }
 });
 
-document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('drop', e => {
+document.addEventListener('mouseup', () => { draggingNode = null; isPanning = false; canvas.classList.remove('panning'); });
+
+// Canvas pan
+canvas.addEventListener('mousedown', e => {
+  if (e.target === canvas || e.target === svg) {
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+    canvas.classList.add('panning');
+    selectedNodeId = null;
+    document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+  }
+});
+
+// Zoom
+canvas.addEventListener('wheel', e => {
   e.preventDefault();
-  const f = e.dataTransfer.files[0];
-  if (f && f.type.startsWith('image/')) loadFile(f);
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  zoom = Math.max(0.3, Math.min(2, zoom * delta));
+  applyTransform();
+  drawConnections();
+  document.getElementById('zoom-badge').textContent = Math.round(zoom * 100) + '%';
+}, { passive: false });
+
+function applyTransform() {
+  document.querySelectorAll('.node').forEach(el => {
+    const node = nodes.find(n => n.id === el.id);
+    if (node) {
+      el.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+      el.style.transformOrigin = '0 0';
+    }
+  });
+}
+
+// ── CONNECTIONS ──
+function drawConnections() {
+  svg.innerHTML = '';
+  connections.forEach(conn => {
+    const fromNode = nodes.find(n => n.id === conn.from);
+    const toNode = nodes.find(n => n.id === conn.to);
+    if (!fromNode || !toNode) return;
+    const fw = 220, fh = 170;
+    const x1 = (fromNode.x + fw) * zoom + panX;
+    const y1 = (fromNode.y + fh/2) * zoom + panY;
+    const x2 = toNode.x * zoom + panX;
+    const y2 = (toNode.y + (conn.port === 'in2' ? fh * 0.7 : fh/2)) * zoom + panY;
+    const cx = (x1 + x2) / 2;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`);
+    path.setAttribute('stroke', conn.port === 'in2' ? '#a78bfa' : '#4a9eff');
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('opacity', '0.6');
+    svg.appendChild(path);
+    // Arrow
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    arrow.setAttribute('cx', x2);
+    arrow.setAttribute('cy', y2);
+    arrow.setAttribute('r', '4');
+    arrow.setAttribute('fill', conn.port === 'in2' ? '#a78bfa' : '#4a9eff');
+    svg.appendChild(arrow);
+  });
+}
+
+// ── SELECT NODE ──
+function selectNode(id) {
+  selectedNodeId = id;
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+  document.getElementById(id)?.classList.add('selected');
+  const node = nodes.find(n => n.id === id);
+  if (node?.type === 'render') openRenderPanel(node);
+  else if (node?.type === 'output') openOutputPanel(node);
+}
+
+// ── FILE UPLOADS ──
+document.getElementById('fi').addEventListener('change', e => {
+  if (e.target.files[0] && pendingFileNodeId) { loadImageToNode(e.target.files[0], pendingFileNodeId); e.target.value = ''; }
 });
+document.getElementById('fi-ref').addEventListener('change', e => {
+  if (e.target.files[0] && pendingFileNodeId) { loadImageToNode(e.target.files[0], pendingFileNodeId); e.target.value = ''; }
+});
+document.getElementById('add-source-btn').addEventListener('click', () => { const n = addNode('source', { x: 100 + Math.random()*200, y: 100 + Math.random()*200 }); pendingFileNodeId = n.id; document.getElementById('fi').click(); drawConnections(); });
+document.getElementById('add-ref-btn').addEventListener('click', () => { const n = addNode('ref', { x: 100 + Math.random()*200, y: 350 + Math.random()*100 }); pendingFileNodeId = n.id; document.getElementById('fi-ref').click(); drawConnections(); autoConnectRef(n); });
 
-fi.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); fi.value = ''; });
-fiRef.addEventListener('change', e => { if (e.target.files[0]) loadRefFile(e.target.files[0]); fiRef.value = ''; });
+function autoConnectRef(refNode) {
+  const renderNode = nodes.find(n => n.type === 'render');
+  if (renderNode) { connections.push({ from: refNode.id, to: renderNode.id, port: 'in2' }); drawConnections(); }
+}
 
-function loadFile(f) {
+function loadImageToNode(file, nodeId) {
   const reader = new FileReader();
   reader.onload = e => {
     const img = new Image();
@@ -372,258 +402,205 @@ function loadFile(f) {
       c2.width = w; c2.height = h;
       c2.getContext('2d').drawImage(img, 0, 0, w, h);
       const b64 = c2.toDataURL('image/jpeg', 0.92);
-      const id = Date.now();
-      scenes.push({ id, orig: b64, rendered: null, name: `Scene ${scenes.length + 1}` });
-      currentSceneId = id;
-      showScene(scenes[scenes.length - 1]);
-      renderThumbs();
-      clearErr();
+      const node = nodes.find(n => n.id === nodeId);
+      node.image = b64;
+      setNodeImage(nodeId, b64);
       checkReady();
     };
     img.src = e.target.result;
   };
-  reader.readAsDataURL(f);
+  reader.readAsDataURL(file);
 }
 
-function loadRefFile(f) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    refImage = e.target.result;
-    const prev = document.getElementById('ref-preview');
-    prev.src = refImage;
-    prev.classList.add('visible');
-    document.getElementById('ref-clear').classList.add('visible');
-    document.getElementById('ref-upload').style.display = 'none';
-  };
-  reader.readAsDataURL(f);
+function setNodeImage(nodeId, src) {
+  const img = document.getElementById(nodeId + '-img');
+  const ph = document.getElementById(nodeId + '-ph');
+  if (img) { img.src = src; img.classList.add('visible'); }
+  if (ph) ph.style.display = 'none';
 }
 
-function showScene(scene) {
-  uploadZone.style.display = 'none';
-  canvas.classList.add('visible');
-  if (scene.rendered) {
-    renderedImg.src = scene.rendered;
-    document.getElementById('render-label').textContent = 'Rendered';
-    document.getElementById('compare-orig-img').src = scene.orig;
-    document.getElementById('compare-rend-img').src = scene.rendered;
-    canvasActions.classList.add('visible');
-    document.getElementById('view-toggle').classList.add('visible');
-  } else {
-    renderedImg.src = scene.orig;
-    document.getElementById('render-label').textContent = 'Original';
-    canvasActions.classList.remove('visible');
-    document.getElementById('view-toggle').classList.remove('visible');
+// ── SETTINGS PANEL ──
+function openSettingsPanel() {
+  document.getElementById('sp-title').textContent = 'Settings';
+  document.getElementById('sp-body').innerHTML = `
+    <div>
+      <div class="sp-sec-label">Replicate API Key</div>
+      <input type="password" class="sp-input" id="sp-api-key" placeholder="r8_xxxxxxxxxxxxxxxxxxxx" value="${apiKey}">
+    </div>
+    <div>
+      <div class="sp-sec-label">Time of Day</div>
+      <div class="opt-grid">
+        <button class="opt-btn sel" data-g="time" data-v="daytime, bright exterior daylight visible through windows">☀️ 낮</button>
+        <button class="opt-btn" data-g="time" data-v="night time, dark exterior outside windows">🌙 밤</button>
+      </div>
+    </div>
+    <div>
+      <div class="sp-sec-label">Presets</div>
+      <div class="presets-grid">
+        <button class="preset-btn" data-prompt="add realism, photorealistic surfaces">✨ Realism</button>
+        <button class="preset-btn" data-prompt="heavy rain, wet surfaces, stormy">🌧 Rain</button>
+        <button class="preset-btn" data-prompt="warm golden sunset, orange glow">🌅 Sunset</button>
+        <button class="preset-btn" data-prompt="nordic minimalist, white walls, light wood">🪵 Nordic</button>
+        <button class="preset-btn" data-prompt="luxury, marble, gold accents, premium">💎 Luxury</button>
+        <button class="preset-btn" data-prompt="industrial loft, exposed concrete, metal">🏭 Industrial</button>
+      </div>
+    </div>
+    <div>
+      <div class="sp-sec-label">Prompt</div>
+      <textarea class="sp-textarea" id="sp-prompt" placeholder="원하는 스타일, 조명, 마감재...&#10;&#10;예) clear sunny 1PM, neutral white daylight, all ceiling downlights ON, recessed lights glowing"></textarea>
+    </div>
+  `;
+  sidePanel.classList.add('open');
+  document.getElementById('render-btn').style.display = 'flex';
+
+  document.getElementById('sp-api-key').addEventListener('input', e => { apiKey = e.target.value.trim(); localStorage.setItem('replicate_api_key', apiKey); checkReady(); });
+  document.querySelectorAll('.opt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const g = btn.dataset.g;
+      if (btn.classList.contains('sel')) btn.classList.remove('sel');
+      else { document.querySelectorAll(`.opt-btn[data-g="${g}"]`).forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); }
+    });
+  });
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ta = document.getElementById('sp-prompt');
+      btn.classList.toggle('active');
+      if (btn.classList.contains('active')) ta.value = (ta.value ? ta.value + ', ' : '') + btn.dataset.prompt;
+    });
+  });
+}
+
+function openRenderPanel(node) {
+  openSettingsPanel();
+}
+
+function openOutputPanel(node) {
+  document.getElementById('sp-title').textContent = 'Output';
+  document.getElementById('render-btn').style.display = 'none';
+  const rendered = node.rendered;
+  document.getElementById('sp-body').innerHTML = rendered ? `
+    <img src="${rendered}" style="width:100%;border-radius:8px;margin-bottom:10px">
+    <button onclick="downloadImg('${rendered}')" style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;cursor:pointer;font-family:Inter,sans-serif;font-weight:500">⬇ 다운로드</button>
+    <button id="upscale-output-btn" style="width:100%;padding:10px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;cursor:pointer;font-family:Inter,sans-serif;margin-top:6px">⬆ 4K 업스케일</button>
+  ` : '<p style="color:var(--muted);font-size:12px">아직 렌더링 결과가 없어요.<br>Render 노드를 선택하고 Render를 실행하세요.</p>';
+  sidePanel.classList.add('open');
+  if (rendered) {
+    document.getElementById('upscale-output-btn')?.addEventListener('click', () => upscaleNode(node));
   }
-  setViewMode(scene.rendered ? 'render' : 'render');
 }
 
-function setViewMode(mode) {
-  viewMode = mode;
-  if (mode === 'compare') {
-    renderView.style.display = 'none';
-    compareWrap.classList.add('visible');
-    document.getElementById('vt-render').classList.remove('active');
-    document.getElementById('vt-compare').classList.add('active');
-  } else {
-    renderView.style.display = 'flex';
-    compareWrap.classList.remove('visible');
-    document.getElementById('vt-render').classList.add('active');
-    document.getElementById('vt-compare').classList.remove('active');
+document.getElementById('open-settings-btn').addEventListener('click', openSettingsPanel);
+document.getElementById('sp-close').addEventListener('click', () => sidePanel.classList.remove('open'));
+
+// ── RENDER ──
+document.getElementById('render-btn').addEventListener('click', doRender);
+
+async function doRender() {
+  const sourceNode = nodes.find(n => n.type === 'source' && n.image);
+  const refNode = nodes.find(n => n.type === 'ref' && n.image);
+  const renderNode = nodes.find(n => n.type === 'render');
+  const outputNode = nodes.find(n => n.type === 'output');
+  if (!sourceNode || !renderNode) return;
+
+  const prompt = buildPrompt();
+  clearErr();
+  setNodeLoading(renderNode.id, true);
+  document.getElementById('render-btn').disabled = true;
+  document.getElementById('render-btn').textContent = '⏳ 렌더링 중...';
+
+  try {
+    const imgEl = new Image();
+    imgEl.src = sourceNode.image;
+    await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
+    const body = { apiKey, prompt, image: sourceNode.image, width: imgEl.naturalWidth || 1280, height: imgEl.naturalHeight || 720 };
+    if (refNode) body.refImage = refNode.image;
+
+    const res = await fetch('/api/render', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const pred = await res.json();
+    if (!res.ok) throw new Error(pred.error || '렌더링 실패');
+
+    let url;
+    if (pred.status === 'succeeded' && pred.output) {
+      url = Array.isArray(pred.output) ? pred.output[0] : pred.output;
+    } else {
+      url = await pollResult(pred.id);
+    }
+
+    if (url) {
+      renderNode.rendered = url;
+      setNodeImage(renderNode.id, url);
+      renderNode.rendered = url;
+      document.getElementById(renderNode.id)?.classList.add('rendered');
+      if (outputNode) { outputNode.rendered = url; setNodeImage(outputNode.id, url); }
+    }
+  } catch(e) {
+    showErr('오류: ' + e.message);
+  } finally {
+    setNodeLoading(renderNode.id, false);
+    document.getElementById('render-btn').disabled = false;
+    document.getElementById('render-btn').textContent = '✦ Render';
+    checkReady();
   }
 }
 
-document.getElementById('vt-render').addEventListener('click', () => setViewMode('render'));
-document.getElementById('vt-compare').addEventListener('click', () => setViewMode('compare'));
-
-function renderThumbs() {
-  thumbsWrap.innerHTML = '';
-  const projectList = document.getElementById('project-list');
-  projectList.innerHTML = '';
-  scenes.forEach((scene, i) => {
-    // 상단 원본 썸네일
-    const tOrig = document.createElement('div');
-    tOrig.className = 'thumb';
-    tOrig.innerHTML = `<img src="${scene.orig}"><div class="thumb-badge orig">원본</div>`;
-    tOrig.addEventListener('click', () => { currentSceneId = scene.id; renderedImg.src = scene.orig; document.getElementById('render-label').textContent = 'Original'; renderThumbs(); });
-    thumbsWrap.appendChild(tOrig);
-    // 렌더 썸네일
-    if (scene.rendered) {
-      const tRend = document.createElement('div');
-      tRend.className = 'thumb' + (scene.id === currentSceneId ? ' active' : '');
-      tRend.innerHTML = `<img src="${scene.rendered}"><div class="thumb-badge rendered">렌더</div>`;
-      tRend.addEventListener('click', () => { currentSceneId = scene.id; showScene(scene); renderThumbs(); checkReady(); });
-      thumbsWrap.appendChild(tRend);
-    }
-    // 왼쪽 목록
-    const p = document.createElement('div');
-    p.className = 'project-item' + (scene.id === currentSceneId ? ' active' : '');
-    p.innerHTML = `<img src="${scene.rendered || scene.orig}"><div class="project-item-label">Scene ${i+1}${scene.rendered ? ' ✓' : ''}</div>`;
-    p.addEventListener('click', () => { currentSceneId = scene.id; showScene(scene); renderThumbs(); checkReady(); });
-    projectList.appendChild(p);
-  });
+async function pollResult(id) {
+  for (let i = 0; i < 60; i++) {
+    await new Promise(r => setTimeout(r, 3000));
+    const res = await fetch('/api/poll', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, predictionId: id }) });
+    const d = await res.json();
+    if (d.status === 'succeeded') return Array.isArray(d.output) ? d.output[0] : d.output;
+    if (d.status === 'failed') throw new Error(d.error || '실패');
+  }
+  throw new Error('타임아웃');
 }
 
-// OPTION BUTTONS
-document.querySelectorAll('.opt-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const g = btn.dataset.g;
-    if (btn.classList.contains('sel')) { btn.classList.remove('sel'); }
-    else { document.querySelectorAll(`.opt-btn[data-g="${g}"]`).forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); }
-  });
-});
+async function upscaleNode(node) {
+  const btn = document.getElementById('upscale-output-btn');
+  if (btn) { btn.textContent = '⏳ 업스케일 중...'; btn.disabled = true; }
+  try {
+    const res = await fetch('/api/upscale', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, image: node.rendered }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    let url = Array.isArray(data.output) ? data.output[0] : data.output;
+    if (!url && data.id) url = await pollResult(data.id);
+    if (url) { node.rendered = url; setNodeImage(node.id, url); openOutputPanel(node); }
+  } catch(e) { showErr('업스케일 오류: ' + e.message); }
+  finally { if (btn) { btn.textContent = '⬆ 4K 업스케일'; btn.disabled = false; } }
+}
 
-// PRESET BUTTONS
-document.querySelectorAll('.preset-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const inst = document.getElementById('instructions');
-    btn.classList.toggle('active');
-    if (btn.classList.contains('active')) {
-      inst.value = (inst.value ? inst.value + ', ' : '') + btn.dataset.prompt;
-    }
-  });
-});
+function downloadImg(url) {
+  const a = document.createElement('a'); a.href = url; a.download = `renderai-${Date.now()}.jpg`; a.target = '_blank'; a.click();
+}
 
-// API KEY
-const savedKey = localStorage.getItem('replicate_api_key');
-if (savedKey) apiKey.value = savedKey;
-apiKey.addEventListener('input', () => { localStorage.setItem('replicate_api_key', apiKey.value.trim()); checkReady(); });
-
-function checkReady() {
-  const scene = currentScene();
-  renderBtn.disabled = !(scene && apiKey.value.trim().startsWith('r8_'));
+function setNodeLoading(id, on) {
+  const el = document.getElementById(id + '-loading');
+  if (el) el.classList.toggle('visible', on);
 }
 
 function buildPrompt() {
   const time = document.querySelector('.opt-btn[data-g="time"].sel')?.dataset.v || '';
-  const inst = document.getElementById('instructions').value.trim();
+  const inst = document.getElementById('sp-prompt')?.value.trim() || '';
   return [time, inst].filter(Boolean).join(', ');
 }
 
-// COMPARE SLIDER
-let sliderDragging = false;
-const compareLine = document.getElementById('compare-line');
-function setSliderPos(x) {
-  const rect = compareWrap.getBoundingClientRect();
-  let pct = Math.max(0, Math.min(100, ((x - rect.left) / rect.width) * 100));
-  compareLine.style.left = pct + '%';
-  document.getElementById('compare-rend-layer').style.clipPath = `inset(0 ${100-pct}% 0 0)`;
-}
-compareLine.addEventListener('mousedown', e => { sliderDragging = true; e.preventDefault(); });
-document.addEventListener('mousemove', e => { if (sliderDragging) setSliderPos(e.clientX); });
-document.addEventListener('mouseup', () => { sliderDragging = false; });
-compareLine.addEventListener('touchstart', () => { sliderDragging = true; });
-document.addEventListener('touchmove', e => { if (sliderDragging) setSliderPos(e.touches[0].clientX); });
-document.addEventListener('touchend', () => { sliderDragging = false; });
-
-// RENDER
-renderBtn.addEventListener('click', async () => {
-  const key = apiKey.value.trim();
-  const scene = currentScene();
-  if (!key || !scene) return;
-  clearErr();
-  setLoading(true);
-  try {
-    const imgEl = new Image();
-    imgEl.src = scene.orig;
-    await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
-    const w = imgEl.naturalWidth || 1280;
-    const h = imgEl.naturalHeight || 720;
-    const body = { apiKey: key, prompt: buildPrompt(), image: scene.orig, width: w, height: h };
-    // 레퍼런스 이미지 있으면 multi-image 모델 사용
-    if (refImage) body.refImage = refImage;
-    const res = await fetch('/api/render', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const pred = await res.json();
-    if (!res.ok) throw new Error(pred.error || '렌더링 시작 실패');
-    if (pred.status === 'succeeded' && pred.output) {
-      const url = Array.isArray(pred.output) ? pred.output[0] : pred.output;
-      showResult(url);
-    } else {
-      await poll(key, pred.id);
-    }
-  } catch (e) {
-    showErr('오류: ' + e.message);
-    setLoading(false);
-  }
-});
-
-async function poll(key, id) {
-  for (let i = 0; i < 60; i++) {
-    await new Promise(r => setTimeout(r, 3000));
-    const res = await fetch('/api/poll', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: key, predictionId: id }) });
-    const d = await res.json();
-    if (d.status === 'succeeded') { const url = Array.isArray(d.output) ? d.output[0] : d.output; showResult(url); return; }
-    if (d.status === 'failed') { showErr('렌더링 실패: ' + (d.error || '')); setLoading(false); return; }
-  }
-  showErr('타임아웃: 렌더링이 너무 오래 걸립니다'); setLoading(false);
+function checkReady() {
+  const hasSource = nodes.some(n => n.type === 'source' && n.image);
+  const hasKey = apiKey.startsWith('r8_');
+  document.getElementById('render-btn').disabled = !(hasSource && hasKey);
 }
 
-function showResult(url) {
-  const scene = currentScene();
-  if (!scene) return;
-  scene.rendered = url;
-  renderedImg.src = url;
-  renderedImg.onload = () => {
-    setLoading(false);
-    document.getElementById('render-label').textContent = 'Rendered';
-    document.getElementById('compare-orig-img').src = scene.orig;
-    document.getElementById('compare-rend-img').src = url;
-    canvasActions.classList.add('visible');
-    document.getElementById('view-toggle').classList.add('visible');
-    renderThumbs();
-  };
-}
+function showErr(m) { const e = document.getElementById('errmsg'); e.textContent = m; e.classList.add('visible'); }
+function clearErr() { document.getElementById('errmsg').classList.remove('visible'); }
 
-// UPSCALE
-document.getElementById('upscale-btn').addEventListener('click', async () => {
-  const key = apiKey.value.trim();
-  const scene = currentScene();
-  if (!key || !scene?.rendered) return;
-  const btn = document.getElementById('upscale-btn');
-  btn.textContent = '⏳ 업스케일 중...';
-  btn.disabled = true;
-  try {
-    const res = await fetch('/api/upscale', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: key, image: scene.rendered }) });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-    // upscale도 폴링 필요할 수 있음
-    let url = Array.isArray(data.output) ? data.output[0] : data.output;
-    if (!url && data.id) {
-      for (let i = 0; i < 30; i++) {
-        await new Promise(r => setTimeout(r, 3000));
-        const r2 = await fetch('/api/poll', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: key, predictionId: data.id }) });
-        const d2 = await r2.json();
-        if (d2.status === 'succeeded') { url = Array.isArray(d2.output) ? d2.output[0] : d2.output; break; }
-        if (d2.status === 'failed') { throw new Error('업스케일 실패'); }
-      }
-    }
-    if (url) { scene.rendered = url; renderedImg.src = url; document.getElementById('compare-rend-img').src = url; renderThumbs(); }
-  } catch (e) { showErr('업스케일 오류: ' + e.message); }
-  finally { btn.textContent = '⬆ 4K'; btn.disabled = false; }
-});
+// ── TOOLBAR ──
+document.getElementById('tb-fit').addEventListener('click', () => { zoom = 1; panX = 60; panY = 60; applyTransform(); drawConnections(); document.getElementById('zoom-badge').textContent = '100%'; });
+document.getElementById('tb-zoom-in').addEventListener('click', () => { zoom = Math.min(2, zoom * 1.2); applyTransform(); drawConnections(); document.getElementById('zoom-badge').textContent = Math.round(zoom*100)+'%'; });
+document.getElementById('tb-zoom-out').addEventListener('click', () => { zoom = Math.max(0.3, zoom * 0.8); applyTransform(); drawConnections(); document.getElementById('zoom-badge').textContent = Math.round(zoom*100)+'%'; });
+document.getElementById('tb-clear').addEventListener('click', () => { if (confirm('모든 노드를 삭제할까요?')) { nodes = []; connections = []; document.querySelectorAll('.node').forEach(n => n.remove()); svg.innerHTML = ''; } });
 
-// DOWNLOAD
-downloadBtn.addEventListener('click', () => {
-  const scene = currentScene();
-  if (!scene?.rendered) return;
-  const a = document.createElement('a');
-  a.href = scene.rendered;
-  a.download = `renderai-${Date.now()}.jpg`;
-  a.target = '_blank';
-  a.click();
-});
-
-newRenderBtn.addEventListener('click', () => fi.click());
-
-function setLoading(on) {
-  if (on) { loading.classList.add('visible'); renderBtn.disabled = true; renderBtn.textContent = '⏳ 렌더링 중...'; }
-  else { loading.classList.remove('visible'); renderBtn.disabled = false; renderBtn.textContent = '✦ Render'; checkReady(); }
-}
-function showErr(m) { errmsg.textContent = m; errmsg.classList.add('visible'); }
-function clearErr() { errmsg.classList.remove('visible'); }
+// ── START ──
+panX = 60; panY = 80;
+init();
 </script>
 </body>
 </html>
