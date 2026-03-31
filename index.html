@@ -829,7 +829,7 @@ async function runEngine(engineId){
       body: JSON.stringify({
         apiKey,
         engine: engineNode.engine,
-        prompt: String(engineNode.prompt || ''),
+        prompt: String(engineNode.prompt || 'Render this image photorealistically'),
         image: mainSmall,
         refImage: refSmall || null
       })
