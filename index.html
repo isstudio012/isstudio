@@ -827,9 +827,7 @@ sourceLauncher.addEventListener('dblclick', (e)=>{
   nodes.push(n);
   renderNode(n);
   selectNode(n.id);
-  pendingUploadNode = n.id;
   saveWorkspace();
-  fileInput.click();
 });
 
 sourceLauncher.addEventListener('mousedown', (e)=>{
@@ -966,7 +964,7 @@ canvas.addEventListener('wheel', (e)=>{
   setCanvasZoom(canvasZoom + step);
 }, { passive:false });
 function setCanvasZoom(v){
-  canvasZoom = Math.max(0.7, Math.min(1.6, Math.round(v*10)/10));
+  canvasZoom = Math.max(0.1, Math.min(1.6, Math.round(v*10)/10));
   canvas.style.zoom = '';
   canvas.style.transformOrigin = 'top left';
   canvas.style.transform = `scale(${canvasZoom})`;
