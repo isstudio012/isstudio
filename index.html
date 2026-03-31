@@ -21,7 +21,7 @@ button,input,select,textarea{font:inherit}
 
 .node{position:absolute;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);user-select:none;transform-origin:top left;will-change:left,top}
 .node.source{min-width:300px;width:300px}
-.node.engine{min-width:340px;width:340px}
+.node.engine{min-width:360px;width:360px}
 .node-header{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);cursor:grab}
 .node-title{font-size:13px;color:var(--text)}
 .node-actions{display:flex;gap:6px}
@@ -153,7 +153,7 @@ function uid(prefix='n'){ return prefix + Math.random().toString(36).slice(2,9);
 
 function getNextSourcePosition(){
   const sources = nodes.filter(n=>n.type==='source').sort((a,b)=>a.y-b.y);
-  const leftX = 56;
+  const leftX = 28;
   const topY = 120;
   const gapY = 290;
   return { x: leftX, y: topY + sources.length * gapY };
@@ -255,7 +255,7 @@ function addSourceNode(x,y){
   selectNode(n.id);
 }
 
-function addEngineNode(x=420,y=160){
+function addEngineNode(x=760,y=150){
   const n={id:uid('eng_'),type:'engine',x,y,engine:'Flux Kontext Pro',prompt:'',previewImage:null};
   nodes.push(n);
   renderNode(n);
@@ -361,8 +361,8 @@ function duplicateEngineNode(id){
   const copy = {
     id: uid('eng_'),
     type: 'engine',
-    x: node.x + 44,
-    y: node.y + 44,
+    x: node.x + 420,
+    y: node.y + 20,
     engine: node.engine || 'Flux Kontext Pro',
     prompt: node.prompt || '',
     previewImage: node.previewImage || null
