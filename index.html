@@ -216,7 +216,6 @@ function restoreWorkspace(){
         locked: true
       };
       nodes.push(baseEngine);
-      renderNode(baseEngine);
     }
 
     zCounter = Number(data.zCounter || 5);
@@ -947,7 +946,6 @@ document.getElementById('resetWs').addEventListener('click', ()=>{
   localStorage.removeItem(LS_WORKSPACE);
   location.reload();
 });
-if(addSourceLegacy) addSourceLegacy.addEventListener('click', ()=>addSourceNode());
 document.getElementById('zoomOut').addEventListener('click', ()=> setCanvasZoom(canvasZoom - 0.1));
 document.getElementById('zoomIn').addEventListener('click', ()=> setCanvasZoom(canvasZoom + 0.1));
 document.getElementById('zoomReset').addEventListener('click', ()=> setCanvasZoom(1));
@@ -957,7 +955,7 @@ canvas.addEventListener('wheel', (e)=>{
   const oldZoom = canvasZoom;
   const step = e.deltaY > 0 ? -0.1 : 0.1;
   const newZoom = Math.max(0.1, Math.min(1.6, Math.round((oldZoom+step)*10)/10));
-  const rect = canvas.getBoundingClientRect();
+  const rect = canvas.parentElement.getBoundingClientRect();
   zoomAroundPoint(oldZoom, newZoom, e.clientX - rect.left, e.clientY - rect.top);
 }, { passive:false });
 
@@ -976,7 +974,7 @@ function zoomAroundPoint(oldZoom, newZoom, px, py){
 }
 
 function setCanvasZoom(v){
-  const rect = canvas.getBoundingClientRect();
+  const rect = canvas.parentElement.getBoundingClientRect();
   zoomAroundPoint(canvasZoom, Math.max(0.1,Math.min(1.6,Math.round(v*10)/10)), rect.width/2, rect.height/2);
 }
 
@@ -1006,16 +1004,20 @@ fullscreen.addEventListener('click', ()=>{ fullscreen.classList.remove('on'); fu
 previewBox.addEventListener('click', ()=>{ if(previewImg.src) openImagePopup(previewImg.src, 'Preview'); });
 
 // Initial
-if(!restoreWorkspace()){
-  if (typeof sourceLauncher !== 'undefined' && sourceLauncher) {
-    sourceLauncher.style.left = '16px';
-    sourceLauncher.style.top = '16px';
-  }
+restoreWorkspace();
+
+// Always guarantee exactly one engine node
+const existingEngines = nodes.filter(n => n.type === 'engine');
+if(existingEngines.length === 0){
   addEngineNode();
   const firstEngine = nodes.find(n=>n.type==='engine');
   if(firstEngine){
     selectNode(firstEngine.id);
     selectEngine(firstEngine.id);
+  }
+  if (typeof sourceLauncher !== 'undefined' && sourceLauncher) {
+    sourceLauncher.style.left = '16px';
+    sourceLauncher.style.top = '16px';
   }
   setTimeout(()=>{ saveWorkspace(); }, 0);
 }
