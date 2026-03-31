@@ -13,7 +13,7 @@ button,input,select,textarea{font:inherit}
 #left{position:relative;overflow:hidden}
 #right{border-left:1px solid #2b2b2b;background:#151515;display:flex;flex-direction:column}
 #canvas{position:absolute;inset:0 0 108px 0;overflow:hidden;background:radial-gradient(circle at 1px 1px, rgba(255,255,255,.08) 1px, transparent 0) 0 0/28px 28px,var(--bg)}
-#connections{position:absolute;inset:0;pointer-events:none}
+#connections{position:absolute;inset:0;pointer-events:auto;z-index:2}
 .toolbar{position:absolute;top:16px;left:16px;display:flex;gap:8px;z-index:20}
 .tb{height:36px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;cursor:pointer}.tb:hover{background:var(--panel2)}
 .notice{position:absolute;bottom:124px;left:16px;padding:8px 12px;border-radius:10px;background:rgba(28,28,28,.95);border:1px solid var(--line);color:var(--muted);font-size:12px;z-index:20}
@@ -82,10 +82,19 @@ button,input,select,textarea{font:inherit}
   </div>
 
   <div id="right">
-    <div class="previewTop"><div class="previewTitle">Preview</div></div>
-    <div class="previewBox" id="previewBox">
-      <div class="previewEmpty" id="previewEmpty">미리보기</div>
-      <img id="previewImg" alt="" />
+    <div id="rightInner">
+      <div class="side-card">
+        <div class="side-label">Preview</div>
+        <div class="previewBox" id="previewBox">
+          <div class="previewEmpty" id="previewEmpty">미리보기</div>
+          <img id="previewImg" alt="" />
+        </div>
+      </div>
+      <div class="side-card">
+        <div class="side-label">API Code</div>
+        <input id="apiCode" class="side-input" type="password" placeholder="r8_xxx" />
+        <div class="side-help" style="margin-top:8px">저장됨. 새로고침/브라우저 재실행 후에도 유지.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -104,6 +113,7 @@ const bottomMake = document.getElementById('bottomMake');
 const previewBox = document.getElementById('previewBox');
 const previewImg = document.getElementById('previewImg');
 const previewEmpty = document.getElementById('previewEmpty');
+const apiCodeInput = document.getElementById('apiCode');
 
 let nodes = [], links = [];
 let zCounter = 5;
@@ -115,6 +125,9 @@ let selectedLink = null;
 let selectedEngineId = null;
 
 const API_RENDER = '/api/render';
+const LS_API_KEY = 'vizmaker_api_code_v1';
+apiCodeInput.value = localStorage.getItem(LS_API_KEY) || '';
+apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
 
 function uid(prefix='n'){ return prefix + Math.random().toString(36).slice(2,9); }
 
@@ -157,7 +170,6 @@ function renderNode(node){
           <option>Image Engine</option>
         </select>
         <textarea class="prompt" placeholder="Prompt"></textarea>
-        <button class="make">Make</button>
         <div class="loading">Rendering...</div>
       </div>
       <div class="port in" data-port="in"></div>
@@ -205,12 +217,14 @@ function addSourceNode(x=90,y=120){
   const n={id:uid('src_'),type:'source',x,y,image:null};
   nodes.push(n);
   renderNode(n);
+  selectNode(n.id);
 }
 
 function addEngineNode(x=420,y=160){
   const n={id:uid('eng_'),type:'engine',x,y,engine:'Flux Kontext Pro',prompt:'',previewImage:null};
   nodes.push(n);
   renderNode(n);
+  selectNode(n.id);
   selectEngine(n.id);
 }
 
@@ -223,6 +237,7 @@ function addImageNode(type, x, y, image){
 
 function bindNodeEvents(node, el){
   el.addEventListener('mousedown', ()=>{
+    selectNode(node.id);
     if(node.type==='engine') selectEngine(node.id);
   });
 
@@ -248,12 +263,13 @@ function bindNodeEvents(node, el){
       node.prompt = ta.value;
       if(selectedEngineId===node.id) bottomPrompt.value = node.prompt;
     });
-    el.querySelector('.make').addEventListener('click', ()=>runEngine(node.id));
+
   }
 
   if(node.type==='result' || node.type==='final'){
     el.querySelector('.result-box').addEventListener('click', e=>{
       e.stopPropagation();
+      selectNode(node.id);
       if(node.image){
         showPreview(node.image);
         toggleFullscreen(node.image);
@@ -334,6 +350,7 @@ function syncEnginePreview(engineNode){
     im.src = img || '';
     box.classList.toggle('has-image', !!img);
   }
+  if(selectedEngineId===engineNode.id && img){ showPreview(img); }
 }
 
 function syncAllEnginePreviews(){ nodes.filter(n=>n.type==='engine').forEach(syncEnginePreview); }
@@ -363,7 +380,7 @@ function redraw(){
     path.setAttribute('class','line-hit');
     path.style.pointerEvents='stroke';
     path.addEventListener('click', e=>{e.stopPropagation(); selectedLink=link.id; redraw();});
-    path.addEventListener('dblclick', e=>{e.stopPropagation(); removeLink(link.id);});
+    path.addEventListener('dblclick', e=>{ e.preventDefault(); e.stopPropagation(); removeLink(link.id); });
     svg.appendChild(path);
 
     // remove handle
@@ -379,6 +396,7 @@ function redraw(){
     t.textContent='×';
     g.appendChild(c); g.appendChild(t);
     g.addEventListener('click', e=>{e.stopPropagation(); removeLink(link.id);});
+    g.addEventListener('dblclick', e=>{e.preventDefault(); e.stopPropagation(); removeLink(link.id);});
     svg.appendChild(g);
   });
 
@@ -413,15 +431,14 @@ async function runEngine(engineId){
   const engineNode = nodes.find(n=>n.id===engineId);
   if(!engineNode) return;
   const el = document.getElementById(engineId);
-  const btn = el.querySelector('.make');
   const loading = el.querySelector('.loading');
 
   const {main, ref, mainType} = getInputImages(engineId);
   if(!main){ alert('이미지를 연결해줘.'); return; }
 
-  btn.disabled = true;
   bottomMake.disabled = true;
   loading.style.display = 'block';
+  showPreview(main);
 
   try{
     let outputImage = main;
@@ -429,7 +446,7 @@ async function runEngine(engineId){
       const res = await fetch(API_RENDER, {
         method:'POST',
         headers:{'Content-Type':'application/json; charset=utf-8'},
-        body: JSON.stringify({ engine: engineNode.engine, prompt: String(engineNode.prompt||''), image: main, refImage: ref })
+        body: JSON.stringify({ apiKey: apiCodeInput.value.trim(), engine: engineNode.engine, prompt: String(engineNode.prompt||''), image: main, refImage: ref })
       });
       if(res.ok){
         const data = await res.json();
@@ -447,9 +464,11 @@ async function runEngine(engineId){
       const img = exEl.querySelector('img');
       img.src = outputImage;
       box.classList.add('has-image');
+      selectNode(existing.id);
     } else {
       const newNode = addImageNode(targetType, engineNode.x + 420, engineNode.y + (targetType==='final'? 0: 10), outputImage);
       links.push({id: uid('ln_'), from: engineId, to: newNode.id, toPort: 'in'});
+      selectNode(newNode.id);
     }
 
     showPreview(outputImage);
@@ -457,9 +476,27 @@ async function runEngine(engineId){
     redraw();
 
   } finally {
-    btn.disabled = false;
     bottomMake.disabled = false;
     loading.style.display = 'none';
+  }
+}
+
+
+function getNodePreviewImage(node){
+  if(!node) return null;
+  if(node.type==='source' || node.type==='result' || node.type==='final') return node.image || null;
+  if(node.type==='engine') return node.previewImage || null;
+  return null;
+}
+
+function selectNode(id){
+  document.querySelectorAll('.node').forEach(el => el.classList.remove('selected'));
+  const node = nodes.find(n=>n.id===id);
+  const el = node ? document.getElementById(id) : null;
+  if(el) el.classList.add('selected');
+  if(node){
+    const img = getNodePreviewImage(node);
+    if(img) showPreview(img);
   }
 }
 
@@ -509,6 +546,7 @@ fileInput.addEventListener('change', e=>{
     el.querySelector('img').src = node.image;
     el.querySelector('.image-box').classList.add('has-image');
     syncAllEnginePreviews();
+    selectNode(node.id);
     redraw();
   };
   reader.readAsDataURL(file);
@@ -542,7 +580,11 @@ document.addEventListener('keydown', e=>{
   }
 });
 
-canvas.addEventListener('click', ()=>{ selectedLink = null; redraw(); });
+canvas.addEventListener('click', ()=>{
+  selectedLink = null;
+  document.querySelectorAll('.node').forEach(el => el.classList.remove('selected'));
+  redraw();
+});
 
 // Toolbar
 
@@ -560,6 +602,10 @@ previewBox.addEventListener('click', ()=>{ if(previewImg.src) toggleFullscreen(p
 // Initial
 addSourceNode();
 addEngineNode();
+setTimeout(()=>{
+  const firstEngine = nodes.find(n=>n.type==='engine');
+  if(firstEngine){ selectNode(firstEngine.id); selectEngine(firstEngine.id); }
+}, 0);
 </script>
 </body>
 </html>
