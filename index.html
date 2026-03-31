@@ -311,7 +311,7 @@ function renderNode(node){
     el.innerHTML = `
       <div class="node-header">
         <div class="node-title">Node</div>
-        <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button><button class="icon-btn delete-node">×</button></div>
+        <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button></div>
       </div>
       <div class="node-body">
         <div class="image-box engine-preview ${node.previewImage?'has-image':''}">
@@ -421,7 +421,9 @@ function bindNodeEvents(node, el){
   el.querySelector('.node-header').addEventListener('mousedown', startNodeDrag);
   el.querySelector('.node-body')?.addEventListener('mousedown', startNodeDrag);
 
-  el.querySelector('.delete-node')?.addEventListener('click', e=>{e.stopPropagation(); removeNode(node.id);});
+  if(node.type==='source' || node.type==='result' || node.type==='final'){
+    el.querySelector('.delete-node')?.addEventListener('click', e=>{e.stopPropagation(); removeNode(node.id);});
+  }
   el.querySelector('.duplicate-node')?.addEventListener('click', e=>{e.stopPropagation(); duplicateEngineNode(node.id);});
 
   if(node.type==='source'){
