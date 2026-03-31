@@ -12,7 +12,7 @@ button,input,select,textarea{font:inherit}
 #app{width:100%;height:100%;display:grid;grid-template-columns:1fr 420px;grid-template-rows:1fr;}
 #left{position:relative;overflow:hidden}
 #right{border-left:1px solid #2b2b2b;background:#151515;display:flex;flex-direction:column}
-#canvas{position:absolute;inset:0 0 108px 0;overflow:hidden;background:radial-gradient(circle at 1px 1px, rgba(255,255,255,.08) 1px, transparent 0) 0 0/28px 28px,var(--bg);zoom:1}
+#canvas{position:absolute;inset:0 0 108px 0;overflow:hidden;background:var(--bg);zoom:1}
 #canvas.panning{cursor:grabbing}
 #connections{position:absolute;inset:0;pointer-events:auto;z-index:2}
 .toolbar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:20}
@@ -29,7 +29,7 @@ button,input,select,textarea{font:inherit}
 .node-body{padding:12px}
 .image-box{width:100%;height:180px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);background:#171717;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;position:relative}
 .node.source .image-box{height:230px}
-.image-box img{width:100%;height:100%;object-fit:cover;display:none}
+.image-box img{width:100%;height:100%;object-fit:contain;display:none;background:#111}
 .image-box.has-image img{display:block}
 .image-box .ghost{font-size:13px;color:var(--muted);padding:0 12px;text-align:center}
 .engine-preview{height:150px;margin-bottom:10px;cursor:zoom-in}
@@ -146,8 +146,69 @@ let panMode = null;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
+const LS_WORKSPACE = 'vizmaker_workspace_v2';
 apiCodeInput.value = localStorage.getItem(LS_API_KEY) || '';
 apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
+
+function saveWorkspace(){
+  try{
+    const payload = {
+      nodes,
+      links,
+      zCounter,
+      selectedNodeId,
+      selectedEngineId,
+      canvasZoom,
+      canvasLeft: canvas.style.left || '0px',
+      canvasTop: canvas.style.top || '0px',
+      bottomPrompt: bottomPrompt.value || ''
+    };
+    localStorage.setItem(LS_WORKSPACE, JSON.stringify(payload));
+  }catch(_e){}
+}
+
+function restoreWorkspace(){
+  try{
+    const raw = localStorage.getItem(LS_WORKSPACE);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) return false;
+
+    nodes = data.nodes || [];
+    links = data.links || [];
+    zCounter = Number(data.zCounter || 5);
+    selectedNodeId = data.selectedNodeId || null;
+    selectedEngineId = data.selectedEngineId || null;
+    canvas.style.left = data.canvasLeft || '0px';
+    canvas.style.top = data.canvasTop || '0px';
+
+    nodes.forEach(renderNode);
+    syncAllEnginePreviews();
+    redraw();
+
+    if (typeof data.canvasZoom === 'number') {
+      setCanvasZoom(data.canvasZoom);
+    }
+
+    if (selectedNodeId) {
+      selectNode(selectedNodeId);
+    } else {
+      clearPreview();
+    }
+
+    if (selectedEngineId) {
+      selectEngine(selectedEngineId);
+    } else {
+      bottomPrompt.value = data.bottomPrompt || '';
+      bottomPrompt.disabled = true;
+      bottomMake.disabled = true;
+    }
+
+    return true;
+  }catch(_e){
+    return false;
+  }
+}
 
 function uid(prefix='n'){ return prefix + Math.random().toString(36).slice(2,9); }
 
@@ -253,6 +314,7 @@ function addSourceNode(x,y){
   nodes.push(n);
   renderNode(n);
   selectNode(n.id);
+  saveWorkspace();
 }
 
 function addEngineNode(x=760,y=150){
@@ -261,6 +323,7 @@ function addEngineNode(x=760,y=150){
   renderNode(n);
   selectNode(n.id);
   selectEngine(n.id);
+  saveWorkspace();
 }
 
 function addImageNode(type, x, y, image){
@@ -348,7 +411,7 @@ function bindNodeEvents(node, el){
         links = links.filter(l => !(l.to===node.id && l.toPort===toPort));
         links.push({id:uid('ln_'), from:connectStart.nodeId, to:node.id, toPort});
       }
-      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw();
+      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); saveWorkspace();
     });
   });
 }
@@ -375,6 +438,7 @@ function duplicateEngineNode(id){
   selectNode(copy.id);
   selectEngine(copy.id);
   redraw();
+  saveWorkspace();
 }
 
 function removeNode(id){
@@ -382,8 +446,10 @@ function removeNode(id){
   nodes = nodes.filter(n=>n.id!==id);
   document.getElementById(id)?.remove();
   if(selectedEngineId===id) selectEngine(null);
+  if(selectedNodeId===id) selectedNodeId = null;
   syncAllEnginePreviews();
   redraw();
+  saveWorkspace();
 }
 
 function removeLink(id){
@@ -391,6 +457,7 @@ function removeLink(id){
   if(selectedLink===id) selectedLink=null;
   syncAllEnginePreviews();
   redraw();
+  saveWorkspace();
 }
 
 function getNodeRect(node){
@@ -427,6 +494,7 @@ function syncEnginePreview(engineNode){
     const im = el.querySelector('.engine-preview img');
     im.src = img || '';
     box.classList.toggle('has-image', !!img);
+    applyEnginePreviewAspect(engineNode, img);
   }
   if(selectedNodeId===engineNode.id){ if(img) showPreview(img); else clearPreview(); }
 }
@@ -527,6 +595,28 @@ function redraw(){
   }
 }
 
+function applyEnginePreviewAspect(engineNode, imgSrc){
+  const el = document.getElementById(engineNode.id);
+  if(!el) return;
+  const box = el.querySelector('.engine-preview');
+  if(!box) return;
+
+  if(!imgSrc){
+    box.style.aspectRatio = '';
+    box.style.height = '150px';
+    return;
+  }
+
+  const probe = new Image();
+  probe.onload = () => {
+    if (probe.naturalWidth && probe.naturalHeight) {
+      box.style.aspectRatio = `${probe.naturalWidth} / ${probe.naturalHeight}`;
+      box.style.height = 'auto';
+    }
+  };
+  probe.src = imgSrc;
+}
+
 function getInputImages(engineId){
   const mainLink = links.find(l=>l.to===engineId && l.toPort==='in');
   const refLink = links.find(l=>l.to===engineId && l.toPort==='ref');
@@ -614,6 +704,7 @@ function selectNode(id){
   } else {
     clearPreview();
   }
+  saveWorkspace();
 }
 
 function showPreview(src){
@@ -640,6 +731,7 @@ function selectEngine(id){
     bottomPrompt.disabled = true;
     bottomMake.disabled = true;
   }
+  saveWorkspace();
 }
 
 bottomPrompt.addEventListener('input', ()=>{
@@ -649,6 +741,7 @@ bottomPrompt.addEventListener('input', ()=>{
   node.prompt = bottomPrompt.value;
   const el = document.getElementById(selectedEngineId);
   el.querySelector('.prompt').value = node.prompt;
+  saveWorkspace();
 });
 
 bottomMake.addEventListener('click', ()=>{
@@ -669,6 +762,7 @@ fileInput.addEventListener('change', e=>{
     syncAllEnginePreviews();
     selectNode(node.id);
     redraw();
+    saveWorkspace();
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -704,7 +798,16 @@ document.addEventListener('mousemove', e=>{
   }
 });
 
-document.addEventListener('mouseup', ()=>{ drag = null; connectStart = null; tempMouse = null; panMode = null; canvas.classList.remove('panning'); redraw(); });
+document.addEventListener('mouseup', ()=>{
+  const changed = !!drag || !!panMode;
+  drag = null;
+  connectStart = null;
+  tempMouse = null;
+  panMode = null;
+  canvas.classList.remove('panning');
+  redraw();
+  if(changed) saveWorkspace();
+});
 
 document.addEventListener('keydown', e=>{
   if((e.key==='Delete' || e.key==='Backspace') && selectedLink){
@@ -753,6 +856,7 @@ function setCanvasZoom(v){
   canvas.style.transformOrigin = 'center center';
   canvas.style.transform = `scale(${canvasZoom})`;
   document.getElementById('zoomReset').textContent = Math.round(canvasZoom*100) + '%';
+  saveWorkspace();
 }
 
 
@@ -781,12 +885,15 @@ fullscreen.addEventListener('click', ()=>{ fullscreen.classList.remove('on'); fu
 previewBox.addEventListener('click', ()=>{ if(previewImg.src) openImagePopup(previewImg.src, 'Preview'); });
 
 // Initial
-addSourceNode();
-addEngineNode();
-setTimeout(()=>{
-  const firstEngine = nodes.find(n=>n.type==='engine');
-  if(firstEngine){ selectNode(firstEngine.id); selectEngine(firstEngine.id); }
-}, 0);
+if(!restoreWorkspace()){
+  addSourceNode();
+  addEngineNode();
+  setTimeout(()=>{
+    const firstEngine = nodes.find(n=>n.type==='engine');
+    if(firstEngine){ selectNode(firstEngine.id); selectEngine(firstEngine.id); }
+    saveWorkspace();
+  }, 0);
+}
 </script>
 </body>
 </html>
