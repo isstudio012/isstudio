@@ -22,7 +22,8 @@ button,input,select,textarea{font:inherit}
 .source-launcher:active{cursor:grabbing}
 .notice{position:absolute;bottom:124px;left:16px;padding:8px 12px;border-radius:10px;background:rgba(28,28,28,.95);border:1px solid var(--line);color:var(--muted);font-size:12px;z-index:20}
 
-.node{position:absolute;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);user-select:none;transform-origin:top left;will-change:left,top}
+.node{position:absolute;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);user-select:none;transform-origin:top left;will-change:left,top;transition:box-shadow 0.15s}
+.node.dragging{box-shadow:0 20px 48px rgba(0,0,0,.45);transition:none}
 .node.source{min-width:360px;width:360px}
 .node.engine{min-width:360px;width:360px}
 .node-header{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);cursor:grab}
@@ -92,6 +93,7 @@ button,input,select,textarea{font:inherit}
       <button class="tb" id="zoomOut">−</button>
       <button class="tb" id="zoomReset">100%</button>
       <button class="tb" id="zoomIn">+</button>
+      <button class="tb" id="resetWs" title="워크스페이스 초기화">↺</button>
     </div>
     <div id="canvas"><div id="world"><svg id="connections"></svg></div></div>
     <div id="sourceLauncher" class="source-launcher">+ Source</div>
@@ -282,7 +284,7 @@ function renderNode(node){
   if(node.type==='engine'){
     el.innerHTML = `
       <div class="node-header">
-        <div class="node-title">Node</div>
+        <div class="node-title">Engine</div>
         <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button>${node.locked ? '' : '<button class="icon-btn delete-node">×</button>'}</div>
       </div>
       <div class="node-body">
@@ -390,6 +392,7 @@ function bindNodeEvents(node, el){
       offsetY: (e.clientY - canvasRect.top  - top)  / canvasZoom - node.y
     };
     bringToFront(el);
+    el.classList.add('dragging');
     e.preventDefault();
   };
 
@@ -616,15 +619,18 @@ function redraw(){
     fat.style.pointerEvents='stroke';
     fat.addEventListener('click', e=>{e.stopPropagation(); selectedLink=link.id; redraw();});
     fat.addEventListener('dblclick', e=>{ e.preventDefault(); e.stopPropagation(); removeLink(link.id); });
+    fat.addEventListener('mouseenter', e=>{ path.setAttribute('stroke','#ffffff'); });
+    fat.addEventListener('mouseleave', e=>{ path.setAttribute('stroke', selectedLink===link.id ? '#ffffff' : '#ffd400'); });
     svg.appendChild(fat);
 
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d', d);
     path.setAttribute('fill','none');
-    path.setAttribute('stroke', selectedLink===link.id ? '#ffffff' : '#8a8a8a');
+    path.setAttribute('stroke', selectedLink===link.id ? '#ffffff' : '#ffd400');
     path.setAttribute('stroke-width', selectedLink===link.id ? '3' : '2');
     path.setAttribute('class','line-hit');
     path.style.pointerEvents='none';
+    path.addEventListener('dblclick', e=>{ e.preventDefault(); e.stopPropagation(); removeLink(link.id); });
     svg.appendChild(path);
   });
 
@@ -854,8 +860,8 @@ document.addEventListener('mousemove', e=>{
     const node = nodes.find(n=>n.id===drag.id);
     const left = parseFloat(world.style.left || '0') || 0;
     const top  = parseFloat(world.style.top  || '0') || 0;
-    node.x = Math.max(0, (e.clientX - drag.canvasOriginX - left) / canvasZoom - drag.offsetX);
-    node.y = Math.max(0, (e.clientY - drag.canvasOriginY - top)  / canvasZoom - drag.offsetY);
+    node.x = (e.clientX - drag.canvasOriginX - left) / canvasZoom - drag.offsetX;
+    node.y = (e.clientY - drag.canvasOriginY - top)  / canvasZoom - drag.offsetY;
     const el = document.getElementById(node.id);
     el.style.left = node.x + 'px';
     el.style.top  = node.y + 'px';
@@ -891,6 +897,7 @@ document.addEventListener('mousemove', e=>{
 document.addEventListener('mouseup', (e)=>{
   const launcherDrag = sourceLauncherDrag;
   const changed = !!drag || !!panMode || !!(launcherDrag && launcherDrag.moved);
+  if(drag){ const el = document.getElementById(drag.id); if(el) el.classList.remove('dragging'); }
   drag = null;
   connectStart = null;
   tempMouse = null;
@@ -934,7 +941,11 @@ canvas.addEventListener('click', ()=>{
 
 // Toolbar
 
-const addSourceLegacy = document.getElementById('addSource');
+document.getElementById('resetWs').addEventListener('click', ()=>{
+  if(!confirm('워크스페이스를 초기화할까요?')) return;
+  localStorage.removeItem(LS_WORKSPACE);
+  location.reload();
+});
 if(addSourceLegacy) addSourceLegacy.addEventListener('click', ()=>addSourceNode());
 document.getElementById('zoomOut').addEventListener('click', ()=> setCanvasZoom(canvasZoom - 0.1));
 document.getElementById('zoomIn').addEventListener('click', ()=> setCanvasZoom(canvasZoom + 0.1));
