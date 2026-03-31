@@ -150,11 +150,51 @@ let sourceLauncherDrag = null;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
-const LS_WORKSPACE = 'vizmaker_workspace_v2';
+const LS_WORKSPACE = 'vizmaker_workspace_v3';
+const DB_NAME = 'vizmaker_db';
+const DB_STORE = 'kv';
 apiCodeInput.value = localStorage.getItem(LS_API_KEY) || '';
 apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
 
-function saveWorkspace(){
+function openDB(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbSet(key, value){
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(value, key);
+    tx.oncomplete = () => { db.close(); resolve(true); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+async function dbGet(key){
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).get(key);
+    req.onsuccess = () => { db.close(); resolve(req.result); };
+    req.onerror = () => { db.close(); reject(req.error); };
+  });
+}
+
+let saveTimer = null;
+function scheduleWorkspaceSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { scheduleWorkspaceSave(); }, 120);
+}
+
+async function saveWorkspace(){
   try{
     const payload = {
       nodes: JSON.parse(JSON.stringify(nodes)),
@@ -170,17 +210,14 @@ function saveWorkspace(){
       sourceLauncherLeft: sourceLauncher.style.left || '16px',
       sourceLauncherTop: sourceLauncher.style.top || '16px'
     };
-    localStorage.setItem(LS_WORKSPACE, JSON.stringify(payload));
+    await dbSet(LS_WORKSPACE, payload);
   }catch(_e){}
 }
 
-function restoreWorkspace(){
+async function restoreWorkspace(){
   try{
-    const raw = localStorage.getItem(LS_WORKSPACE);
-    if(!raw) return false;
-    const data = JSON.parse(raw);
-    if(!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) return false;
-    if(!data.nodes.length) return false;
+    const data = await dbGet(LS_WORKSPACE);
+    if(!data || !Array.isArray(data.nodes) || !Array.isArray(data.links) || !data.nodes.length) return false;
 
     nodes = data.nodes || [];
     links = data.links || [];
@@ -326,7 +363,7 @@ function addSourceNode(x,y){
   nodes.push(n);
   renderNode(n);
   selectNode(n.id);
-  saveWorkspace();
+  scheduleWorkspaceSave();
 }
 
 function addEngineNode(x=760,y=150){
@@ -335,14 +372,14 @@ function addEngineNode(x=760,y=150){
   renderNode(n);
   selectNode(n.id);
   selectEngine(n.id);
-  saveWorkspace();
+  scheduleWorkspaceSave();
 }
 
 function addImageNode(type, x, y, image){
   const n={id:uid(type==='final'?'fin_':'res_'),type,x,y,image};
   nodes.push(n);
   renderNode(n);
-  saveWorkspace();
+  scheduleWorkspaceSave();
   return n;
 }
 
@@ -424,7 +461,7 @@ function bindNodeEvents(node, el){
         links = links.filter(l => !(l.to===node.id && l.toPort===toPort));
         links.push({id:uid('ln_'), from:connectStart.nodeId, to:node.id, toPort});
       }
-      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); saveWorkspace();
+      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); scheduleWorkspaceSave();
     });
   });
 }
@@ -451,7 +488,7 @@ function duplicateEngineNode(id){
   selectNode(copy.id);
   selectEngine(copy.id);
   redraw();
-  saveWorkspace();
+  scheduleWorkspaceSave();
 }
 
 function removeNode(id){
@@ -462,7 +499,7 @@ function removeNode(id){
   if(selectedNodeId===id) selectedNodeId = null;
   syncAllEnginePreviews();
   redraw();
-  saveWorkspace();
+  scheduleWorkspaceSave();
 }
 
 function removeLink(id){
@@ -470,7 +507,7 @@ function removeLink(id){
   if(selectedLink===id) selectedLink=null;
   syncAllEnginePreviews();
   redraw();
-  saveWorkspace();
+  scheduleWorkspaceSave();
 }
 
 function getNodeRect(node){
@@ -717,7 +754,7 @@ function selectNode(id){
   } else {
     clearPreview();
   }
-  saveWorkspace();
+  scheduleWorkspaceSave();
 }
 
 function showPreview(src){
@@ -744,7 +781,7 @@ function selectEngine(id){
     bottomPrompt.disabled = true;
     bottomMake.disabled = true;
   }
-  saveWorkspace();
+  scheduleWorkspaceSave();
 }
 
 bottomPrompt.addEventListener('input', ()=>{
@@ -754,7 +791,7 @@ bottomPrompt.addEventListener('input', ()=>{
   node.prompt = bottomPrompt.value;
   const el = document.getElementById(selectedEngineId);
   el.querySelector('.prompt').value = node.prompt;
-  saveWorkspace();
+  scheduleWorkspaceSave();
 });
 
 bottomMake.addEventListener('click', ()=>{
@@ -796,7 +833,7 @@ fileInput.addEventListener('change', e=>{
     syncAllEnginePreviews();
     selectNode(node.id);
     redraw();
-    saveWorkspace();
+    scheduleWorkspaceSave();
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -848,7 +885,7 @@ document.addEventListener('mouseup', ()=>{
   sourceLauncherDrag = null;
   canvas.classList.remove('panning');
   redraw();
-  if(changed) saveWorkspace();
+  if(changed) scheduleWorkspaceSave();
 });
 
 document.addEventListener('keydown', e=>{
@@ -899,7 +936,7 @@ function setCanvasZoom(v){
   canvas.style.transformOrigin = 'center center';
   canvas.style.transform = `scale(${canvasZoom})`;
   document.getElementById('zoomReset').textContent = Math.round(canvasZoom*100) + '%';
-  saveWorkspace();
+  scheduleWorkspaceSave();
 }
 
 
@@ -927,19 +964,26 @@ function toggleFullscreen(src){
 fullscreen.addEventListener('click', ()=>{ fullscreen.classList.remove('on'); fullscreenImg.src=''; });
 previewBox.addEventListener('click', ()=>{ if(previewImg.src) openImagePopup(previewImg.src, 'Preview'); });
 
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') saveWorkspace(); });
+window.addEventListener('beforeunload', ()=>{ saveWorkspace(); });
+
+
 // Initial
-if(!restoreWorkspace()){
-  sourceLauncher.style.left = '16px';
-  sourceLauncher.style.top = '16px';
-  addSourceNode();
-  addEngineNode();
-  const firstEngine = nodes.find(n=>n.type==='engine');
-  if(firstEngine){
-    selectNode(firstEngine.id);
-    selectEngine(firstEngine.id);
+(async ()=>{
+  const restored = await restoreWorkspace();
+  if(!restored){
+    sourceLauncher.style.left = '16px';
+    sourceLauncher.style.top = '16px';
+    addSourceNode();
+    addEngineNode();
+    const firstEngine = nodes.find(n=>n.type==='engine');
+    if(firstEngine){
+      selectNode(firstEngine.id);
+      selectEngine(firstEngine.id);
+    }
+    saveWorkspace();
   }
-  saveWorkspace();
-}
+})();
 </script>
 </body>
 </html>
