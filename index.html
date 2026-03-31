@@ -782,6 +782,25 @@ async function runUpscale(engineId){
   }
 }
 
+function resizeImageBase64(base64, maxSize=1536, quality=0.85){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if(w > maxSize || h > maxSize){
+        if(w > h){ h = Math.round(h * maxSize/w); w = maxSize; }
+        else { w = Math.round(w * maxSize/h); h = maxSize; }
+      }
+      const cvs = document.createElement('canvas');
+      cvs.width = w; cvs.height = h;
+      cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(cvs.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = ()=> resolve(base64);
+    img.src = base64;
+  });
+}
+
 async function runEngine(engineId){
   const engineNode = nodes.find(n=>n.id===engineId);
   if(!engineNode) return;
@@ -796,10 +815,14 @@ async function runEngine(engineId){
 
   bottomMake.disabled = true;
   loading.style.display = 'block';
-  loading.textContent = 'Rendering...';
+  loading.textContent = 'Preparing...';
+
+  // 이미지 리사이즈 (413 방지)
+  const mainSmall = await resizeImageBase64(main);
+  const refSmall  = ref ? await resizeImageBase64(ref) : null;
 
   try{
-    // 1. Start render
+    loading.textContent = 'Rendering...';
     const res = await fetch('/api/render', {
       method: 'POST',
       headers: {'Content-Type': 'application/json; charset=utf-8'},
@@ -807,8 +830,8 @@ async function runEngine(engineId){
         apiKey,
         engine: engineNode.engine,
         prompt: String(engineNode.prompt || ''),
-        image: main,
-        refImage: ref || null
+        image: mainSmall,
+        refImage: refSmall || null
       })
     });
 
