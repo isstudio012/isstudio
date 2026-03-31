@@ -17,6 +17,8 @@ button,input,select,textarea{font:inherit}
 #connections{position:absolute;inset:0;pointer-events:auto;z-index:2}
 .toolbar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:20}
 .tb{height:36px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;cursor:pointer}.tb:hover{background:var(--panel2)}
+.source-launcher{position:absolute;left:16px;top:16px;height:42px;min-width:120px;padding:0 18px;border:1px solid #d2b100;background:#ffd400;color:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:grab;z-index:30;user-select:none;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.source-launcher:active{cursor:grabbing}
 .notice{position:absolute;bottom:124px;left:16px;padding:8px 12px;border-radius:10px;background:rgba(28,28,28,.95);border:1px solid var(--line);color:var(--muted);font-size:12px;z-index:20}
 
 .node{position:absolute;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);user-select:none;transform-origin:top left;will-change:left,top}
@@ -83,12 +85,12 @@ button,input,select,textarea{font:inherit}
 <div id="app">
   <div id="left">
     <div class="toolbar">
-      <button class="tb" id="addSource">+ Source</button>
       <button class="tb" id="zoomOut">−</button>
       <button class="tb" id="zoomReset">100%</button>
       <button class="tb" id="zoomIn">+</button>
     </div>
     <div id="canvas"><svg id="connections"></svg></div>
+    <div id="sourceLauncher" class="source-launcher">+ Source</div>
     <div class="bottom-bar">
       <textarea id="bottomPrompt" class="bottom-prompt" placeholder="Prompt"></textarea>
       <button id="bottomMake" class="bottom-make">Make</button>
@@ -131,6 +133,7 @@ const previewBox = document.getElementById('previewBox');
 const previewImg = document.getElementById('previewImg');
 const previewEmpty = document.getElementById('previewEmpty');
 const apiCodeInput = document.getElementById('apiCode');
+const sourceLauncher = document.getElementById('sourceLauncher');
 
 let nodes = [], links = [];
 let zCounter = 5;
@@ -143,6 +146,7 @@ let selectedEngineId = null;
 let selectedNodeId = null;
 let canvasZoom = 1;
 let panMode = null;
+let sourceLauncherDrag = null;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
@@ -161,7 +165,9 @@ function saveWorkspace(){
       canvasZoom,
       canvasLeft: canvas.style.left || '0px',
       canvasTop: canvas.style.top || '0px',
-      bottomPrompt: bottomPrompt.value || ''
+      bottomPrompt: bottomPrompt.value || '',
+      sourceLauncherLeft: sourceLauncher.style.left || '16px',
+      sourceLauncherTop: sourceLauncher.style.top || '16px'
     };
     localStorage.setItem(LS_WORKSPACE, JSON.stringify(payload));
   }catch(_e){}
@@ -181,6 +187,8 @@ function restoreWorkspace(){
     selectedEngineId = data.selectedEngineId || null;
     canvas.style.left = data.canvasLeft || '0px';
     canvas.style.top = data.canvasTop || '0px';
+    sourceLauncher.style.left = data.sourceLauncherLeft || '16px';
+    sourceLauncher.style.top = data.sourceLauncherTop || '16px';
 
     nodes.forEach(renderNode);
     syncAllEnginePreviews();
@@ -748,6 +756,25 @@ bottomMake.addEventListener('click', ()=>{
   if(selectedEngineId) runEngine(selectedEngineId);
 });
 
+
+sourceLauncher.addEventListener('click', (e)=>{
+  if(sourceLauncherDrag && sourceLauncherDrag.moved) return;
+  addSourceNode();
+});
+
+sourceLauncher.addEventListener('mousedown', (e)=>{
+  if(e.button !== 0) return;
+  const rect = sourceLauncher.getBoundingClientRect();
+  sourceLauncherDrag = {
+    startX: e.clientX,
+    startY: e.clientY,
+    left: rect.left,
+    top: rect.top,
+    moved: false
+  };
+  e.preventDefault();
+});
+
 fileInput.addEventListener('change', e=>{
   const file = e.target.files[0];
   if(!file || !pendingUploadNode) return;
@@ -796,14 +823,22 @@ document.addEventListener('mousemove', e=>{
     canvas.style.left = nextLeft + 'px';
     canvas.style.top = nextTop + 'px';
   }
+  if(sourceLauncherDrag){
+    const dx = e.clientX - sourceLauncherDrag.startX;
+    const dy = e.clientY - sourceLauncherDrag.startY;
+    if(Math.abs(dx) > 3 || Math.abs(dy) > 3) sourceLauncherDrag.moved = true;
+    sourceLauncher.style.left = (sourceLauncherDrag.left + dx) + 'px';
+    sourceLauncher.style.top = (sourceLauncherDrag.top + dy) + 'px';
+  }
 });
 
 document.addEventListener('mouseup', ()=>{
-  const changed = !!drag || !!panMode;
+  const changed = !!drag || !!panMode || !!(sourceLauncherDrag && sourceLauncherDrag.moved);
   drag = null;
   connectStart = null;
   tempMouse = null;
   panMode = null;
+  sourceLauncherDrag = null;
   canvas.classList.remove('panning');
   redraw();
   if(changed) saveWorkspace();
@@ -886,6 +921,8 @@ previewBox.addEventListener('click', ()=>{ if(previewImg.src) openImagePopup(pre
 
 // Initial
 if(!restoreWorkspace()){
+  sourceLauncher.style.left = '16px';
+  sourceLauncher.style.top = '16px';
   addSourceNode();
   addEngineNode();
   setTimeout(()=>{
