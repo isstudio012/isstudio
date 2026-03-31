@@ -57,9 +57,9 @@ button,input,select,textarea{font:inherit}
 .port.ref + .port-label{left:12px;top:65%;transform:translateY(-50%)}
 
 .line-hit{pointer-events:stroke;cursor:pointer}
-.fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out}
+.fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.95);display:none;align-items:center;justify-content:center;z-index:9999;cursor:zoom-out}
 .fullscreen.on{display:flex}
-.fullscreen img{max-width:92vw;max-height:90vh;object-fit:contain;border-radius:16px}
+.fullscreen img{max-width:96vw;max-height:96vh;object-fit:contain;border-radius:8px}
 #fileInput{display:none}
 
 .bottom-bar{position:absolute;left:18px;right:18px;bottom:18px;height:72px;display:flex;gap:12px;z-index:25}
@@ -1181,18 +1181,8 @@ function setCanvasZoom(v){
 
 function openImagePopup(src, title='Image'){
   if(!src) return;
-  const w = window.open('', '_blank', 'noopener,noreferrer,width=1400,height=900');
-  if(!w){
-    alert('팝업이 차단됐어. 브라우저에서 팝업 허용해줘.');
-    return;
-  }
-  const safeSrc = String(src).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-  const safeTitle = String(title).replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title><style>
-    html,body{margin:0;width:100%;height:100%;background:#0f0f0f;display:flex;align-items:center;justify-content:center;overflow:hidden}
-    img{max-width:100vw;max-height:100vh;object-fit:contain;display:block}
-  </style></head><body><img src="${safeSrc}" alt=""></body></html>`);
-  w.document.close();
+  fullscreenImg.src = src;
+  fullscreen.classList.add('on');
 }
 
 // Fullscreen
@@ -1201,6 +1191,11 @@ function toggleFullscreen(src){
   else { fullscreenImg.src = src; fullscreen.classList.add('on'); }
 }
 fullscreen.addEventListener('click', ()=>{ fullscreen.classList.remove('on'); fullscreenImg.src=''; });
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape' && fullscreen.classList.contains('on')){
+    fullscreen.classList.remove('on'); fullscreenImg.src='';
+  }
+});
 previewBox.addEventListener('click', ()=>{ if(previewImg.src) openImagePopup(previewImg.src, 'Preview'); });
 
 // Preview zoom
