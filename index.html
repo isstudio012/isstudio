@@ -3,122 +3,563 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Node Render UI</title>
+<title>VizMaker UI (Step 1)</title>
 <style>
 :root{--bg:#141414;--panel:#1c1c1c;--panel2:#232323;--line:#4a4a4a;--text:#f4f4f4;--muted:#b9b9b9}
-*{box-sizing:border-box;margin:0;padding:0} html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,Arial,sans-serif;color:var(--text)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,Arial,sans-serif;color:var(--text)}
 button,input,select,textarea{font:inherit}
-#app{width:100%;height:100%;position:relative;background:var(--bg)}
-#canvas{position:absolute;inset:0;overflow:hidden;background:radial-gradient(circle at 1px 1px, rgba(255,255,255,.08) 1px, transparent 0) 0 0/28px 28px,var(--bg)}
+#app{width:100%;height:100%;display:grid;grid-template-columns:1fr 420px;grid-template-rows:1fr;}
+#left{position:relative;overflow:hidden}
+#right{border-left:1px solid #2b2b2b;background:#151515;display:flex;flex-direction:column}
+#canvas{position:absolute;inset:0 0 108px 0;overflow:hidden;background:radial-gradient(circle at 1px 1px, rgba(255,255,255,.08) 1px, transparent 0) 0 0/28px 28px,var(--bg)}
 #connections{position:absolute;inset:0;pointer-events:none}
 .toolbar{position:absolute;top:16px;left:16px;display:flex;gap:8px;z-index:20}
 .tb{height:36px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;cursor:pointer}.tb:hover{background:var(--panel2)}
-.node{position:absolute;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);user-select:none;transform-origin:top left}.node.small{min-width:220px}.node.result{width:260px}
+.notice{position:absolute;bottom:124px;left:16px;padding:8px 12px;border-radius:10px;background:rgba(28,28,28,.95);border:1px solid var(--line);color:var(--muted);font-size:12px;z-index:20}
+
+.node{position:absolute;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);user-select:none;transform-origin:top left}
+.node.engine{min-width:340px;width:340px}
 .node-header{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);cursor:grab}
-.node-title{font-size:13px;color:var(--text)} .node-actions{display:flex;gap:6px}
+.node-title{font-size:13px;color:var(--text)}
+.node-actions{display:flex;gap:6px}
 .icon-btn{width:24px;height:24px;border:none;background:transparent;color:#fff;cursor:pointer;border-radius:6px;font-size:14px}.icon-btn:hover{background:rgba(255,255,255,.08)}
-.node-body{padding:12px}.image-box{width:100%;height:180px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);background:#171717;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;position:relative}
-.image-box img{width:100%;height:100%;object-fit:cover;display:none}.image-box.has-image img{display:block}.image-box .ghost{font-size:13px;color:var(--muted);padding:0 12px;text-align:center}
+.node-body{padding:12px}
+.image-box{width:100%;height:180px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);background:#171717;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;position:relative}
+.image-box img{width:100%;height:100%;object-fit:cover;display:none}
+.image-box.has-image img{display:block}
+.image-box .ghost{font-size:13px;color:var(--muted);padding:0 12px;text-align:center}
+.engine-preview{height:150px;margin-bottom:10px;cursor:default}
 .engine-select{width:100%;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:0 12px;outline:none;margin-bottom:10px}
-.prompt{width:100%;min-height:96px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:12px;outline:none;resize:vertical}.prompt::placeholder{color:#d8d8d8}
-.make{width:100%;height:42px;border:none;border-radius:12px;background:#efefef;color:#111;margin-top:10px;cursor:pointer;font-weight:600}.make:hover{background:#fff}.make:disabled{opacity:.45;cursor:not-allowed}
-.port{position:absolute;width:16px;height:16px;border-radius:999px;background:#fff;border:2px solid #1b1b1b;z-index:3;cursor:pointer}.port.in{left:-8px;top:50%;transform:translateY(-50%)}.port.out{right:-8px;top:50%;transform:translateY(-50%)}
-.line-hit{pointer-events:stroke;cursor:pointer}.fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out}.fullscreen.on{display:flex}.fullscreen img{max-width:92vw;max-height:90vh;object-fit:contain;border-radius:16px}
-#fileInput{display:none}.notice{position:absolute;bottom:16px;left:16px;padding:8px 12px;border-radius:10px;background:rgba(28,28,28,.95);border:1px solid var(--line);color:var(--muted);font-size:12px;z-index:20}
-.loading{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+.prompt{width:100%;min-height:84px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:12px;outline:none;resize:none}
+.prompt::placeholder{color:#d8d8d8}
+.make{width:100%;height:42px;border:none;border-radius:12px;background:#efefef;color:#111;margin-top:10px;cursor:pointer;font-weight:600}
+.make:hover{background:#fff}
+.make:disabled{opacity:.45;cursor:not-allowed}
+.loading{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;display:none}
+
+.port{position:absolute;width:16px;height:16px;border-radius:999px;background:#fff;border:2px solid #1b1b1b;z-index:3;cursor:pointer}
+.port.in{left:-8px;top:50%;transform:translateY(-50%)}
+.port.ref{left:-8px;top:65%;transform:translateY(-50%);background:#fff;border-color:#1b1b1b;outline:2px solid rgba(255,255,255,.25)}
+.port.out{right:-8px;top:50%;transform:translateY(-50%)}
+
+.line-hit{pointer-events:stroke;cursor:pointer}
+.fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out}
+.fullscreen.on{display:flex}
+.fullscreen img{max-width:92vw;max-height:90vh;object-fit:contain;border-radius:16px}
+#fileInput{display:none}
+
+.bottom-bar{position:absolute;left:18px;right:18px;bottom:18px;height:72px;display:flex;gap:12px;z-index:25}
+.bottom-prompt{flex:1;height:100%;border:1px solid var(--line);border-radius:14px;background:rgba(44,44,44,.95);padding:14px 16px;color:var(--text);outline:none;resize:none}
+.bottom-prompt::placeholder{color:#f2f2f2}
+.bottom-make{width:128px;border:none;border-radius:14px;background:#3a3a3a;color:#fff;cursor:pointer}
+.bottom-make:hover{background:#4a4a4a}
+.bottom-make:disabled{opacity:.45;cursor:not-allowed}
+
+/* Right preview */
+.previewTop{padding:14px 14px 10px;border-bottom:1px solid #2b2b2b}
+.previewTitle{font-size:14px;color:#fff}
+.previewBox{margin:14px;border:1px solid #2b2b2b;border-radius:14px;background:#121212;overflow:hidden;display:flex;align-items:center;justify-content:center;height:360px;cursor:zoom-in}
+.previewBox img{width:100%;height:100%;object-fit:contain;display:none;background:#000}
+.previewEmpty{color:var(--muted);font-size:13px}
+
+.link-remove{pointer-events:all;cursor:pointer}
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="toolbar">
-    <button class="tb" id="addSource">+ Source</button>
-    <button class="tb" id="addNode">+ Node</button>
+  <div id="left">
+    <div class="toolbar">
+      <button class="tb" id="addSource">+ Source</button>
+      <button class="tb" id="addNode">+ Node</button>
+    </div>
+    <div id="canvas"><svg id="connections"></svg></div>
+    <div class="notice">연결 해제: 선 더블클릭 / 선 중간 × 클릭 / 선 선택 후 Delete</div>
+    <div class="bottom-bar">
+      <textarea id="bottomPrompt" class="bottom-prompt" placeholder="Prompt"></textarea>
+      <button id="bottomMake" class="bottom-make">Make</button>
+    </div>
   </div>
-  <div id="canvas"><svg id="connections"></svg></div>
-  <div class="notice">Result / Final 노드는 처음엔 없음 · 렌더 후에만 생성</div>
+
+  <div id="right">
+    <div class="previewTop"><div class="previewTitle">Preview</div></div>
+    <div class="previewBox" id="previewBox">
+      <div class="previewEmpty" id="previewEmpty">미리보기</div>
+      <img id="previewImg" alt="" />
+    </div>
+  </div>
 </div>
+
 <input id="fileInput" type="file" accept="image/*" />
 <div id="fullscreen" class="fullscreen"><img id="fullscreenImg" alt="" /></div>
+
 <script>
 const canvas = document.getElementById('canvas');
 const svg = document.getElementById('connections');
 const fileInput = document.getElementById('fileInput');
 const fullscreen = document.getElementById('fullscreen');
 const fullscreenImg = document.getElementById('fullscreenImg');
-let nodes = [], links = [], zCounter = 5, drag = null, pendingUploadNode = null, connectStart = null, tempMouse = null, selectedLink = null;
+const bottomPrompt = document.getElementById('bottomPrompt');
+const bottomMake = document.getElementById('bottomMake');
+const previewBox = document.getElementById('previewBox');
+const previewImg = document.getElementById('previewImg');
+const previewEmpty = document.getElementById('previewEmpty');
+
+let nodes = [], links = [];
+let zCounter = 5;
+let drag = null;
+let pendingUploadNode = null;
+let connectStart = null;
+let tempMouse = null;
+let selectedLink = null;
+let selectedEngineId = null;
+
 const API_RENDER = '/api/render';
+
 function uid(prefix='n'){ return prefix + Math.random().toString(36).slice(2,9); }
+
 function renderNode(node){
   const el = document.createElement('div');
-  el.className = 'node' + (node.type === 'engine' ? ' small' : '') + (node.type === 'result' ? ' result' : '');
-  el.id = node.id; el.style.left = node.x + 'px'; el.style.top = node.y + 'px';
-  if(node.type === 'source') el.innerHTML = `<div class="node-header"><div class="node-title">Source</div><div class="node-actions"><button class="icon-btn delete-node">×</button></div></div><div class="node-body"><div class="image-box source-box ${node.image?'has-image':''}"><img src="${node.image||''}"><div class="ghost">Image</div></div></div><div class="port out" data-port="out"></div>`;
-  if(node.type === 'engine') el.innerHTML = `<div class="node-header"><div class="node-title">Node</div><div class="node-actions"><button class="icon-btn delete-node">×</button></div></div><div class="node-body"><select class="engine-select"><option>Flux Kontext Pro</option><option>Nano Banana 2</option><option>Image Engine</option></select><textarea class="prompt" placeholder="Prompt"></textarea><button class="make">Make</button><div class="loading" style="display:none">Rendering...</div></div><div class="port in" data-port="in"></div><div class="port out" data-port="out"></div>`;
-  if(node.type === 'result') el.innerHTML = `<div class="node-header"><div class="node-title">Result</div><div class="node-actions"><button class="icon-btn delete-node">×</button></div></div><div class="node-body"><div class="image-box result-box ${node.image?'has-image':''}"><img src="${node.image||''}"><div class="ghost">Image</div></div></div><div class="port in" data-port="in"></div><div class="port out" data-port="out"></div>`;
-  if(node.type === 'final') el.innerHTML = `<div class="node-header"><div class="node-title">Final</div><div class="node-actions"><button class="icon-btn delete-node">×</button></div></div><div class="node-body"><div class="image-box result-box ${node.image?'has-image':''}"><img src="${node.image||''}"><div class="ghost">Image</div></div></div><div class="port in" data-port="in"></div>`;
-  canvas.appendChild(el); bindNodeEvents(node, el); bringToFront(el); redraw();
-}
-function addSourceNode(x=90,y=120){ const n={id:uid('src_'),type:'source',x,y,image:null}; nodes.push(n); renderNode(n); }
-function addEngineNode(x=420,y=120){ const n={id:uid('eng_'),type:'engine',x,y,engine:'Flux Kontext Pro',prompt:''}; nodes.push(n); renderNode(n); }
-function addImageNode(type, x, y, image){ const n={id:uid(type==='final'?'fin_':'res_'),type,x,y,image}; nodes.push(n); renderNode(n); return n; }
-function bindNodeEvents(node, el){
-  el.querySelector('.node-header').addEventListener('mousedown', e=>{ if(e.target.closest('.icon-btn')) return; drag={id:node.id, dx:e.clientX-node.x, dy:e.clientY-node.y}; bringToFront(el); });
-  el.querySelector('.delete-node')?.addEventListener('click', e=>{ e.stopPropagation(); removeNode(node.id); });
-  if(node.type==='source') el.querySelector('.source-box').addEventListener('click', e=>{ e.stopPropagation(); pendingUploadNode=node.id; fileInput.click(); });
+  el.className = 'node' + (node.type==='engine' ? ' engine' : '');
+  el.id = node.id;
+  el.style.left = node.x + 'px';
+  el.style.top = node.y + 'px';
+
+  if(node.type==='source'){
+    el.innerHTML = `
+      <div class="node-header">
+        <div class="node-title">Source</div>
+        <div class="node-actions"><button class="icon-btn delete-node">×</button></div>
+      </div>
+      <div class="node-body">
+        <div class="image-box source-box ${node.image?'has-image':''}">
+          <img src="${node.image||''}">
+          <div class="ghost">Image</div>
+        </div>
+      </div>
+      <div class="port out" data-port="out"></div>`;
+  }
+
   if(node.type==='engine'){
-    const sel=el.querySelector('.engine-select'), ta=el.querySelector('.prompt'); sel.value=node.engine; ta.value=node.prompt;
-    sel.addEventListener('change', ()=>node.engine=sel.value); ta.addEventListener('input', ()=>node.prompt=ta.value);
+    el.innerHTML = `
+      <div class="node-header">
+        <div class="node-title">Node</div>
+        <div class="node-actions"><button class="icon-btn delete-node">×</button></div>
+      </div>
+      <div class="node-body">
+        <div class="image-box engine-preview ${node.previewImage?'has-image':''}">
+          <img src="${node.previewImage||''}">
+          <div class="ghost">Image</div>
+        </div>
+        <select class="engine-select">
+          <option>Flux Kontext Pro</option>
+          <option>Nano Banana 2</option>
+          <option>Image Engine</option>
+        </select>
+        <textarea class="prompt" placeholder="Prompt"></textarea>
+        <button class="make">Make</button>
+        <div class="loading">Rendering...</div>
+      </div>
+      <div class="port in" data-port="in"></div>
+      <div class="port ref" data-port="ref"></div>
+      <div class="port out" data-port="out"></div>`;
+  }
+
+  if(node.type==='result'){
+    el.innerHTML = `
+      <div class="node-header">
+        <div class="node-title">Result</div>
+        <div class="node-actions"><button class="icon-btn delete-node">×</button></div>
+      </div>
+      <div class="node-body">
+        <div class="image-box result-box ${node.image?'has-image':''}">
+          <img src="${node.image||''}">
+          <div class="ghost">Image</div>
+        </div>
+      </div>
+      <div class="port in" data-port="in"></div>`;
+  }
+
+  if(node.type==='final'){
+    el.innerHTML = `
+      <div class="node-header">
+        <div class="node-title">Final</div>
+        <div class="node-actions"><button class="icon-btn delete-node">×</button></div>
+      </div>
+      <div class="node-body">
+        <div class="image-box result-box ${node.image?'has-image':''}">
+          <img src="${node.image||''}">
+          <div class="ghost">Image</div>
+        </div>
+      </div>
+      <div class="port in" data-port="in"></div>`;
+  }
+
+  canvas.appendChild(el);
+  bindNodeEvents(node, el);
+  bringToFront(el);
+  redraw();
+}
+
+function addSourceNode(x=90,y=120){
+  const n={id:uid('src_'),type:'source',x,y,image:null};
+  nodes.push(n);
+  renderNode(n);
+}
+
+function addEngineNode(x=420,y=160){
+  const n={id:uid('eng_'),type:'engine',x,y,engine:'Flux Kontext Pro',prompt:'',previewImage:null};
+  nodes.push(n);
+  renderNode(n);
+  selectEngine(n.id);
+}
+
+function addImageNode(type, x, y, image){
+  const n={id:uid(type==='final'?'fin_':'res_'),type,x,y,image};
+  nodes.push(n);
+  renderNode(n);
+  return n;
+}
+
+function bindNodeEvents(node, el){
+  el.addEventListener('mousedown', ()=>{
+    if(node.type==='engine') selectEngine(node.id);
+  });
+
+  el.querySelector('.node-header').addEventListener('mousedown', e=>{
+    if(e.target.closest('.icon-btn')) return;
+    drag={id:node.id, dx:e.clientX-node.x, dy:e.clientY-node.y};
+    bringToFront(el);
+  });
+
+  el.querySelector('.delete-node')?.addEventListener('click', e=>{e.stopPropagation(); removeNode(node.id);});
+
+  if(node.type==='source'){
+    el.querySelector('.source-box').addEventListener('click', e=>{e.stopPropagation(); pendingUploadNode=node.id; fileInput.click();});
+  }
+
+  if(node.type==='engine'){
+    const sel = el.querySelector('.engine-select');
+    const ta = el.querySelector('.prompt');
+    sel.value = node.engine;
+    ta.value = node.prompt;
+    sel.addEventListener('change', ()=>node.engine=sel.value);
+    ta.addEventListener('input', ()=>{
+      node.prompt = ta.value;
+      if(selectedEngineId===node.id) bottomPrompt.value = node.prompt;
+    });
     el.querySelector('.make').addEventListener('click', ()=>runEngine(node.id));
   }
-  if(node.type==='result' || node.type==='final') el.querySelector('.result-box').addEventListener('click', e=>{ e.stopPropagation(); if(node.image) toggleFullscreen(node.image); });
+
+  if(node.type==='result' || node.type==='final'){
+    el.querySelector('.result-box').addEventListener('click', e=>{
+      e.stopPropagation();
+      if(node.image){
+        showPreview(node.image);
+        toggleFullscreen(node.image);
+      }
+    });
+  }
+
+  // Ports
   el.querySelectorAll('.port').forEach(port=>{
-    port.addEventListener('mousedown', e=>{ e.stopPropagation(); selectedLink=null; redraw(); connectStart={nodeId:node.id, port:port.dataset.port}; });
-    port.addEventListener('mouseup', e=>{ e.stopPropagation(); if(!connectStart) return; if(connectStart.nodeId===node.id){ connectStart=null; tempMouse=null; redraw(); return; }
-      if(connectStart.port==='out' && port.dataset.port==='in') { if(!links.some(l=>l.from===connectStart.nodeId && l.to===node.id)) links.push({id:uid('ln_'), from:connectStart.nodeId, to:node.id}); }
-      connectStart=null; tempMouse=null; redraw();
+    port.addEventListener('mousedown', e=>{e.stopPropagation(); selectedLink=null; connectStart={nodeId:node.id, port:port.dataset.port};});
+    port.addEventListener('mouseup', e=>{
+      e.stopPropagation();
+      if(!connectStart) return;
+      if(connectStart.nodeId===node.id){ connectStart=null; tempMouse=null; redraw(); return; }
+      const fromPort = connectStart.port;
+      const toPort = port.dataset.port;
+      // Allow out -> in / out -> ref
+      if(fromPort==='out' && (toPort==='in' || toPort==='ref')){
+        // single link per (to, toPort)
+        links = links.filter(l => !(l.to===node.id && l.toPort===toPort));
+        links.push({id:uid('ln_'), from:connectStart.nodeId, to:node.id, toPort});
+      }
+      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw();
     });
   });
 }
+
 function bringToFront(el){ zCounter += 1; el.style.zIndex = zCounter; }
-function removeNode(id){ links = links.filter(l=>l.from!==id && l.to!==id); nodes = nodes.filter(n=>n.id!==id); document.getElementById(id)?.remove(); redraw(); }
-function removeLink(id){ links = links.filter(l=>l.id!==id); if(selectedLink===id) selectedLink=null; redraw(); }
-function getNodeRect(node){ const el=document.getElementById(node.id); return {w:el.offsetWidth,h:el.offsetHeight}; }
-function getPortPos(nodeId, kind){ const node=nodes.find(n=>n.id===nodeId); const rect=getNodeRect(node); return kind==='out'?{x:node.x+rect.w,y:node.y+rect.h/2}:{x:node.x,y:node.y+rect.h/2}; }
-function redraw(){ svg.setAttribute('width', canvas.clientWidth); svg.setAttribute('height', canvas.clientHeight); svg.innerHTML=''; document.querySelectorAll('.ghost').forEach(g=>g.style.display = g.parentElement.classList.contains('has-image') ? 'none':'block');
-  links.forEach(link=>{ const from=getPortPos(link.from,'out'), to=getPortPos(link.to,'in'), mx=(from.x+to.x)/2; const path=document.createElementNS('http://www.w3.org/2000/svg','path'); path.setAttribute('d',`M ${from.x} ${from.y} C ${mx} ${from.y}, ${mx} ${to.y}, ${to.x} ${to.y}`); path.setAttribute('fill','none'); path.setAttribute('stroke',selectedLink===link.id?'#ffffff':'#8a8a8a'); path.setAttribute('stroke-width',selectedLink===link.id?'3':'2'); path.setAttribute('class','line-hit'); path.style.pointerEvents='stroke'; path.addEventListener('click',e=>{ e.stopPropagation(); selectedLink=link.id; redraw(); }); path.addEventListener('dblclick',e=>{ e.stopPropagation(); removeLink(link.id); }); svg.appendChild(path); });
-  if(connectStart && tempMouse){ const from=getPortPos(connectStart.nodeId, connectStart.port), mx=(from.x+tempMouse.x)/2; const path=document.createElementNS('http://www.w3.org/2000/svg','path'); path.setAttribute('d',`M ${from.x} ${from.y} C ${mx} ${from.y}, ${mx} ${tempMouse.y}, ${tempMouse.x} ${tempMouse.y}`); path.setAttribute('fill','none'); path.setAttribute('stroke','#ffffff'); path.setAttribute('stroke-width','2'); path.setAttribute('stroke-dasharray','5 5'); svg.appendChild(path); }
+
+function removeNode(id){
+  links = links.filter(l=>l.from!==id && l.to!==id);
+  nodes = nodes.filter(n=>n.id!==id);
+  document.getElementById(id)?.remove();
+  if(selectedEngineId===id) selectEngine(null);
+  syncAllEnginePreviews();
+  redraw();
 }
-function connectedInputImage(engineId){ const incoming=links.filter(l=>l.to===engineId); for(const link of incoming){ const src=nodes.find(n=>n.id===link.from); if(src && src.image) return src.image; } return null; }
-function latestDownstreamResult(engineId){ return nodes.find(n => (n.type==='result'||n.type==='final') && links.some(l=>l.from===engineId && l.to===n.id)); }
+
+function removeLink(id){
+  links = links.filter(l=>l.id!==id);
+  if(selectedLink===id) selectedLink=null;
+  syncAllEnginePreviews();
+  redraw();
+}
+
+function getNodeRect(node){
+  const el=document.getElementById(node.id);
+  return {w:el.offsetWidth,h:el.offsetHeight};
+}
+
+function getPortPos(nodeId, kind){
+  const node=nodes.find(n=>n.id===nodeId);
+  const rect=getNodeRect(node);
+  if(kind==='out') return {x:node.x+rect.w, y:node.y+rect.h/2};
+  // in
+  return {x:node.x, y:node.y+rect.h/2};
+}
+
+function getPortPosTo(nodeId, toPort){
+  const node=nodes.find(n=>n.id===nodeId);
+  const rect=getNodeRect(node);
+  const y = toPort==='ref' ? (node.y + rect.h*0.65) : (node.y + rect.h*0.5);
+  return {x:node.x, y};
+}
+
+function syncEnginePreview(engineNode){
+  const mainLink = links.find(l=>l.to===engineNode.id && l.toPort==='in');
+  let img = null;
+  if(mainLink){
+    const src = nodes.find(n=>n.id===mainLink.from);
+    img = src?.image || null;
+  }
+  engineNode.previewImage = img;
+  const el = document.getElementById(engineNode.id);
+  if(el){
+    const box = el.querySelector('.engine-preview');
+    const im = el.querySelector('.engine-preview img');
+    im.src = img || '';
+    box.classList.toggle('has-image', !!img);
+  }
+}
+
+function syncAllEnginePreviews(){ nodes.filter(n=>n.type==='engine').forEach(syncEnginePreview); }
+
+function redraw(){
+  svg.setAttribute('width', canvas.clientWidth);
+  svg.setAttribute('height', canvas.clientHeight);
+  svg.innerHTML='';
+
+  // Update ghosts
+  document.querySelectorAll('.ghost').forEach(g=>{
+    const box=g.parentElement;
+    g.style.display = box.classList.contains('has-image') ? 'none' : 'block';
+  });
+
+  // Draw links
+  links.forEach(link=>{
+    const from = getPortPos(link.from, 'out');
+    const to = getPortPosTo(link.to, link.toPort);
+    const mx = (from.x + to.x) / 2;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M ${from.x} ${from.y} C ${mx} ${from.y}, ${mx} ${to.y}, ${to.x} ${to.y}`);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', selectedLink===link.id ? '#ffffff' : '#8a8a8a');
+    path.setAttribute('stroke-width', selectedLink===link.id ? '3' : '2');
+    path.setAttribute('class','line-hit');
+    path.style.pointerEvents='stroke';
+    path.addEventListener('click', e=>{e.stopPropagation(); selectedLink=link.id; redraw();});
+    path.addEventListener('dblclick', e=>{e.stopPropagation(); removeLink(link.id);});
+    svg.appendChild(path);
+
+    // remove handle
+    const cx=(from.x+to.x)/2, cy=(from.y+to.y)/2;
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','link-remove');
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',10);
+    c.setAttribute('fill','#1f1f1f'); c.setAttribute('stroke','#5a5a5a');
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',cx); t.setAttribute('y',cy+4); t.setAttribute('fill','#fff');
+    t.setAttribute('font-size','12'); t.setAttribute('text-anchor','middle');
+    t.textContent='×';
+    g.appendChild(c); g.appendChild(t);
+    g.addEventListener('click', e=>{e.stopPropagation(); removeLink(link.id);});
+    svg.appendChild(g);
+  });
+
+  // temp line
+  if(connectStart && tempMouse){
+    const from = getPortPos(connectStart.nodeId, connectStart.port);
+    const mx = (from.x + tempMouse.x) / 2;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M ${from.x} ${from.y} C ${mx} ${from.y}, ${mx} ${tempMouse.y}, ${tempMouse.x} ${tempMouse.y}`);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke','#ffffff');
+    path.setAttribute('stroke-width','2');
+    path.setAttribute('stroke-dasharray','5 5');
+    svg.appendChild(path);
+  }
+}
+
+function getInputImages(engineId){
+  const mainLink = links.find(l=>l.to===engineId && l.toPort==='in');
+  const refLink = links.find(l=>l.to===engineId && l.toPort==='ref');
+  const mainNode = mainLink ? nodes.find(n=>n.id===mainLink.from) : null;
+  const refNode = refLink ? nodes.find(n=>n.id===refLink.from) : null;
+  return {main: mainNode?.image || null, ref: refNode?.image || null, mainType: mainNode?.type || null};
+}
+
+function findDownstream(engineId, type){
+  const l = links.find(x=>x.from===engineId && nodes.find(n=>n.id===x.to && n.type===type));
+  return l ? nodes.find(n=>n.id===l.to) : null;
+}
+
 async function runEngine(engineId){
-  const engineNode=nodes.find(n=>n.id===engineId), el=document.getElementById(engineId), btn=el.querySelector('.make'), loading=el.querySelector('.loading');
-  const inputImage=connectedInputImage(engineId); if(!inputImage){ alert('이미지를 연결해줘.'); return; }
-  btn.disabled=true; loading.style.display='block';
+  const engineNode = nodes.find(n=>n.id===engineId);
+  if(!engineNode) return;
+  const el = document.getElementById(engineId);
+  const btn = el.querySelector('.make');
+  const loading = el.querySelector('.loading');
+
+  const {main, ref, mainType} = getInputImages(engineId);
+  if(!main){ alert('이미지를 연결해줘.'); return; }
+
+  btn.disabled = true;
+  bottomMake.disabled = true;
+  loading.style.display = 'block';
+
   try{
-    let outputImage = inputImage;
+    let outputImage = main;
     try{
-      const res = await fetch(API_RENDER, {method:'POST', headers:{'Content-Type':'application/json; charset=utf-8'}, body:JSON.stringify({engine:engineNode.engine, prompt:String(engineNode.prompt||''), image:inputImage})});
-      if(res.ok){ const data=await res.json(); outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image || inputImage); }
-    }catch(_e){}
-    const existing = latestDownstreamResult(engineId);
-    if(existing){ existing.image = outputImage; const box=document.getElementById(existing.id).querySelector('.image-box'); const img=document.getElementById(existing.id).querySelector('img'); img.src=outputImage; box.classList.add('has-image'); }
-    else {
-      const result = addImageNode('result', engineNode.x + 340, engineNode.y + 8, outputImage);
-      links.push({id:uid('ln_'), from:engineId, to:result.id});
+      const res = await fetch(API_RENDER, {
+        method:'POST',
+        headers:{'Content-Type':'application/json; charset=utf-8'},
+        body: JSON.stringify({ engine: engineNode.engine, prompt: String(engineNode.prompt||''), image: main, refImage: ref })
+      });
+      if(res.ok){
+        const data = await res.json();
+        outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image || main);
+      }
+    } catch(_e) {}
+
+    // stage rule: if input is a Result node => create/update Final only; else create/update Result
+    const targetType = (mainType === 'result') ? 'final' : 'result';
+    const existing = findDownstream(engineId, targetType);
+    if(existing){
+      existing.image = outputImage;
+      const exEl = document.getElementById(existing.id);
+      const box = exEl.querySelector('.image-box');
+      const img = exEl.querySelector('img');
+      img.src = outputImage;
+      box.classList.add('has-image');
+    } else {
+      const newNode = addImageNode(targetType, engineNode.x + 420, engineNode.y + (targetType==='final'? 0: 10), outputImage);
+      links.push({id: uid('ln_'), from: engineId, to: newNode.id, toPort: 'in'});
     }
+
+    showPreview(outputImage);
+    syncAllEnginePreviews();
     redraw();
-  } finally { btn.disabled=false; loading.style.display='none'; }
+
+  } finally {
+    btn.disabled = false;
+    bottomMake.disabled = false;
+    loading.style.display = 'none';
+  }
 }
-fileInput.addEventListener('change', e=>{ const file=e.target.files[0]; if(!file||!pendingUploadNode) return; const reader=new FileReader(); reader.onload=ev=>{ const node=nodes.find(n=>n.id===pendingUploadNode); if(!node) return; node.image=ev.target.result; const el=document.getElementById(node.id); el.querySelector('img').src=node.image; el.querySelector('.image-box').classList.add('has-image'); redraw(); }; reader.readAsDataURL(file); e.target.value=''; });
-document.addEventListener('mousemove', e=>{ if(drag){ const node=nodes.find(n=>n.id===drag.id); node.x=Math.max(20,e.clientX-drag.dx); node.y=Math.max(20,e.clientY-drag.dy); const el=document.getElementById(node.id); el.style.left=node.x+'px'; el.style.top=node.y+'px'; redraw(); } if(connectStart){ const rect=canvas.getBoundingClientRect(); tempMouse={x:e.clientX-rect.left,y:e.clientY-rect.top}; redraw(); } });
-document.addEventListener('mouseup', ()=>{ drag=null; if(connectStart && !tempMouse) connectStart=null; });
-document.addEventListener('keydown', e=>{ if((e.key==='Delete'||e.key==='Backspace') && selectedLink) removeLink(selectedLink); });
-canvas.addEventListener('click', ()=>{ selectedLink=null; redraw(); });
-document.getElementById('addSource').addEventListener('click', ()=>addSourceNode(80 + Math.random()*180, 100 + Math.random()*220));
-document.getElementById('addNode').addEventListener('click', ()=>addEngineNode(380 + Math.random()*220, 110 + Math.random()*220));
-function toggleFullscreen(src){ if(fullscreen.classList.contains('on') && fullscreenImg.src===src){ fullscreen.classList.remove('on'); fullscreenImg.src=''; } else { fullscreenImg.src=src; fullscreen.classList.add('on'); } }
+
+function showPreview(src){
+  if(!src) return;
+  previewImg.src = src;
+  previewImg.style.display = 'block';
+  previewEmpty.style.display = 'none';
+}
+
+function selectEngine(id){
+  selectedEngineId = id;
+  const node = nodes.find(n=>n.id===id);
+  if(node && node.type==='engine'){
+    bottomPrompt.value = node.prompt || '';
+    bottomPrompt.disabled = false;
+    bottomMake.disabled = false;
+  } else {
+    bottomPrompt.value = '';
+    bottomPrompt.disabled = true;
+    bottomMake.disabled = true;
+  }
+}
+
+bottomPrompt.addEventListener('input', ()=>{
+  if(!selectedEngineId) return;
+  const node = nodes.find(n=>n.id===selectedEngineId);
+  if(!node || node.type!=='engine') return;
+  node.prompt = bottomPrompt.value;
+  const el = document.getElementById(selectedEngineId);
+  el.querySelector('.prompt').value = node.prompt;
+});
+
+bottomMake.addEventListener('click', ()=>{
+  if(selectedEngineId) runEngine(selectedEngineId);
+});
+
+fileInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file || !pendingUploadNode) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const node = nodes.find(n=>n.id===pendingUploadNode);
+    if(!node) return;
+    node.image = ev.target.result;
+    const el = document.getElementById(node.id);
+    el.querySelector('img').src = node.image;
+    el.querySelector('.image-box').classList.add('has-image');
+    syncAllEnginePreviews();
+    redraw();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+// Drag & connect
+
+document.addEventListener('mousemove', e=>{
+  if(drag){
+    const node = nodes.find(n=>n.id===drag.id);
+    node.x = Math.max(20, e.clientX - drag.dx);
+    node.y = Math.max(20, e.clientY - drag.dy);
+    const el = document.getElementById(node.id);
+    el.style.left = node.x + 'px';
+    el.style.top = node.y + 'px';
+    redraw();
+  }
+  if(connectStart){
+    const rect = canvas.getBoundingClientRect();
+    tempMouse = {x: e.clientX - rect.left, y: e.clientY - rect.top};
+    redraw();
+  }
+});
+
+document.addEventListener('mouseup', ()=>{ drag = null; connectStart = null; tempMouse = null; redraw(); });
+
+document.addEventListener('keydown', e=>{
+  if((e.key==='Delete' || e.key==='Backspace') && selectedLink){
+    removeLink(selectedLink);
+  }
+});
+
+canvas.addEventListener('click', ()=>{ selectedLink = null; redraw(); });
+
+// Toolbar
+
+document.getElementById('addSource').addEventListener('click', ()=>addSourceNode(80 + Math.random()*220, 90 + Math.random()*260));
+document.getElementById('addNode').addEventListener('click', ()=>addEngineNode(360 + Math.random()*260, 110 + Math.random()*240));
+
+// Fullscreen
+function toggleFullscreen(src){
+  if(fullscreen.classList.contains('on') && fullscreenImg.src===src){ fullscreen.classList.remove('on'); fullscreenImg.src=''; }
+  else { fullscreenImg.src = src; fullscreen.classList.add('on'); }
+}
 fullscreen.addEventListener('click', ()=>{ fullscreen.classList.remove('on'); fullscreenImg.src=''; });
-addSourceNode(); addEngineNode();
+previewBox.addEventListener('click', ()=>{ if(previewImg.src) toggleFullscreen(previewImg.src); });
+
+// Initial
+addSourceNode();
+addEngineNode();
 </script>
 </body>
 </html>
