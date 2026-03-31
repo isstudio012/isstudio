@@ -12,7 +12,7 @@ button,input,select,textarea{font:inherit}
 #app{width:100%;height:100%;display:grid;grid-template-columns:1fr 420px;grid-template-rows:1fr;}
 #left{position:relative;overflow:hidden}
 #right{border-left:1px solid #2b2b2b;background:#151515;display:flex;flex-direction:column}
-#canvas{position:absolute;inset:0 0 108px 0;overflow:hidden;background:var(--bg);zoom:1}
+#canvas{position:absolute;top:0;left:0;overflow:visible;background:var(--bg);zoom:1}
 #canvas.panning{cursor:grabbing}
 #connections{position:absolute;inset:0;pointer-events:auto;z-index:2}
 .toolbar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:20}
@@ -147,6 +147,22 @@ let selectedNodeId = null;
 let canvasZoom = 1;
 let panMode = null;
 let sourceLauncherDrag = null;
+
+function resizeWorld(){
+  const leftPane = document.getElementById('left');
+  const bottomBar = document.querySelector('.bottom-bar');
+  const viewportW = leftPane.clientWidth;
+  const viewportH = leftPane.clientHeight - (bottomBar ? bottomBar.offsetHeight : 108);
+
+  // When zooming out, enlarge the internal world so the visible range expands instead of shrinking.
+  canvas.style.width = (viewportW / canvasZoom) + 'px';
+  canvas.style.height = (viewportH / canvasZoom) + 'px';
+}
+
+window.addEventListener('resize', ()=>{
+  resizeWorld();
+  redraw();
+});
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
@@ -852,8 +868,8 @@ document.addEventListener('mousemove', e=>{
     const rawX = (e.clientX - rect.left)/canvasZoom - drag.offsetX;
     const rawY = (e.clientY - rect.top)/canvasZoom - drag.offsetY;
 
-    const maxX = Math.max(20, canvas.clientWidth / canvasZoom - el.offsetWidth - 20);
-    const maxY = Math.max(20, canvas.clientHeight / canvasZoom - el.offsetHeight - 20);
+    const maxX = Math.max(20, canvas.clientWidth - el.offsetWidth - 20);
+    const maxY = Math.max(20, canvas.clientHeight - el.offsetHeight - 20);
 
     node.x = Math.max(20, Math.min(maxX, rawX));
     node.y = Math.max(20, Math.min(maxY, rawY));
