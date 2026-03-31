@@ -3,62 +3,28 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VizMaker - fixed connect</title>
+<title>VizMaker - workflow fixed</title>
 <style>
-:root{
-  --bg:#0f1115;--panel:#171a20;--panel2:#1d2129;--line:#2b313d;--text:#f3f4f6;--muted:#9aa2af;
-  --blue:#27a7ff;--purple:#8b5cf6;--green:#22c55e;--red:#ef4444;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;height:100vh;overflow:hidden}
-.app{display:grid;grid-template-columns:60px 1fr 320px;height:100vh}
-.sidebar{background:#111318;border-right:1px solid #222834;padding:12px 8px;display:flex;flex-direction:column;gap:8px}
-.sidebtn{width:44px;height:44px;border-radius:12px;border:1px solid #262c38;background:#171b22;color:#cbd5e1;display:grid;place-items:center;font-size:12px}
-.canvas-wrap{position:relative;overflow:hidden}
-.canvas-wrap::before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,#242a35 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
-#canvas{position:absolute;inset:0;overflow:hidden}
-#connSvg{position:absolute;inset:0;pointer-events:auto;z-index:2}
-.toolbar{position:absolute;top:16px;left:16px;z-index:10;display:flex;gap:8px}
-.toolbtn{height:36px;padding:0 12px;border-radius:10px;border:1px solid #29303b;background:#181d24;color:#dbe2ea;cursor:pointer}
-.status{position:absolute;top:16px;left:240px;z-index:10;min-height:36px;padding:8px 12px;border-radius:10px;background:rgba(16,24,40,.9);border:1px solid #2b3340;color:#dbe2ea;font-size:13px;display:flex;align-items:center;gap:8px}
-.status b{color:#fff}
-.bottom{position:absolute;left:16px;right:16px;bottom:16px;display:flex;gap:10px;z-index:10}
-.btn{height:54px;padding:0 16px;border-radius:12px;border:1px solid #2a3240;background:#1b2028;color:#e5e7eb;cursor:pointer;font-weight:600}
-.btn.primary{background:linear-gradient(180deg,#1c8cf0,#1673d0);border-color:#1574d6}
-.prompt{flex:1;height:54px;border-radius:12px;border:1px solid #2a3240;background:#171b22;color:#fff;padding:14px 16px;outline:none}
-.right{background:#171a20;border-left:1px solid #222834;padding:14px;display:flex;flex-direction:column;gap:14px}
-.card{background:#1c2027;border:1px solid #2a313d;border-radius:14px;overflow:hidden}
-.card h3{margin:0;padding:12px 14px;border-bottom:1px solid #2a313d;font-size:13px}
-.preview{height:220px;display:grid;place-items:center;background:#14181f;color:#8f98a8}
-.preview img{width:100%;height:100%;object-fit:cover;display:block}
-.select,.input{width:100%;height:40px;border-radius:10px;border:1px solid #2a313d;background:#151921;color:#fff;padding:0 12px;outline:none}
-.label{font-size:12px;color:#9aa2af;margin:0 0 6px}
-.node{position:absolute;width:250px;background:#171b22;border:1px solid #313847;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.28);z-index:5;user-select:none}
-.node.selected{border-color:#39a8ff;box-shadow:0 0 0 2px rgba(39,167,255,.2),0 12px 30px rgba(0,0,0,.35)}
-.node.disabled{opacity:.45;filter:grayscale(1)}
-.node.collapsed .thumb{display:none}
-.node.collapsed .meta{padding-top:10px}
-.head{position:absolute;right:10px;top:-18px;display:flex;gap:8px;z-index:8}
-.head .iconbtn{width:40px;height:40px;border-radius:999px;border:1px solid #2f3542;background:#1a1e25;color:#fff;cursor:pointer;font-size:16px}
-.head .iconbtn.on{border-color:#2bd36b;color:#62f59c}
-.thumb{height:170px;border-radius:20px 20px 0 0;background:#222833;overflow:hidden;display:grid;place-items:center;color:#768194;position:relative}
-.thumb img{width:100%;height:100%;object-fit:cover;display:none}
-.thumb img.show{display:block}
-.meta{padding:14px 16px 16px}
-.title{font-weight:800;font-size:15px;margin-bottom:4px}
-.sub{font-size:12px;color:#96a0ad}
-.port{position:absolute;width:34px;height:34px;border-radius:999px;border:2px solid #36404f;background:#1f242c;display:grid;place-items:center;cursor:pointer;z-index:9;transition:.15s transform,.15s border-color,.15s box-shadow}
-.port:hover{transform:scale(1.08)}
-.port.active{box-shadow:0 0 0 6px rgba(39,167,255,.15)}
-.port.out{right:-17px;top:50%;transform:translateY(-50%)}
-.port.in{left:-17px;top:38%}
-.port.in2{left:-17px;top:62%;border-color:#6f56d9}
-.port .chev{font-size:18px;line-height:1;color:#cfd6df;pointer-events:none}
-.port.in2 .chev{color:#b698ff}
-.badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#0f2840;color:#57b8ff;font-size:11px;font-weight:700;margin-left:8px}
-.helper{padding:10px 12px;border-radius:12px;background:#111827;border:1px solid #273142;color:#c8d0da;font-size:12px;line-height:1.5}
-.helper code{color:#8cd1ff}
-.empty{padding:10px 12px;font-size:12px;color:#98a2b3}
+:root{--bg:#0d1015;--panel:#171b22;--panel2:#1d232c;--line:#2e3744;--text:#eef2f7;--muted:#94a3b8;--blue:#24a3ff;--purple:#9466ff;--green:#2fd37a;--red:#ef4444;--yellow:#fbbf24}
+*{box-sizing:border-box} html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+.app{display:grid;grid-template-columns:62px 1fr 320px;height:100vh}
+.sidebar{background:#11141a;border-right:1px solid #212733;padding:10px 8px;display:flex;flex-direction:column;gap:8px}.sidebtn{width:44px;height:44px;border-radius:12px;border:1px solid #262d39;background:#171b22;color:#d6dde8;display:grid;place-items:center;font-size:12px}
+.canvasWrap{position:relative;overflow:hidden}.canvasWrap:before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,#202734 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+#canvas{position:absolute;inset:0;overflow:hidden} #connSvg{position:absolute;inset:0;z-index:2;pointer-events:auto}
+.toolbar{position:absolute;left:14px;top:14px;z-index:20;display:flex;gap:8px;flex-wrap:wrap;max-width:900px}
+.toolbtn,.miniBtn,.nodeBtn,.dockBtn{border:1px solid #2b3441;background:#171d25;color:#e9eef6;border-radius:10px;cursor:pointer}.toolbtn{height:36px;padding:0 12px;font-weight:600}.toolbtn:hover,.miniBtn:hover,.nodeBtn:hover,.dockBtn:hover{filter:brightness(1.08)}
+.status{position:absolute;left:14px;top:62px;z-index:20;max-width:780px;min-height:38px;padding:10px 12px;background:rgba(17,24,39,.92);border:1px solid #2b3441;border-radius:12px;font-size:13px;color:#dae4ef;display:flex;align-items:center;gap:8px}
+.status b{color:#fff}.hint{color:#7dd3fc}
+.right{background:var(--panel);border-left:1px solid #212733;padding:14px;display:flex;flex-direction:column;gap:14px}.card{background:var(--panel2);border:1px solid #2a3341;border-radius:14px;overflow:hidden}.card h3{margin:0;padding:12px 14px;font-size:13px;border-bottom:1px solid #2a3341}.preview{height:220px;background:#12161d;display:grid;place-items:center;color:#7f8ca1}.preview img{width:100%;height:100%;object-fit:cover;display:block}.section{padding:14px;display:grid;gap:12px}.label{font-size:12px;color:var(--muted);margin-bottom:6px}.select,.input{width:100%;height:40px;border-radius:10px;border:1px solid #2b3441;background:#12171e;color:#fff;padding:0 12px;outline:none}
+.helper{padding:12px;border-radius:12px;background:#121722;border:1px solid #2a3341;color:#d4dbe5;font-size:12px;line-height:1.5}
+.helper code{color:#7dd3fc}.debug{font-size:12px;color:#9ba9bc;white-space:pre-wrap}
+.bottomDock{position:absolute;left:14px;right:14px;bottom:14px;z-index:20;display:flex;gap:10px;align-items:flex-end}.bottomDock.hidden{display:none}.promptBox{flex:1;min-height:60px;border:1px solid #2b3441;background:#151a21;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}.promptTop{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#9eb0c7}.promptInput{width:100%;min-height:42px;max-height:140px;resize:vertical;border:none;outline:none;background:transparent;color:#fff;font-size:13px;line-height:1.5}.dockBtn{height:56px;padding:0 18px;font-weight:700}.dockBtn.primary{background:linear-gradient(180deg,#1e96ff,#1776d9);border-color:#1776d9}.reopenDock{position:absolute;right:346px;bottom:16px;z-index:21;height:42px;padding:0 14px;display:none}.reopenDock.show{display:block}
+.node{position:absolute;width:276px;background:#171b22;border:1px solid #313b49;border-radius:22px;box-shadow:0 14px 40px rgba(0,0,0,.35);z-index:5;user-select:none}.node.selected{border-color:#36a7ff;box-shadow:0 0 0 2px rgba(36,163,255,.18),0 14px 40px rgba(0,0,0,.4)}.node.disabled{opacity:.46;filter:grayscale(1)}.node.collapsed .thumb,.node.collapsed .nodeBody{display:none}.node.collapsed .meta{padding-top:12px;padding-bottom:14px}.node.source{width:250px}.node.ref{width:220px}.node.ref .thumb{height:150px}.node.result{width:300px}
+.nodeHead{position:absolute;right:10px;top:-18px;display:flex;gap:8px;z-index:10}.nodeBtn{width:38px;height:38px;border-radius:999px;font-size:16px}.nodeBtn.on{border-color:var(--green);color:#79ffb2}.nodeBtn.delete{color:#ffb4b4}
+.thumb{height:170px;border-radius:22px 22px 0 0;background:#222a35;overflow:hidden;display:grid;place-items:center;color:#768399;position:relative}.thumb img{width:100%;height:100%;object-fit:cover;display:none}.thumb img.show{display:block}.placeholder{font-size:13px;color:#93a2b8;text-align:center;padding:12px}.meta{padding:14px 16px 8px}.title{font-size:15px;font-weight:800;margin-bottom:4px}.sub{font-size:12px;color:#9aa8bb}.badge{display:inline-block;margin-left:8px;padding:3px 8px;border-radius:999px;background:#10263a;color:#72c4ff;font-size:11px;font-weight:800}
+.nodeBody{padding:0 16px 16px}.nodePrompt{width:100%;min-height:72px;border-radius:12px;border:1px solid #2b3441;background:#12171e;color:#fff;padding:10px 12px;resize:vertical;outline:none;font-size:13px;line-height:1.45}.nodeActions{margin-top:8px;display:flex;gap:8px}.miniBtn{height:34px;padding:0 12px;font-size:12px;font-weight:700}.miniBtn.primary{background:linear-gradient(180deg,#1e96ff,#1776d9);border-color:#1776d9}.miniBtn.ghost{background:#131821}.miniBtn.warn{color:#ffd28c}.port{position:absolute;width:34px;height:34px;border-radius:999px;border:2px solid #374252;background:#1e242d;display:grid;place-items:center;cursor:pointer;z-index:9}.port:hover{transform:scale(1.08)}.port.active{box-shadow:0 0 0 6px rgba(36,163,255,.17)}.port .chev{font-size:18px;line-height:1;color:#d6dde8;pointer-events:none}.port.out{right:-17px;top:50%;transform:translateY(-50%)}.port.in{left:-17px;top:35%}.port.in2{left:-17px;top:58%;border-color:#7759f4}.port.in2 .chev{color:#c2b0ff}
+.linkDelete{position:absolute;z-index:30;padding:6px 10px;border-radius:10px;background:#111827;border:1px solid #334155;font-size:12px;display:none}.linkDelete.show{display:block}
+.small{font-size:11px;color:#9eb0c7}
 </style>
 </head>
 <body>
@@ -68,408 +34,313 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui
     <div class="sidebtn">프로젝트</div>
     <div class="sidebtn">히스토리</div>
   </div>
-
-  <div class="canvas-wrap">
+  <div class="canvasWrap">
     <div class="toolbar">
       <button class="toolbtn" id="fitBtn">Fit</button>
-      <button class="toolbtn" id="clearLinkBtn">Clear Links</button>
+      <button class="toolbtn" id="addSourceBtn">+ Source</button>
       <button class="toolbtn" id="addRefBtn">+ Reference</button>
+      <button class="toolbtn" id="addResultBtn">+ Result Node</button>
+      <button class="toolbtn" id="clearLinksBtn">Clear Links</button>
+      <button class="toolbtn" id="toggleDockBtn">입력창 숨기기</button>
     </div>
-    <div class="status" id="statusBox"><b>연결 방법:</b> 1번 <b>Source 오른쪽 포트</b>를 누른 뒤 2번 <b>Render 왼쪽 포트</b>를 눌러.</div>
+    <div class="status" id="statusBox"><b>사용법:</b> 출력 포트 클릭 → 입력 포트 클릭. <span class="hint">연결선 클릭 후 Delete</span> 또는 더블클릭으로 제거 가능.</div>
     <svg id="connSvg"></svg>
     <div id="canvas"></div>
-    <div class="bottom">
-      <input class="prompt" id="promptInput" placeholder="작업 지시 입력... 예: clear sunny 1 PM daylight, no yellow tint" />
-      <button class="btn" id="uploadSourceBtn">+ Source 이미지</button>
-      <button class="btn primary" id="makeBtn">Make</button>
+    <div class="linkDelete" id="linkDeleteBox">선택된 연결 · Delete / Backspace 로 제거</div>
+    <button class="toolbtn reopenDock" id="reopenDockBtn">입력창 다시 열기</button>
+    <div class="bottomDock" id="bottomDock">
+      <div class="promptBox">
+        <div class="promptTop"><span>공용 작업 지시</span><span class="small">선택된 Result 노드에 적용</span></div>
+        <textarea class="promptInput" id="globalPrompt" placeholder="예: clear sunny 1 PM daylight, no yellow tint"></textarea>
+      </div>
+      <button class="dockBtn" id="uploadBtn">+ Source 이미지</button>
+      <button class="dockBtn primary" id="makeSelectedBtn">선택 Result Make</button>
     </div>
-    <input type="file" id="sourceInput" accept="image/*" hidden />
-    <input type="file" id="refInput" accept="image/*" hidden />
+    <input type="file" id="sourceInput" accept="image/*" hidden>
+    <input type="file" id="refInput" accept="image/*" hidden>
   </div>
-
   <div class="right">
-    <div class="card">
-      <h3>Preview</h3>
-      <div class="preview" id="previewBox">결과 미리보기</div>
-    </div>
-    <div class="card" style="padding:14px;display:grid;gap:12px">
-      <div>
-        <div class="label">Engine</div>
-        <select class="select" id="engineSelect">
-          <option value="flux">Flux Kontext Pro</option>
-          <option value="nano">Nano Banana 2</option>
-        </select>
-      </div>
-      <div>
-        <div class="label">Replicate API key</div>
-        <input class="input" id="apiKeyInput" type="password" placeholder="r8_xxx" />
-      </div>
-      <div>
-        <div class="label">Time of day</div>
-        <select class="select" id="todSelect">
-          <option value="daytime, bright exterior daylight visible through windows">Day</option>
-          <option value="night time, dark exterior outside windows, interior lights on">Night</option>
-          <option value="sunset golden hour, warm orange light through windows">Sunset</option>
-        </select>
-      </div>
+    <div class="card"><h3>Preview</h3><div class="preview" id="previewBox">결과 미리보기</div></div>
+    <div class="card"><div class="section">
+      <div><div class="label">Engine</div><select class="select" id="engineSelect"><option value="flux">Flux Kontext Pro</option><option value="nano">Nano Banana 2</option></select></div>
+      <div><div class="label">Replicate API key</div><input class="input" id="apiKeyInput" type="password" placeholder="r8_xxx"></div>
+      <div><div class="label">Time of day</div><select class="select" id="todSelect"><option value="daytime, bright exterior daylight visible through windows">Day</option><option value="night time, dark exterior outside windows, interior lights on">Night</option><option value="sunset golden hour, warm orange light through windows">Sunset</option></select></div>
       <div class="helper">
-        이번 버전은 <code>클릭 연결</code> + <code>드래그 연결</code> 둘 다 됨.<br>
-        Source → Render 일반 입력 / Reference → Render 보라 입력.
+        1. <code>Source/Result 출력</code> → <code>Result 일반 입력(in)</code><br>
+        2. <code>Reference 출력</code> → <code>Result 보라 입력(in2)</code><br>
+        3. 각 <code>Result 노드 아래 프롬프트</code>에서 바로 수정 후 다시 Make 가능<br>
+        4. 결과가 나오면 그 Result도 다음 Result의 입력으로 재사용 가능
       </div>
-      <div class="empty" id="debugText">연결 없음</div>
-    </div>
+      <div class="debug" id="debugText">연결 없음</div>
+    </div></div>
   </div>
 </div>
-
 <script>
 const canvas = document.getElementById('canvas');
 const svg = document.getElementById('connSvg');
 const statusBox = document.getElementById('statusBox');
 const debugText = document.getElementById('debugText');
 const previewBox = document.getElementById('previewBox');
+const dock = document.getElementById('bottomDock');
+const reopenDockBtn = document.getElementById('reopenDockBtn');
+const linkDeleteBox = document.getElementById('linkDeleteBox');
 
-let zoom = 1, panX = 120, panY = 100;
-let dragNode = null, dragOffsetX = 0, dragOffsetY = 0;
-let panning = false, panStartX = 0, panStartY = 0;
-let linkStart = null; // {nodeId, type, x, y}
-let tempMouse = null;
-let nodes = [];
-let connections = [];
-let resultUrl = null;
+let zoom=1, panX=120, panY=80;
+let nodes=[], connections=[];
+let dragNode=null, dragDX=0, dragDY=0;
+let panning=false, panSX=0, panSY=0;
+let linkStart=null, tempMouse=null;
+let selectedNodeId=null, selectedConnId=null;
+let pendingUploadNodeId=null;
 
-function uid(prefix='n'){ return prefix + Math.random().toString(36).slice(2, 9); }
-function getNode(id){ return nodes.find(n => n.id === id); }
-function px(v){ return `${v}px`; }
-function setStatus(msg){ statusBox.innerHTML = msg; }
+function uid(p='n'){return p+Math.random().toString(36).slice(2,9)}
+function getNode(id){return nodes.find(n=>n.id===id)}
+function setStatus(html){statusBox.innerHTML=html}
+function worldToScreen(x,y){return {x:x*zoom+panX,y:y*zoom+panY}}
+function screenToWorld(x,y){return {x:(x-panX)/zoom,y:(y-panY)/zoom}}
+function sanitizePrompt(raw){return String(raw||'').normalize('NFKC').replace(/[\u2500-\u257F]/g,'-').replace(/[\u0000-\u001F\u007F]/g,' ').replace(/\s+/g,' ').trim()}
 
-function worldToScreen(x,y){ return { x:x*zoom + panX, y:y*zoom + panY }; }
-function screenToWorld(x,y){ return { x:(x-panX)/zoom, y:(y-panY)/zoom }; }
+function createNode(type,x,y){
+  const node={id:uid(type[0]),type,x,y,image:null,enabled:true,collapsed:false,prompt:'',lastPrompt:'',resultUrl:null};
+  nodes.push(node); renderNode(node); redraw(); return node;
+}
 
-function createNode(type, x, y){
-  const node = {
-    id: uid(type[0]), type, x, y, image:null, enabled:true, collapsed:false
-  };
-  nodes.push(node);
-  renderNode(node);
-  return node;
+function titleFor(node){
+  if(node.type==='source') return 'Source';
+  if(node.type==='ref') return 'Reference';
+  return 'Result';
+}
+function subFor(node){
+  if(node.type==='source') return '입력 이미지';
+  if(node.type==='ref') return '스타일/재질 기준';
+  return '결과 노드';
+}
+function placeholderFor(node){
+  if(node.type==='source') return 'Source 이미지 업로드';
+  if(node.type==='ref') return 'Reference 업로드';
+  return '렌더 결과';
 }
 
 function renderNode(node){
-  const el = document.createElement('div');
-  el.className = 'node';
-  el.id = node.id;
-  el.innerHTML = `
-    <div class="head">
-      <button class="iconbtn on" data-action="toggle" title="켜기/끄기">⏻</button>
-      <button class="iconbtn" data-action="collapse" title="접기/펼치기">▾</button>
-      ${node.type === 'render' ? '' : '<button class="iconbtn" data-action="delete" title="삭제">×</button>'}
+  const el=document.createElement('div');
+  el.className=`node ${node.type}`; el.id=node.id;
+  const resultExtra = node.type==='result' ? `
+    <div class="nodeBody">
+      <textarea class="nodePrompt" placeholder="이 Result 전용 프롬프트를 입력해. 다시 Make 하면 같은 노드에서 결과 갱신됨."></textarea>
+      <div class="nodeActions">
+        <button class="miniBtn ghost" data-action="apply-global">공용 프롬프트 가져오기</button>
+        <button class="miniBtn primary" data-action="make-node">Make</button>
+      </div>
+    </div>` : '';
+  const deleteBtn = node.type==='result' ? '<button class="nodeBtn delete" data-action="delete" title="삭제">×</button>' : '<button class="nodeBtn delete" data-action="delete" title="삭제">×</button>';
+  const outputPort = (node.type==='source'||node.type==='ref'||node.type==='result') ? '<div class="port out" data-port="out" title="출력"><span class="chev">›</span></div>' : '';
+  const inputPorts = node.type==='result' ? '<div class="port in" data-port="in" title="일반 입력"><span class="chev">›</span></div><div class="port in2" data-port="in2" title="Reference 입력"><span class="chev">›</span></div>' : '';
+  el.innerHTML=`
+    <div class="nodeHead">
+      <button class="nodeBtn on" data-action="toggle" title="켜기/끄기">⏻</button>
+      <button class="nodeBtn" data-action="collapse" title="접기/펼치기">▾</button>
+      ${deleteBtn}
     </div>
-    <div class="thumb" data-action="upload">
-      <img alt="" />
-      <div class="placeholder">${node.type === 'source' ? 'Source 이미지 업로드' : node.type === 'ref' ? 'Reference 업로드' : '렌더 결과'}</div>
-    </div>
-    <div class="meta">
-      <div class="title">${node.type === 'source' ? 'Source' : node.type === 'ref' ? 'Reference' : 'Render'} ${node.type === 'render' ? '<span class="badge">'+document.getElementById('engineSelect').selectedOptions[0].text+'</span>' : ''}</div>
-      <div class="sub">${node.type === 'source' ? '입력 이미지' : node.type === 'ref' ? '스타일/재질 기준' : '결과 노드'}</div>
-    </div>
-    ${node.type !== 'render' ? '<div class="port out" data-port="out" title="출력"><span class="chev">›</span></div>' : ''}
-    ${node.type === 'render' ? '<div class="port in" data-port="in" title="일반 입력"><span class="chev">›</span></div><div class="port in2" data-port="in2" title="Reference 입력"><span class="chev">›</span></div>' : ''}
-  `;
+    <div class="thumb" data-action="upload"><img alt=""><div class="placeholder">${placeholderFor(node)}</div></div>
+    <div class="meta"><div class="title">${titleFor(node)} ${node.type==='result'?'<span class="badge">'+document.getElementById('engineSelect').selectedOptions[0].text+'</span>':''}</div><div class="sub">${subFor(node)}</div></div>
+    ${resultExtra}
+    ${outputPort}
+    ${inputPorts}`;
   canvas.appendChild(el);
-  bindNode(el, node);
+  bindNode(el,node);
   updateNode(node.id);
 }
 
-function updateNode(nodeId){
-  const node = getNode(nodeId);
-  const el = document.getElementById(nodeId);
-  if(!node || !el) return;
-  el.style.left = px(node.x);
-  el.style.top = px(node.y);
-  el.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
-  el.style.transformOrigin = '0 0';
-  el.classList.toggle('disabled', !node.enabled);
-  el.classList.toggle('collapsed', node.collapsed);
-  const img = el.querySelector('img');
-  const ph = el.querySelector('.placeholder');
-  if(node.image){ img.src = node.image; img.classList.add('show'); ph.style.display='none'; }
-  else { img.classList.remove('show'); ph.style.display=''; }
-  if(node.type === 'render'){
-    const badge = el.querySelector('.badge');
-    if (badge) badge.textContent = document.getElementById('engineSelect').selectedOptions[0].text;
+function updateNode(id){
+  const node=getNode(id), el=document.getElementById(id); if(!node||!el) return;
+  el.style.left=node.x+'px'; el.style.top=node.y+'px'; el.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`; el.style.transformOrigin='0 0';
+  el.classList.toggle('disabled', !node.enabled); el.classList.toggle('collapsed', node.collapsed); el.classList.toggle('selected', selectedNodeId===id);
+  const img=el.querySelector('img'), ph=el.querySelector('.placeholder');
+  const displayImage=node.type==='result' ? (node.resultUrl||node.image) : node.image;
+  if(displayImage){img.src=displayImage; img.classList.add('show'); ph.style.display='none'} else {img.classList.remove('show'); ph.style.display='';}
+  if(node.type==='result'){
+    const badge=el.querySelector('.badge'); if(badge) badge.textContent=document.getElementById('engineSelect').selectedOptions[0].text;
+    const ta=el.querySelector('.nodePrompt'); if(ta && ta.value!==node.prompt) ta.value=node.prompt||'';
   }
 }
 
 function bindNode(el,node){
-  el.addEventListener('mousedown', (e)=>{
-    if (e.target.closest('.port') || e.target.closest('[data-action]')) return;
-    e.preventDefault();
-    const p = screenToWorld(e.clientX, e.clientY);
-    dragNode = node.id;
-    dragOffsetX = p.x - node.x;
-    dragOffsetY = p.y - node.y;
-    selectNode(node.id);
+  el.addEventListener('mousedown',e=>{
+    if(e.target.closest('.port')||e.target.closest('[data-action]')||e.target.closest('.nodePrompt')||e.target.closest('.miniBtn')) return;
+    e.preventDefault(); const p=screenToWorld(e.clientX,e.clientY); dragNode=node.id; dragDX=p.x-node.x; dragDY=p.y-node.y; selectNode(node.id);
   });
-
-  el.addEventListener('click', (e)=>{
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    e.stopPropagation();
-    const action = btn.dataset.action;
-    if (action === 'toggle') {
-      node.enabled = !node.enabled;
-      btn.classList.toggle('on', node.enabled);
-      updateNode(node.id);
-      redraw();
+  el.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-action]'); if(!btn) return; e.stopPropagation();
+    const action=btn.dataset.action;
+    if(action==='toggle'){node.enabled=!node.enabled; btn.classList.toggle('on', node.enabled); updateNode(node.id); redraw(); return;}
+    if(action==='collapse'){node.collapsed=!node.collapsed; btn.textContent=node.collapsed?'▸':'▾'; updateNode(node.id); redraw(); return;}
+    if(action==='delete'){removeNode(node.id); return;}
+    if(action==='upload'){
+      pendingUploadNodeId=node.id;
+      if(node.type==='source'||(node.type==='result'&&!node.resultUrl)) document.getElementById('sourceInput').click();
+      else if(node.type==='ref') document.getElementById('refInput').click();
+      return;
     }
-    if (action === 'collapse') {
-      node.collapsed = !node.collapsed;
-      btn.textContent = node.collapsed ? '▸' : '▾';
-      updateNode(node.id);
-      redraw();
-    }
-    if (action === 'delete' && node.type !== 'render') {
-      connections = connections.filter(c => c.from !== node.id && c.to !== node.id);
-      nodes = nodes.filter(n => n.id !== node.id);
-      el.remove();
-      redraw();
-      syncDebug();
-    }
-    if (action === 'upload') {
-      if(node.type === 'source') document.getElementById('sourceInput').click();
-      if(node.type === 'ref') document.getElementById('refInput').click();
-    }
+    if(action==='apply-global' && node.type==='result'){node.prompt=document.getElementById('globalPrompt').value; updateNode(node.id); setStatus('<b>프롬프트 복사:</b> 공용 입력값을 Result 노드에 넣었어.'); return;}
+    if(action==='make-node' && node.type==='result'){doRender(node.id); return;}
   });
-
-  const out = el.querySelector('.port.out');
-  if (out) {
-    out.addEventListener('mousedown', (e)=>{
-      e.preventDefault(); e.stopPropagation();
-      beginLink(node.id);
-    });
-    out.addEventListener('click', (e)=>{
-      e.preventDefault(); e.stopPropagation();
-      beginLink(node.id);
-    });
-  }
-
-  const inPort = el.querySelector('.port.in');
-  if (inPort) {
-    inPort.addEventListener('mousedown', (e)=>{ e.preventDefault(); e.stopPropagation(); finishLink(node.id,'in'); });
-    inPort.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); finishLink(node.id,'in'); });
-  }
-  const in2Port = el.querySelector('.port.in2');
-  if (in2Port) {
-    in2Port.addEventListener('mousedown', (e)=>{ e.preventDefault(); e.stopPropagation(); finishLink(node.id,'in2'); });
-    in2Port.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); finishLink(node.id,'in2'); });
-  }
+  const out=el.querySelector('.port.out'); if(out){['mousedown','click'].forEach(evt=>out.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();beginLink(node.id)}));}
+  const input1=el.querySelector('.port.in'); if(input1){['mousedown','click'].forEach(evt=>input1.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();finishLink(node.id,'in')}));}
+  const input2=el.querySelector('.port.in2'); if(input2){['mousedown','click'].forEach(evt=>input2.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();finishLink(node.id,'in2')}));}
+  const ta=el.querySelector('.nodePrompt'); if(ta){ta.addEventListener('input',()=>{node.prompt=ta.value;});}
 }
 
-function selectNode(id){
-  document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
-  if(id) document.getElementById(id)?.classList.add('selected');
+function removeNode(nodeId){
+  connections = connections.filter(c=>c.from!==nodeId && c.to!==nodeId);
+  nodes = nodes.filter(n=>n.id!==nodeId);
+  document.getElementById(nodeId)?.remove();
+  if(selectedNodeId===nodeId) selectedNodeId=null;
+  redraw(); syncDebug(); setStatus('<b>노드 삭제:</b> 관련 연결도 같이 지워졌어.');
 }
 
-function getPortWorldPos(nodeId, port){
-  const node = getNode(nodeId);
-  if(!node) return null;
-  const width = 250;
-  const height = node.collapsed ? 72 : 244;
-  if (port === 'out') return { x: node.x + width, y: node.y + height*0.5 };
-  if (port === 'in') return { x: node.x, y: node.y + height*0.38 };
-  if (port === 'in2') return { x: node.x, y: node.y + height*0.62 };
+function selectNode(id){selectedNodeId=id; document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected')); if(id) document.getElementById(id)?.classList.add('selected');}
+function selectConnection(id,screenX,screenY){selectedConnId=id; redraw(); linkDeleteBox.classList.add('show'); linkDeleteBox.style.left=(screenX+12)+'px'; linkDeleteBox.style.top=(screenY+12)+'px';}
+function clearSelectedConnectionUI(){selectedConnId=null; linkDeleteBox.classList.remove('show');}
+
+function getNodeDims(node){
+  const w = node.type==='source'?250:node.type==='ref'?220:300;
+  let h;
+  if(node.collapsed) h=74; else if(node.type==='source') h=236; else if(node.type==='ref') h=216; else h=376;
+  return {w,h};
+}
+function getPortWorldPos(nodeId,port){
+  const node=getNode(nodeId); if(!node) return null; const {w,h}=getNodeDims(node);
+  if(port==='out') return {x:node.x+w, y:node.y+h*0.5};
+  if(port==='in') return {x:node.x, y:node.y+h*0.35};
+  if(port==='in2') return {x:node.x, y:node.y+h*0.58};
   return null;
 }
 
 function beginLink(fromId){
-  const from = getNode(fromId);
-  if(!from || from.type === 'render' || !from.enabled) return;
-  linkStart = { nodeId: fromId, type: from.type };
-  tempMouse = null;
-  document.querySelectorAll('.port').forEach(p=>p.classList.remove('active'));
-  document.getElementById(fromId)?.querySelector('.port.out')?.classList.add('active');
-  if (from.type === 'source') setStatus('<b>연결 중:</b> 이제 2번 <b>Render 왼쪽 위 입력 포트</b>를 클릭해.');
-  if (from.type === 'ref') setStatus('<b>연결 중:</b> 이제 <b>Render 보라 입력 포트</b>를 클릭해.');
-  redraw();
+  const from=getNode(fromId); if(!from||!from.enabled) return; if(from.type==='ref') setStatus('<b>연결 중:</b> 이제 보라 입력 <b>in2</b> 클릭.'); else setStatus('<b>연결 중:</b> 원하는 Result 노드의 일반 입력 <b>in</b> 클릭.');
+  linkStart={nodeId:fromId,type:from.type}; tempMouse=null; clearSelectedConnectionUI(); document.querySelectorAll('.port').forEach(p=>p.classList.remove('active')); document.getElementById(fromId)?.querySelector('.port.out')?.classList.add('active'); redraw();
 }
-
-function finishLink(toId, port){
-  if(!linkStart) return;
-  const expected = linkStart.type === 'ref' ? 'in2' : 'in';
-  if (port !== expected) {
-    setStatus('<b>에러:</b> Source는 일반 입력(in), Reference는 보라 입력(in2)으로 연결해야 함.');
-    cancelLink();
-    return;
-  }
-  const exists = connections.some(c => c.from === linkStart.nodeId && c.to === toId && c.port === port);
-  if (!exists) connections.push({ id: uid('c'), from: linkStart.nodeId, to: toId, port });
-  cancelLink(false);
-  redraw();
-  syncDebug();
-  setStatus('<b>연결 완료:</b> 이제 아래 프롬프트 입력하고 Make 누르면 됨.');
+function finishLink(toId,port){
+  if(!linkStart) return; const from=getNode(linkStart.nodeId), to=getNode(toId); if(!from||!to||to.type!=='result'){cancelLink('<b>에러:</b> 출력은 Result 노드에만 연결 가능.'); return;}
+  const expected = from.type==='ref' ? 'in2' : 'in';
+  if(port!==expected){cancelLink('<b>에러:</b> Reference는 in2, Source/Result는 in 으로 연결해야 해.'); return;}
+  if(from.id===to.id){cancelLink('<b>에러:</b> 자기 자신에게 연결은 안 됨.'); return;}
+  // same target port gets replaced
+  connections = connections.filter(c=>!(c.to===toId && c.port===port));
+  const exists = connections.some(c=>c.from===from.id && c.to===toId && c.port===port);
+  if(!exists) connections.push({id:uid('c'),from:from.id,to:toId,port});
+  cancelLink('<b>연결 완료:</b> 선을 클릭하면 선택, Delete 또는 더블클릭으로 해제 가능.'); syncDebug(); redraw();
 }
+function cancelLink(msg){linkStart=null; tempMouse=null; document.querySelectorAll('.port').forEach(p=>p.classList.remove('active')); setStatus(msg||'<b>사용법:</b> 출력 포트 클릭 → 입력 포트 클릭.'); redraw();}
 
-function cancelLink(resetMsg=true){
-  linkStart = null; tempMouse = null;
-  document.querySelectorAll('.port').forEach(p=>p.classList.remove('active'));
-  if (resetMsg) setStatus('<b>연결 방법:</b> 1번 <b>Source 오른쪽 포트</b>를 누른 뒤 2번 <b>Render 왼쪽 포트</b>를 눌러.');
-  redraw();
-}
+function connectionLabel(c){const from=getNode(c.from), to=getNode(c.to); return `${from?.type||'?'}(${c.from.slice(0,4)}) → ${to?.type||'?'}:${c.port}`}
+function syncDebug(){ debugText.textContent = connections.length ? connections.map(connectionLabel).join('\n') : '연결 없음'; }
 
-function syncDebug(){
-  if(!connections.length){ debugText.textContent = '연결 없음'; return; }
-  debugText.textContent = connections.map(c => `${getNode(c.from)?.type} → ${c.port}`).join(' / ');
-}
-
-function drawPath(x1,y1,x2,y2,color,dashed=false,id=''){
-  const mid = (x1+x2)/2;
-  const p = document.createElementNS('http://www.w3.org/2000/svg','path');
-  p.setAttribute('d', `M ${x1} ${y1} C ${mid} ${y1}, ${mid} ${y2}, ${x2} ${y2}`);
-  p.setAttribute('stroke', color);
-  p.setAttribute('stroke-width', '4');
-  p.setAttribute('fill', 'none');
-  p.setAttribute('stroke-linecap', 'round');
-  if (dashed) p.setAttribute('stroke-dasharray', '10 8');
-  if (id) p.dataset.connId = id;
+function drawPath(x1,y1,x2,y2,color,id){
+  const mid=(x1+x2)/2;
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d',`M ${x1} ${y1} C ${mid} ${y1}, ${mid} ${y2}, ${x2} ${y2}`); p.setAttribute('stroke',color); p.setAttribute('stroke-width',selectedConnId===id?5:4); p.setAttribute('fill','none'); p.setAttribute('stroke-linecap','round'); p.dataset.connId=id; p.style.cursor='pointer';
+  if(selectedConnId===id) p.setAttribute('filter','drop-shadow(0 0 6px rgba(36,163,255,.7))');
+  p.addEventListener('click',e=>{e.stopPropagation(); selectConnection(id,e.clientX,e.clientY)});
+  p.addEventListener('dblclick',e=>{e.stopPropagation(); removeConnection(id)});
   return p;
 }
+function removeConnection(id){connections = connections.filter(c=>c.id!==id); clearSelectedConnectionUI(); redraw(); syncDebug(); setStatus('<b>연결 제거:</b> 다시 붙이면 돼.');}
 
 function redraw(){
-  svg.innerHTML = '';
-  svg.setAttribute('width', window.innerWidth);
-  svg.setAttribute('height', window.innerHeight);
-
-  connections.forEach(c => {
-    const s = getPortWorldPos(c.from, 'out');
-    const t = getPortWorldPos(c.to, c.port);
-    if(!s || !t) return;
-    const ss = worldToScreen(s.x, s.y);
-    const tt = worldToScreen(t.x, t.y);
-    const color = c.port === 'in2' ? '#8b5cf6' : '#27a7ff';
-    const path = drawPath(ss.x, ss.y, tt.x, tt.y, color, false, c.id);
-    path.style.cursor = 'pointer';
-    path.addEventListener('dblclick', (e)=>{
-      e.stopPropagation();
-      connections = connections.filter(x => x.id !== c.id);
-      redraw(); syncDebug();
-      setStatus('<b>연결 삭제:</b> 다시 연결하면 됨.');
-    });
-    svg.appendChild(path);
-    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    dot.setAttribute('cx', tt.x); dot.setAttribute('cy', tt.y); dot.setAttribute('r', '6'); dot.setAttribute('fill', color);
-    svg.appendChild(dot);
+  svg.innerHTML=''; svg.setAttribute('width',window.innerWidth); svg.setAttribute('height',window.innerHeight);
+  connections.forEach(c=>{
+    const s=getPortWorldPos(c.from,'out'), t=getPortWorldPos(c.to,c.port); if(!s||!t) return;
+    const ss=worldToScreen(s.x,s.y), tt=worldToScreen(t.x,t.y); const color=c.port==='in2'?'#9466ff':'#24a3ff';
+    svg.appendChild(drawPath(ss.x,ss.y,tt.x,tt.y,color,c.id));
+    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle'); dot.setAttribute('cx',tt.x); dot.setAttribute('cy',tt.y); dot.setAttribute('r',selectedConnId===c.id?7:6); dot.setAttribute('fill',color); svg.appendChild(dot);
   });
-
-  if(linkStart){
-    const s = getPortWorldPos(linkStart.nodeId, 'out');
-    if (s) {
-      const ss = worldToScreen(s.x,s.y);
-      const tm = tempMouse || ss;
-      const color = linkStart.type === 'ref' ? '#8b5cf6' : '#27a7ff';
-      svg.appendChild(drawPath(ss.x, ss.y, tm.x, tm.y, color, true));
-    }
-  }
-
+  if(linkStart){ const s=getPortWorldPos(linkStart.nodeId,'out'); if(s){ const ss=worldToScreen(s.x,s.y), tm=tempMouse||ss; const color=linkStart.type==='ref'?'#9466ff':'#24a3ff'; const ghost=drawPath(ss.x,ss.y,tm.x,tm.y,color,''); ghost.setAttribute('stroke-dasharray','10 8'); svg.appendChild(ghost); } }
   nodes.forEach(n=>updateNode(n.id));
 }
 
-function setNodeImage(nodeType, dataUrl){
-  const node = nodes.find(n => n.type === nodeType);
-  if (!node) return;
-  node.image = dataUrl;
-  updateNode(node.id);
-  if (nodeType === 'source') previewBox.innerHTML = `<img src="${dataUrl}" alt="">`;
+async function fileToDataUrl(file){return await new Promise((resolve,reject)=>{const r=new FileReader(); r.onload=e=>resolve(e.target.result); r.onerror=reject; r.readAsDataURL(file);})}
+function setNodeImage(nodeId,dataUrl){ const node=getNode(nodeId); if(!node) return; if(node.type==='result') node.resultUrl=dataUrl; else node.image=dataUrl; updateNode(nodeId); if(node.type!=='ref') previewBox.innerHTML=`<img src="${dataUrl}" alt="">`; redraw(); }
+
+function getResultInputs(resultId){
+  const main = connections.find(c=>c.to===resultId && c.port==='in');
+  const ref = connections.find(c=>c.to===resultId && c.port==='in2');
+  const mainNode = main ? getNode(main.from) : null;
+  const refNode = ref ? getNode(ref.from) : null;
+  const inputImage = mainNode ? (mainNode.type==='result' ? (mainNode.resultUrl||mainNode.image) : mainNode.image) : null;
+  return {mainNode, refNode, inputImage, refImage: refNode ? (refNode.type==='result' ? (refNode.resultUrl||refNode.image) : refNode.image) : null};
 }
 
-function fileToDataUrl(file){
-  return new Promise((resolve,reject)=>{
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+async function doRender(resultId){
+  const resultNode=getNode(resultId); if(!resultNode||resultNode.type!=='result') return;
+  const apiKey=document.getElementById('apiKeyInput').value.trim();
+  const {mainNode, refNode, inputImage, refImage}=getResultInputs(resultId);
+  if(!inputImage){ setStatus('<b>먼저 연결:</b> Source 또는 다른 Result를 이 Result의 일반 입력(in)에 연결해.'); return; }
+  resultNode.prompt = resultNode.prompt || document.getElementById('globalPrompt').value || '';
+  updateNode(resultNode.id);
+  const finalPrompt = sanitizePrompt([document.getElementById('todSelect').value, resultNode.prompt].filter(Boolean).join(', '));
+  resultNode.lastPrompt = finalPrompt;
+  previewBox.textContent='렌더 준비 중...';
+  if(!apiKey.startsWith('r8_')){
+    setStatus('<b>UI 정상:</b> 연결/분기/재렌더는 됨. 실제 렌더는 오른쪽에 Replicate API key 넣고 /api/render 백엔드 연결해야 함.');
+    // UI demo placeholder
+    const demo = inputImage; resultNode.resultUrl = demo; updateNode(resultNode.id); previewBox.innerHTML=`<img src="${demo}" alt="">`; return;
+  }
+  const body = { apiKey, prompt: finalPrompt, image: inputImage, refImage: refImage || null, engine: document.getElementById('engineSelect').value };
+  try{
+    setStatus('<b>렌더 요청:</b> '+(mainNode?.type||'input')+' → Result, '+(refNode?'Reference 포함':'Reference 없음'));
+    const res = await fetch('/api/render', {method:'POST', headers:{'Content-Type':'application/json; charset=utf-8'}, body: JSON.stringify(body)});
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'render failed');
+    const url = Array.isArray(data.output) ? data.output[0] : (data.output || data.url || data.image);
+    if(!url) throw new Error('result url missing');
+    resultNode.resultUrl = url; updateNode(resultNode.id); previewBox.innerHTML=`<img src="${url}" alt="">`; setStatus('<b>렌더 완료:</b> 같은 Result 아래 프롬프트 바꾸고 다시 Make 하면 결과 갱신됨.');
+  }catch(err){
+    setStatus('<b>렌더 에러:</b> '+err.message);
+  }
 }
 
-function getConnectedInput(){
-  const render = nodes.find(n => n.type === 'render');
-  const srcConn = connections.find(c => c.to === render.id && c.port === 'in' && getNode(c.from)?.enabled);
-  const refConn = connections.find(c => c.to === render.id && c.port === 'in2' && getNode(c.from)?.enabled);
-  return {
-    render,
-    source: srcConn ? getNode(srcConn.from) : null,
-    reference: refConn ? getNode(refConn.from) : null,
-  };
+function addResultNearSelected(){
+  const base = selectedNodeId ? getNode(selectedNodeId) : null;
+  const x = base ? base.x + 380 : 560 + nodes.filter(n=>n.type==='result').length*40;
+  const y = base ? base.y : 160 + nodes.filter(n=>n.type==='result').length*40;
+  const node=createNode('result',x,y);
+  selectNode(node.id);
+  return node;
 }
 
-function sanitizePrompt(raw){
-  return String(raw || '').normalize('NFKC').replace(/[\u2500-\u257F]/g,'-').replace(/[\u0000-\u001F\u007F]/g,' ').replace(/\s+/g,' ').trim();
-}
-
-async function doRender(){
-  const apiKey = document.getElementById('apiKeyInput').value.trim();
-  const { source, reference } = getConnectedInput();
-  if (!source?.image) {
-    setStatus('<b>먼저 연결:</b> Source 오른쪽 포트 → Render 왼쪽 포트 연결부터 해.');
-    return;
-  }
-  if (!apiKey.startsWith('r8_')) {
-    setStatus('<b>API key 필요:</b> 오른쪽 패널에 Replicate 키 입력해.');
-    return;
-  }
-  const prompt = sanitizePrompt([document.getElementById('todSelect').value, document.getElementById('promptInput').value].filter(Boolean).join(', '));
-  const body = { apiKey, prompt, image: source.image, refImage: reference?.image || null, asciiSafe:false };
-  setStatus('<b>렌더 요청 준비:</b> 연결은 정상. 이제 /api/render 백엔드만 UTF-8 JSON 처리면 됨.');
-  console.log('render payload ready', body);
-  alert('연결은 정상 작동 중.\n이제 실제 렌더는 /api/render 백엔드가 있어야 돌아가.\n현재 파일은 연결/노드 UI 수정본이야.');
-}
-
-window.addEventListener('mousemove', (e)=>{
-  if (dragNode) {
-    const node = getNode(dragNode);
-    const p = screenToWorld(e.clientX, e.clientY);
-    node.x = p.x - dragOffsetX;
-    node.y = p.y - dragOffsetY;
-    redraw();
-  }
-  if (panning) {
-    panX += e.clientX - panStartX;
-    panY += e.clientY - panStartY;
-    panStartX = e.clientX;
-    panStartY = e.clientY;
-    redraw();
-  }
-  if (linkStart) {
-    tempMouse = { x:e.clientX, y:e.clientY };
-    redraw();
-  }
+window.addEventListener('mousemove',e=>{
+  if(dragNode){const node=getNode(dragNode); const p=screenToWorld(e.clientX,e.clientY); node.x=p.x-dragDX; node.y=p.y-dragDY; redraw();}
+  if(panning){panX += e.clientX-panSX; panY += e.clientY-panSY; panSX=e.clientX; panSY=e.clientY; redraw();}
+  if(linkStart){tempMouse={x:e.clientX,y:e.clientY}; redraw();}
 });
-window.addEventListener('mouseup', ()=>{ dragNode = null; panning = false; });
-canvas.addEventListener('mousedown', (e)=>{
-  if (e.target !== canvas) return;
-  if (linkStart) { cancelLink(); return; }
-  panning = true; panStartX = e.clientX; panStartY = e.clientY;
-});
-canvas.addEventListener('click', (e)=>{ if (e.target === canvas) selectNode(null); });
-canvas.addEventListener('wheel', (e)=>{ e.preventDefault(); const factor = e.deltaY > 0 ? 0.92 : 1.08; zoom = Math.max(0.5, Math.min(1.8, zoom * factor)); redraw(); }, {passive:false});
-window.addEventListener('resize', redraw);
+window.addEventListener('mouseup',()=>{dragNode=null; panning=false;});
+canvas.addEventListener('mousedown',e=>{if(e.target!==canvas) return; if(linkStart){cancelLink(); return;} clearSelectedConnectionUI(); selectNode(null); panning=true; panSX=e.clientX; panSY=e.clientY; redraw();});
+canvas.addEventListener('click',e=>{if(e.target===canvas){selectNode(null); clearSelectedConnectionUI(); redraw();}});
+canvas.addEventListener('wheel',e=>{e.preventDefault(); const f=e.deltaY>0?0.92:1.08; zoom=Math.max(0.45,Math.min(1.8,zoom*f)); redraw();},{passive:false});
+window.addEventListener('resize',redraw);
+window.addEventListener('keydown',e=>{if((e.key==='Delete'||e.key==='Backspace')&&selectedConnId){e.preventDefault(); removeConnection(selectedConnId); return;}});
 
-document.getElementById('fitBtn').addEventListener('click', ()=>{ zoom = 1; panX = 120; panY = 100; redraw(); });
-document.getElementById('clearLinkBtn').addEventListener('click', ()=>{ connections = []; cancelLink(); syncDebug(); setStatus('<b>연결 초기화:</b> 다시 Source → Render로 연결해.'); });
-document.getElementById('addRefBtn').addEventListener('click', ()=>{
-  if (nodes.some(n => n.type === 'ref')) return;
-  createNode('ref', 220, 330); redraw();
-});
-document.getElementById('uploadSourceBtn').addEventListener('click', ()=> document.getElementById('sourceInput').click());
-document.getElementById('makeBtn').addEventListener('click', doRender);
-document.getElementById('engineSelect').addEventListener('change', ()=> redraw());
-document.getElementById('sourceInput').addEventListener('change', async (e)=>{ const f=e.target.files[0]; if(!f) return; setNodeImage('source', await fileToDataUrl(f)); e.target.value=''; });
-document.getElementById('refInput').addEventListener('change', async (e)=>{ const f=e.target.files[0]; if(!f) return; setNodeImage('ref', await fileToDataUrl(f)); e.target.value=''; });
+// toolbar
+ document.getElementById('fitBtn').addEventListener('click',()=>{zoom=1; panX=120; panY=80; redraw();});
+ document.getElementById('addSourceBtn').addEventListener('click',()=>{const n=createNode('source',120+nodes.filter(x=>x.type==='source').length*40,120); selectNode(n.id); pendingUploadNodeId=n.id; document.getElementById('sourceInput').click();});
+ document.getElementById('addRefBtn').addEventListener('click',()=>{const n=createNode('ref',160+nodes.filter(x=>x.type==='ref').length*40,360); selectNode(n.id); pendingUploadNodeId=n.id; document.getElementById('refInput').click();});
+ document.getElementById('addResultBtn').addEventListener('click',()=>addResultNearSelected());
+ document.getElementById('clearLinksBtn').addEventListener('click',()=>{connections=[]; clearSelectedConnectionUI(); cancelLink('<b>연결 초기화:</b> 다시 붙이면 돼.'); syncDebug();});
+ document.getElementById('toggleDockBtn').addEventListener('click',()=>{const hidden=dock.classList.toggle('hidden'); reopenDockBtn.classList.toggle('show',hidden); document.getElementById('toggleDockBtn').textContent=hidden?'입력창 숨김됨':'입력창 숨기기';});
+ reopenDockBtn.addEventListener('click',()=>{dock.classList.remove('hidden'); reopenDockBtn.classList.remove('show'); document.getElementById('toggleDockBtn').textContent='입력창 숨기기';});
+ document.getElementById('uploadBtn').addEventListener('click',()=>{const source = nodes.find(n=>n.type==='source') || createNode('source',120,120); pendingUploadNodeId=source.id; document.getElementById('sourceInput').click();});
+ document.getElementById('makeSelectedBtn').addEventListener('click',()=>{const target = selectedNodeId && getNode(selectedNodeId)?.type==='result' ? selectedNodeId : nodes.find(n=>n.type==='result')?.id; if(!target){setStatus('<b>Result 필요:</b> + Result Node 먼저 추가해.'); return;} const node=getNode(target); if(!node.prompt) node.prompt=document.getElementById('globalPrompt').value||''; updateNode(node.id); doRender(target);});
+ document.getElementById('engineSelect').addEventListener('change',()=>redraw());
+ document.getElementById('sourceInput').addEventListener('change', async e=>{const f=e.target.files[0]; if(!f||!pendingUploadNodeId) return; setNodeImage(pendingUploadNodeId, await fileToDataUrl(f)); e.target.value=''; pendingUploadNodeId=null;});
+ document.getElementById('refInput').addEventListener('change', async e=>{const f=e.target.files[0]; if(!f||!pendingUploadNodeId) return; setNodeImage(pendingUploadNodeId, await fileToDataUrl(f)); e.target.value=''; pendingUploadNodeId=null;});
 
 // init
-createNode('source', 160, 200);
-createNode('render', 560, 200);
-redraw();
-syncDebug();
+const src=createNode('source',140,160);
+const result=createNode('result',560,120);
+selectNode(result.id);
+syncDebug(); redraw();
+setStatus('<b>업그레이드됨:</b> 선 제거 가능, 입력창 다시 열기 가능, Result 노드별 프롬프트/Make 가능, Result→Result 체인 가능.');
 </script>
 </body>
 </html>
