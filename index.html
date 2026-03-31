@@ -147,6 +147,7 @@ let selectedNodeId = null;
 let canvasZoom = 1;
 let panMode = null;
 let sourceLauncherDrag = null;
+let sourceLauncherLastClickAt = 0;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
@@ -182,8 +183,18 @@ function restoreWorkspace(){
 
     nodes = data.nodes || [];
     links = data.links || [];
+
     const engineNodes = nodes.filter(n => n.type === 'engine');
-    if (!engineNodes.length) {
+    engineNodes.forEach((n, idx) => {
+      if (typeof n.locked !== 'boolean') n.locked = idx === 0;
+    });
+
+    zCounter = Number(data.zCounter || 5);
+    selectedNodeId = data.selectedNodeId || null;
+    selectedEngineId = data.selectedEngineId || null;
+
+    const engineExists = nodes.some(n => n.type === 'engine');
+    if (!engineExists) {
       nodes.push({
         id: uid('eng_'),
         type: 'engine',
@@ -194,15 +205,7 @@ function restoreWorkspace(){
         previewImage: null,
         locked: true
       });
-    } else {
-      engineNodes.forEach((n, idx) => {
-        if (typeof n.locked !== 'boolean') n.locked = idx === 0;
-      });
     }
-
-    zCounter = Number(data.zCounter || 5);
-    selectedNodeId = data.selectedNodeId || null;
-    selectedEngineId = data.selectedEngineId || null;
 
     canvas.style.left = data.canvasLeft || '0px';
     canvas.style.top = data.canvasTop || '0px';
@@ -216,11 +219,10 @@ function restoreWorkspace(){
     syncAllEnginePreviews();
     redraw();
 
-    if (typeof data.canvasZoom === 'number') {
-      setCanvasZoom(data.canvasZoom);
-    }
+    setCanvasZoom(typeof data.canvasZoom === 'number' ? data.canvasZoom : 1);
 
     const firstEngine = nodes.find(n => n.type === 'engine') || null;
+
     if (selectedNodeId && nodes.find(n => n.id === selectedNodeId)) {
       selectNode(selectedNodeId);
     } else if (firstEngine) {
@@ -234,7 +236,7 @@ function restoreWorkspace(){
     } else if (firstEngine) {
       selectEngine(firstEngine.id);
     } else {
-      bottomPrompt.value = '';
+      bottomPrompt.value = data.bottomPrompt || '';
       bottomPrompt.disabled = true;
       bottomMake.disabled = true;
     }
@@ -281,7 +283,7 @@ function renderNode(node){
     el.innerHTML = `
       <div class="node-header">
         <div class="node-title">Node</div>
-        <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button></div>
+        <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button>${node.locked ? '' : '<button class="icon-btn delete-node">×</button>'}</div>
       </div>
       <div class="node-body">
         <div class="image-box engine-preview ${node.previewImage?'has-image':''}">
@@ -390,7 +392,7 @@ function bindNodeEvents(node, el){
   el.querySelector('.node-header').addEventListener('mousedown', startNodeDrag);
   el.querySelector('.node-body')?.addEventListener('mousedown', startNodeDrag);
 
-  if(node.type==='source' || node.type==='result' || node.type==='final'){
+  if(node.type==='source' || node.type==='result' || node.type==='final' || (node.type==='engine' && !node.locked)){
     el.querySelector('.delete-node')?.addEventListener('click', e=>{e.stopPropagation(); removeNode(node.id);});
   }
   el.querySelector('.duplicate-node')?.addEventListener('click', e=>{e.stopPropagation(); duplicateEngineNode(node.id);});
@@ -458,6 +460,7 @@ function bringToFront(el){ zCounter += 1; el.style.zIndex = zCounter; }
 function duplicateEngineNode(id){
   const node = nodes.find(n=>n.id===id);
   if(!node || node.type!=='engine') return;
+
   const copy = {
     id: uid('eng_'),
     type: 'engine',
@@ -465,13 +468,37 @@ function duplicateEngineNode(id){
     y: node.y + 20,
     engine: node.engine || 'Flux Kontext Pro',
     prompt: node.prompt || '',
-    previewImage: node.previewImage || null
+    previewImage: node.previewImage || null,
+    locked: false
   };
   nodes.push(copy);
   renderNode(copy);
 
-  // copy only node state, not links
-  syncEnginePreview(copy);
+  // Copy only node state and rendered output, not input links.
+  // This lets the user branch from the same rendered state without reconnecting everything.
+  const downstreamResult = findDownstream(node.id, 'result');
+  const downstreamFinal = findDownstream(node.id, 'final');
+  const downstream = downstreamFinal || downstreamResult;
+
+  if(downstream && downstream.image){
+    const clonedImageNode = {
+      id: uid(downstream.type === 'final' ? 'fin_' : 'res_'),
+      type: downstream.type,
+      x: copy.x + 420,
+      y: copy.y + 10,
+      image: downstream.image
+    };
+    nodes.push(clonedImageNode);
+    renderNode(clonedImageNode);
+
+    links.push({
+      id: uid('ln_'),
+      from: copy.id,
+      to: clonedImageNode.id,
+      toPort: 'in'
+    });
+  }
+
   selectNode(copy.id);
   selectEngine(copy.id);
   redraw();
@@ -479,6 +506,8 @@ function duplicateEngineNode(id){
 }
 
 function removeNode(id){
+  const targetNode = nodes.find(n=>n.id===id);
+  if(targetNode && targetNode.type==='engine' && targetNode.locked) return;
   links = links.filter(l=>l.from!==id && l.to!==id);
   nodes = nodes.filter(n=>n.id!==id);
   document.getElementById(id)?.remove();
@@ -863,8 +892,9 @@ document.addEventListener('mousemove', e=>{
   }
 });
 
-document.addEventListener('mouseup', ()=>{
-  const changed = !!drag || !!panMode || !!(sourceLauncherDrag && sourceLauncherDrag.moved);
+document.addEventListener('mouseup', (e)=>{
+  const launcherDrag = sourceLauncherDrag;
+  const changed = !!drag || !!panMode || !!(launcherDrag && launcherDrag.moved);
   drag = null;
   connectStart = null;
   tempMouse = null;
@@ -873,6 +903,23 @@ document.addEventListener('mouseup', ()=>{
   canvas.classList.remove('panning');
   redraw();
   if(changed) saveWorkspace();
+
+  if(launcherDrag && !launcherDrag.moved && typeof sourceLauncher !== 'undefined' && sourceLauncher && e.target === sourceLauncher){
+    const now = Date.now();
+    if(now - sourceLauncherLastClickAt < 350){
+      sourceLauncherLastClickAt = 0;
+      const pos = getNextSourcePosition();
+      const n = {id:uid('src_'),type:'source',x:pos.x,y:pos.y,image:null};
+      nodes.push(n);
+      renderNode(n);
+      selectNode(n.id);
+      pendingUploadNode = n.id;
+      saveWorkspace();
+      fileInput.click();
+    } else {
+      sourceLauncherLastClickAt = now;
+    }
+  }
 });
 
 document.addEventListener('keydown', e=>{
@@ -953,9 +1000,16 @@ previewBox.addEventListener('click', ()=>{ if(previewImg.src) openImagePopup(pre
 
 // Initial
 if(!restoreWorkspace()){
-  sourceLauncher.style.left = '16px';
-  sourceLauncher.style.top = '16px';
+  if (typeof sourceLauncher !== 'undefined' && sourceLauncher) {
+    sourceLauncher.style.left = '16px';
+    sourceLauncher.style.top = '16px';
+  }
   addEngineNode();
+  const firstEngine = nodes.find(n=>n.type==='engine');
+  if(firstEngine){
+    selectNode(firstEngine.id);
+    selectEngine(firstEngine.id);
+  }
   setTimeout(()=>{ saveWorkspace(); }, 0);
 }
 </script>
