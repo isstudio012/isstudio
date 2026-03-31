@@ -48,6 +48,9 @@ button,input,select,textarea{font:inherit}
 .port.in{left:-8px;top:50%;transform:translateY(-50%)}
 .port.ref{left:-8px;top:65%;transform:translateY(-50%);background:#fff;border-color:#1b1b1b;outline:2px solid rgba(255,255,255,.25)}
 .port.out{right:-8px;top:50%;transform:translateY(-50%)}
+.port-label{position:absolute;font-size:9px;color:rgba(255,255,255,.45);white-space:nowrap;pointer-events:none}
+.port.in  + .port-label{left:12px;top:50%;transform:translateY(-50%)}
+.port.ref + .port-label{left:12px;top:65%;transform:translateY(-50%)}
 
 .line-hit{pointer-events:stroke;cursor:pointer}
 .fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out}
@@ -295,8 +298,8 @@ function renderNode(node){
         <textarea class="prompt" placeholder="Prompt"></textarea>
         <div class="loading">Rendering...</div>
       </div>
-      <div class="port in" data-port="in"></div>
-      <div class="port ref" data-port="ref"></div>
+      <div class="port in" data-port="in"></div><span class="port-label" style="left:12px;top:50%;transform:translateY(-50%);position:absolute;font-size:9px;color:rgba(255,255,255,.4);pointer-events:none">Main</span>
+      <div class="port ref" data-port="ref"></div><span class="port-label" style="left:12px;top:65%;transform:translateY(-50%);position:absolute;font-size:9px;color:rgba(255,255,255,.4);pointer-events:none">Ref</span>
       <div class="port out" data-port="out"></div>`;
   }
 
@@ -318,7 +321,7 @@ function renderNode(node){
   if(node.type==='final'){
     el.innerHTML = `
       <div class="node-header">
-        <div class="node-title">Final</div>
+        <div class="node-title">최종</div>
         <div class="node-actions"><button class="icon-btn delete-node">×</button></div>
       </div>
       <div class="node-body">
@@ -573,6 +576,24 @@ function redraw(){
   svg.setAttribute('height', 4000);
   svg.innerHTML='';
 
+  // Center crosshair
+  const left = parseFloat(world.style.left||'0')||0;
+  const top  = parseFloat(world.style.top ||'0')||0;
+  const rect = canvas.getBoundingClientRect();
+  const crossX = (rect.width/2  - left) / canvasZoom;
+  const crossY = (rect.height/2 - top)  / canvasZoom;
+  const crossSize = 12 / canvasZoom;
+  const crossStroke = 1.5 / canvasZoom;
+  const ch = document.createElementNS('http://www.w3.org/2000/svg','line');
+  ch.setAttribute('x1', crossX - crossSize); ch.setAttribute('y1', crossY);
+  ch.setAttribute('x2', crossX + crossSize); ch.setAttribute('y2', crossY);
+  ch.setAttribute('stroke','rgba(255,255,255,0.35)'); ch.setAttribute('stroke-width', crossStroke);
+  const cv = document.createElementNS('http://www.w3.org/2000/svg','line');
+  cv.setAttribute('x1', crossX); cv.setAttribute('y1', crossY - crossSize);
+  cv.setAttribute('x2', crossX); cv.setAttribute('y2', crossY + crossSize);
+  cv.setAttribute('stroke','rgba(255,255,255,0.35)'); cv.setAttribute('stroke-width', crossStroke);
+  svg.appendChild(ch); svg.appendChild(cv);
+
   // Update ghosts
   document.querySelectorAll('.ghost').forEach(g=>{
     const box=g.parentElement;
@@ -605,47 +626,6 @@ function redraw(){
     path.setAttribute('class','line-hit');
     path.style.pointerEvents='none';
     svg.appendChild(path);
-
-    // remove handle
-    const cx=(from.x+to.x)/2, cy=(from.y+to.y)/2;
-    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('class','link-remove');
-
-    const hit=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    hit.setAttribute('class','hit');
-    hit.setAttribute('cx',cx); hit.setAttribute('cy',cy); hit.setAttribute('r',24);
-    hit.setAttribute('fill','transparent');
-
-    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    c.setAttribute('class','vis');
-    c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',13);
-    c.setAttribute('fill','#191919'); c.setAttribute('stroke','#9a9a9a');
-
-    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.setAttribute('class','vis');
-    t.setAttribute('x',cx); t.setAttribute('y',cy+5);
-    t.setAttribute('fill','#fff');
-    t.setAttribute('font-size','15');
-    t.setAttribute('font-weight','700');
-    t.setAttribute('text-anchor','middle');
-    t.textContent='×';
-
-    g.appendChild(hit); g.appendChild(c); g.appendChild(t);
-
-    const killLink = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      selectedLink = null;
-      removeLink(link.id);
-    };
-
-    ['mousedown','mouseup','click','dblclick'].forEach(evt => {
-      hit.addEventListener(evt, killLink);
-      c.addEventListener(evt, killLink);
-      g.addEventListener(evt, killLink);
-    });
-
-    svg.appendChild(g);
   });
 
   // temp line
@@ -962,15 +942,30 @@ document.getElementById('zoomReset').addEventListener('click', ()=> setCanvasZoo
 
 canvas.addEventListener('wheel', (e)=>{
   e.preventDefault();
+  const oldZoom = canvasZoom;
   const step = e.deltaY > 0 ? -0.1 : 0.1;
-  setCanvasZoom(canvasZoom + step);
+  const newZoom = Math.max(0.1, Math.min(1.6, Math.round((oldZoom+step)*10)/10));
+  const rect = canvas.getBoundingClientRect();
+  zoomAroundPoint(oldZoom, newZoom, e.clientX - rect.left, e.clientY - rect.top);
 }, { passive:false });
-function setCanvasZoom(v){
-  canvasZoom = Math.max(0.1, Math.min(1.6, Math.round(v*10)/10));
+
+function zoomAroundPoint(oldZoom, newZoom, px, py){
+  const left = parseFloat(world.style.left||'0')||0;
+  const top  = parseFloat(world.style.top ||'0')||0;
+  const wx = (px - left) / oldZoom;
+  const wy = (py - top)  / oldZoom;
+  canvasZoom = newZoom;
+  world.style.left = (px - wx * newZoom) + 'px';
+  world.style.top  = (py - wy * newZoom) + 'px';
   world.style.transformOrigin = 'top left';
   world.style.transform = `scale(${canvasZoom})`;
-  document.getElementById('zoomReset').textContent = Math.round(canvasZoom*100) + '%';
+  document.getElementById('zoomReset').textContent = Math.round(canvasZoom*100)+'%';
   saveWorkspace();
+}
+
+function setCanvasZoom(v){
+  const rect = canvas.getBoundingClientRect();
+  zoomAroundPoint(canvasZoom, Math.max(0.1,Math.min(1.6,Math.round(v*10)/10)), rect.width/2, rect.height/2);
 }
 
 
