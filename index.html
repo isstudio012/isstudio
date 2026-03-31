@@ -285,8 +285,8 @@ header{height:44px;background:var(--white);border-bottom:1px solid var(--border)
     <div class="opt-section">
       <div class="sec-label">Time of Day</div>
       <div class="opt-grid">
-        <button class="opt-btn sel" data-g="time" data-v="bright daytime, strong natural sunlight flooding through windows, bright clear blue sky outside, vivid daylight interior">☀️ 낮</button>
-        <button class="opt-btn" data-g="time" data-v="night time, interior artificial ceiling lights ON creating warm light pools, completely dark night sky outside windows, high contrast bright interior vs dark exterior">🌙 밤</button>
+        <button class="opt-btn sel" data-g="time" data-v="clear sunny 1PM midday, neutral white daylight 5500K, no yellow tint, bright exterior daylight through windows, exterior brighter than interior, all recessed ceiling downlights ON with visible light cones, indirect cove lighting ON with soft glow along ceiling edges, all interior lights on, bright well-lit interior">☀️ 낮</button>
+        <button class="opt-btn" data-g="time" data-v="night time, completely dark exterior black sky, all recessed ceiling downlights ON and glowing with warm white light cones on floor and walls, indirect cove lighting ON with soft warm glow along ceiling perimeter, warm interior artificial lighting 3000K, high contrast bright interior vs dark exterior, cozy dramatic night atmosphere">🌙 밤</button>
       </div>
     </div>
 
@@ -357,15 +357,29 @@ fi.addEventListener('change', e => {
 function loadFile(f) {
   const reader = new FileReader();
   reader.onload = e => {
-    const b64 = e.target.result;
-    const id = Date.now();
-    const scene = { id, orig: b64, rendered: null, name: `Scene ${scenes.length + 1}` };
-    scenes.push(scene);
-    currentSceneId = id;
-    showScene(scene);
-    renderThumbs();
-    clearErr();
-    checkReady();
+    // 이미지 압축 (최대 1920px, quality 0.85)
+    const img = new Image();
+    img.onload = () => {
+      const maxSize = 1920;
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      const canvas2 = document.createElement('canvas');
+      canvas2.width = w; canvas2.height = h;
+      canvas2.getContext('2d').drawImage(img, 0, 0, w, h);
+      const b64 = canvas2.toDataURL('image/jpeg', 0.85);
+      const id = Date.now();
+      const scene = { id, orig: b64, rendered: null, name: `Scene ${scenes.length + 1}` };
+      scenes.push(scene);
+      currentSceneId = id;
+      showScene(scene);
+      renderThumbs();
+      clearErr();
+      checkReady();
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(f);
 }
