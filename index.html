@@ -167,8 +167,24 @@ apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, api
 
 function saveWorkspace(){
   try{
+    // 이미지는 별도 키로 저장 (용량 분리)
+    const imageMap = {};
+    nodes.forEach(n => {
+      if(n.image) imageMap[n.id + '_img'] = n.image;
+      if(n.previewImage) imageMap[n.id + '_prev'] = n.previewImage;
+    });
+    try{ localStorage.setItem(LS_WORKSPACE + '_images', JSON.stringify(imageMap)); }catch(_e){}
+
+    // 노드에서 이미지 제거 후 저장
+    const nodesLight = nodes.map(n => {
+      const copy = {...n};
+      delete copy.image;
+      delete copy.previewImage;
+      return copy;
+    });
+
     const payload = {
-      nodes,
+      nodes: nodesLight,
       links,
       zCounter,
       selectedNodeId,
@@ -177,8 +193,8 @@ function saveWorkspace(){
       canvasLeft: world.style.left || '0px',
       canvasTop: world.style.top || '0px',
       bottomPrompt: bottomPrompt.value || '',
-      sourceLauncherLeft: (typeof sourceLauncher !== 'undefined' && sourceLauncher) ? (sourceLauncher.style.left || '16px') : '16px',
-      sourceLauncherTop: (typeof sourceLauncher !== 'undefined' && sourceLauncher) ? (sourceLauncher.style.top || '16px') : '16px'
+      sourceLauncherLeft: sourceLauncher ? (sourceLauncher.style.left || '16px') : '16px',
+      sourceLauncherTop:  sourceLauncher ? (sourceLauncher.style.top  || '16px') : '16px'
     };
     localStorage.setItem(LS_WORKSPACE, JSON.stringify(payload));
   }catch(_e){}
@@ -191,7 +207,16 @@ function restoreWorkspace(){
     const data = JSON.parse(raw);
     if(!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) return false;
 
-    nodes = data.nodes || [];
+    // 이미지 복원
+    let imageMap = {};
+    try{ imageMap = JSON.parse(localStorage.getItem(LS_WORKSPACE + '_images') || '{}'); }catch(_e){}
+
+    nodes = data.nodes.map(n => {
+      const copy = {...n};
+      if(imageMap[n.id + '_img'])  copy.image = imageMap[n.id + '_img'];
+      if(imageMap[n.id + '_prev']) copy.previewImage = imageMap[n.id + '_prev'];
+      return copy;
+    });
     links = data.links || [];
 
     // Keep exactly one engine node. Remove any extra engines from broken saved states.
