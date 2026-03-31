@@ -22,7 +22,7 @@ button,input,select,textarea{font:inherit}
 .notice{position:absolute;bottom:124px;left:16px;padding:8px 12px;border-radius:10px;background:rgba(28,28,28,.95);border:1px solid var(--line);color:var(--muted);font-size:12px;z-index:20}
 
 .node{position:absolute;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);user-select:none;transform-origin:top left;will-change:left,top}
-.node.source{min-width:300px;width:300px}
+.node.source{min-width:360px;width:360px}
 .node.engine{min-width:360px;width:360px}
 .node-header{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);cursor:grab}
 .node-title{font-size:13px;color:var(--text)}
@@ -30,7 +30,7 @@ button,input,select,textarea{font:inherit}
 .icon-btn{width:24px;height:24px;border:none;background:transparent;color:#fff;cursor:pointer;border-radius:6px;font-size:14px}.icon-btn:hover{background:rgba(255,255,255,.08)}
 .node-body{padding:12px}
 .image-box{width:100%;height:180px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);background:#171717;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;position:relative}
-.node.source .image-box{height:230px}
+.node.source .image-box{height:250px}
 .image-box img{width:100%;height:100%;object-fit:contain;display:none;background:#111}
 .image-box.has-image img{display:block}
 .image-box .ghost{font-size:13px;color:var(--muted);padding:0 12px;text-align:center}
@@ -57,8 +57,8 @@ button,input,select,textarea{font:inherit}
 .bottom-bar{position:absolute;left:18px;right:18px;bottom:18px;height:72px;display:flex;gap:12px;z-index:25}
 .bottom-prompt{flex:1;height:100%;border:1px solid var(--line);border-radius:14px;background:rgba(44,44,44,.95);padding:14px 16px;color:var(--text);outline:none;resize:none}
 .bottom-prompt::placeholder{color:#f2f2f2}
-.bottom-make{width:128px;border:none;border-radius:14px;background:#3a3a3a;color:#fff;cursor:pointer}
-.bottom-make:hover{background:#4a4a4a}
+.bottom-make{width:128px;border:none;border-radius:14px;background:#ffd400;color:#111;cursor:pointer;font-weight:700}
+.bottom-make:hover{filter:brightness(1.03)}
 .bottom-make:disabled{opacity:.45;cursor:not-allowed}
 
 /* Right preview */
@@ -150,9 +150,73 @@ let sourceLauncherDrag = null;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
+const LS_WORKSPACE = 'vizmaker_workspace_v4';
 const LS_WORKSPACE = 'vizmaker_workspace_v2';
 apiCodeInput.value = localStorage.getItem(LS_API_KEY) || '';
 apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
+
+function saveWorkspace(){
+  try{
+    localStorage.setItem(LS_WORKSPACE, JSON.stringify({
+      nodes,
+      links,
+      zCounter,
+      selectedNodeId,
+      selectedEngineId,
+      canvasZoom,
+      canvasLeft: canvas.style.left || '0px',
+      canvasTop: canvas.style.top || '0px',
+      bottomPrompt: bottomPrompt.value || '',
+      sourceLauncherLeft: sourceLauncher.style.left || '16px',
+      sourceLauncherTop: sourceLauncher.style.top || '16px'
+    }));
+  }catch(_e){}
+}
+
+function restoreWorkspace(){
+  try{
+    const raw = localStorage.getItem(LS_WORKSPACE);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) return false;
+
+    nodes = data.nodes || [];
+    links = data.links || [];
+    zCounter = Number(data.zCounter || 5);
+    selectedNodeId = data.selectedNodeId || null;
+    selectedEngineId = data.selectedEngineId || null;
+
+    canvas.style.left = data.canvasLeft || '0px';
+    canvas.style.top = data.canvasTop || '0px';
+    sourceLauncher.style.left = data.sourceLauncherLeft || '16px';
+    sourceLauncher.style.top = data.sourceLauncherTop || '16px';
+
+    nodes.forEach(renderNode);
+    syncAllEnginePreviews();
+    redraw();
+
+    if (typeof data.canvasZoom === 'number') {
+      setCanvasZoom(data.canvasZoom);
+    }
+
+    if (selectedNodeId) {
+      selectNode(selectedNodeId);
+    } else {
+      clearPreview();
+    }
+
+    if (selectedEngineId) {
+      selectEngine(selectedEngineId);
+    } else {
+      bottomPrompt.value = data.bottomPrompt || '';
+      bottomPrompt.disabled = true;
+      bottomMake.disabled = true;
+    }
+    return true;
+  }catch(_e){
+    return false;
+  }
+}
 
 function saveWorkspace(){
   try{
@@ -419,7 +483,7 @@ function bindNodeEvents(node, el){
         links = links.filter(l => !(l.to===node.id && l.toPort===toPort));
         links.push({id:uid('ln_'), from:connectStart.nodeId, to:node.id, toPort});
       }
-      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); saveWorkspace();
+      connectStart=null; tempMouse=null; syncAllEnginePreviews(); redraw(); saveWorkspace(); saveWorkspace();
     });
   });
 }
