@@ -931,7 +931,7 @@ canvas.addEventListener('wheel', (e)=>{
   setCanvasZoom(canvasZoom + step);
 }, { passive:false });
 function setCanvasZoom(v){
-  canvasZoom = Math.max(0.7, Math.min(1.6, Math.round(v*10)/10));
+  canvasZoom = Math.max(0.1, Math.min(1.6, Math.round(v*10)/10));
   canvas.style.zoom = '';
   canvas.style.transformOrigin = 'center center';
   canvas.style.transform = `scale(${canvasZoom})`;
