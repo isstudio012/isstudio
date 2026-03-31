@@ -43,6 +43,9 @@ button,input,select,textarea{font:inherit}
 .make{width:100%;height:42px;border:none;border-radius:12px;background:#efefef;color:#111;margin-top:10px;cursor:pointer;font-weight:600}
 .make:hover{background:#fff}
 .make:disabled{opacity:.45;cursor:not-allowed}
+.upscale-btn{width:100%;height:34px;border:1px solid var(--line);border-radius:10px;background:transparent;color:#b9b9b9;margin-top:6px;cursor:pointer;font-size:12px;font-family:inherit}
+.upscale-btn:hover{border-color:#ffd400;color:#ffd400}
+.upscale-btn:disabled{opacity:.4;cursor:not-allowed}
 .loading{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;display:none}
 
 .port{position:absolute;width:16px;height:16px;border-radius:999px;background:#fff;border:2px solid #1b1b1b;z-index:200;cursor:crosshair}
@@ -298,6 +301,7 @@ function renderNode(node){
           <option>Image Engine</option>
         </select>
         <textarea class="prompt" placeholder="Prompt"></textarea>
+        <button class="upscale-btn">4K Upscale</button>
         <div class="loading">Rendering...</div>
       </div>
       <div class="port in" data-port="in"></div><span class="port-label" style="left:12px;top:50%;transform:translateY(-50%);position:absolute;font-size:9px;color:rgba(255,255,255,.4);pointer-events:none">Main</span>
@@ -429,6 +433,10 @@ function bindNodeEvents(node, el){
       if(selectedEngineId===node.id) bottomPrompt.value = node.prompt;
     });
 
+    el.querySelector('.upscale-btn').addEventListener('click', e=>{
+      e.stopPropagation();
+      runUpscale(node.id);
+    });
   }
 
   if(node.type==='result' || node.type==='final'){
@@ -694,22 +702,79 @@ function findDownstream(engineId, type){
   return l ? nodes.find(n=>n.id===l.to) : null;
 }
 
+async function runUpscale(engineId){
+  const engineNode = nodes.find(n=>n.id===engineId);
+  if(!engineNode || !engineNode.previewImage){ alert('렌더링된 이미지가 없어.'); return; }
+
+  const apiKey = apiCodeInput.value.trim();
+  if(!apiKey){ alert('API 코드를 입력해줘.'); return; }
+
+  const el = document.getElementById(engineId);
+  const loading = el.querySelector('.loading');
+  const upBtn = el.querySelector('.upscale-btn');
+  upBtn.disabled = true;
+  loading.style.display = 'block';
+  loading.textContent = 'Upscaling...';
+
+  try{
+    const upRes = await fetch('/api/upscale', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ apiKey, image: engineNode.previewImage })
+    });
+    if(!upRes.ok){ alert('업스케일 오류: ' + upRes.status); return; }
+
+    let upData = await upRes.json();
+    let attempts = 0;
+    while(upData.status && upData.status !== 'succeeded' && upData.status !== 'failed' && attempts < 30){
+      loading.textContent = `Upscaling... (${upData.status})`;
+      await new Promise(r => setTimeout(r, 2000));
+      const pollRes = await fetch('/api/poll', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ apiKey, predictionId: upData.id })
+      });
+      if(pollRes.ok) upData = await pollRes.json();
+      else break;
+      attempts++;
+    }
+
+    const upscaled = Array.isArray(upData.output) ? upData.output[0] : upData.output;
+    if(!upscaled){ alert('업스케일 결과가 없어.'); return; }
+
+    engineNode.previewImage = upscaled;
+    const box = el.querySelector('.engine-preview');
+    const im  = el.querySelector('.engine-preview img');
+    if(im) im.src = upscaled;
+    if(box){ box.classList.add('has-image'); applyEnginePreviewAspect(engineNode, upscaled); }
+    showPreview(upscaled);
+    saveWorkspace();
+
+  } finally {
+    upBtn.disabled = false;
+    loading.style.display = 'none';
+    loading.textContent = 'Rendering...';
+  }
+}
+
 async function runEngine(engineId){
   const engineNode = nodes.find(n=>n.id===engineId);
   if(!engineNode) return;
   const el = document.getElementById(engineId);
   const loading = el.querySelector('.loading');
 
-  const {main, ref, mainType} = getInputImages(engineId);
+  const {main, ref} = getInputImages(engineId);
   if(!main){ alert('이미지를 연결해줘.'); return; }
+
+  const apiKey = apiCodeInput.value.trim();
+  if(!apiKey){ alert('API 코드를 입력해줘.'); return; }
 
   bottomMake.disabled = true;
   loading.style.display = 'block';
+  loading.textContent = 'Rendering...';
 
   try{
-    const apiKey = apiCodeInput.value.trim();
-    if(!apiKey){ alert('API 코드를 입력해줘.'); return; }
-
+    // 1. Start render
     const res = await fetch('/api/render', {
       method: 'POST',
       headers: {'Content-Type': 'application/json; charset=utf-8'},
@@ -718,7 +783,7 @@ async function runEngine(engineId){
         engine: engineNode.engine,
         prompt: String(engineNode.prompt || ''),
         image: main,
-        refImage: ref
+        refImage: ref || null
       })
     });
 
@@ -728,12 +793,32 @@ async function runEngine(engineId){
       return;
     }
 
-    const data = await res.json();
-    const outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image);
+    let data = await res.json();
 
+    // 2. Poll if not yet succeeded
+    let attempts = 0;
+    while(data.status && data.status !== 'succeeded' && data.status !== 'failed' && attempts < 60){
+      loading.textContent = `Rendering... (${data.status})`;
+      await new Promise(r => setTimeout(r, 2000));
+      const pollRes = await fetch('/api/poll', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ apiKey, predictionId: data.id })
+      });
+      if(pollRes.ok) data = await pollRes.json();
+      else break;
+      attempts++;
+    }
+
+    if(data.status === 'failed'){
+      alert('렌더링 실패: ' + (data.error || 'unknown'));
+      return;
+    }
+
+    let outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image);
     if(!outputImage){ alert('결과 이미지가 없어.'); return; }
 
-    // Show result
+    // 3. Show result
     engineNode.previewImage = outputImage;
     const engEl = document.getElementById(engineId);
     if(engEl){
@@ -745,10 +830,12 @@ async function runEngine(engineId){
     showPreview(outputImage);
     syncAllEnginePreviews();
     redraw();
+    saveWorkspace();
 
   } finally {
     bottomMake.disabled = false;
     loading.style.display = 'none';
+    loading.textContent = 'Rendering...';
   }
 }
 
