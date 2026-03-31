@@ -332,7 +332,7 @@ function renderNode(node){
     el.innerHTML = `
       <div class="node-header">
         <div class="node-title">Engine</div>
-        <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button>${node.locked ? '' : '<button class="icon-btn delete-node">×</button>'}</div>
+        <div class="node-actions"><button class="icon-btn save-result-btn" title="결과 저장">⬇</button>${node.locked ? '' : '<button class="icon-btn delete-node">×</button>'}</div>
       </div>
       <div class="node-body">
         <div class="image-box engine-preview ${node.previewImage?'has-image':''}">
@@ -356,7 +356,7 @@ function renderNode(node){
   if(node.type==='result'){
     el.innerHTML = `
       <div class="node-header">
-        <div class="node-title">Result</div>
+        <div class="node-title">수정이미지</div>
         <div class="node-actions"><button class="icon-btn delete-node">×</button></div>
       </div>
       <div class="node-body">
@@ -451,6 +451,7 @@ function bindNodeEvents(node, el){
   if(node.type==='source' || node.type==='result' || node.type==='final' || (node.type==='engine' && !node.locked)){
     el.querySelector('.delete-node')?.addEventListener('click', e=>{e.stopPropagation(); removeNode(node.id);});
   }
+  el.querySelector('.save-result-btn')?.addEventListener('click', e=>{e.stopPropagation(); saveResultFromEngine(node.id);});
   el.querySelector('.duplicate-node')?.addEventListener('click', e=>{e.stopPropagation(); duplicateEngineNode(node.id);});
 
   if(node.type==='source'){
@@ -526,6 +527,22 @@ function bindNodeEvents(node, el){
 }
 
 function bringToFront(el){ zCounter += 1; el.style.zIndex = zCounter; }
+  const node = nodes.find(n=>n.id===engineId);
+  if(!node || !node.previewImage){ alert('렌더링된 이미지가 없어.'); return; }
+
+  const resultNode = {
+    id: uid('res_'),
+    type: 'result',
+    x: node.x + 430,
+    y: node.y + (nodes.filter(n=>n.type==='result' && links.find(l=>l.from===engineId&&l.to===n.id)).length * 280),
+    image: node.previewImage
+  };
+  nodes.push(resultNode);
+  renderNode(resultNode);
+  links.push({id: uid('ln_'), from: engineId, to: resultNode.id, toPort: 'in'});
+  redraw();
+  saveWorkspace();
+}
 
 function duplicateEngineNode(id){
   const node = nodes.find(n=>n.id===id);
@@ -899,37 +916,33 @@ async function runEngine(engineId){
     let outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image);
     if(!outputImage){ alert('결과 이미지가 없어.'); return; }
 
-    // 3. 엔진 노드에 결과 표시
-    engineNode.previewImage = outputImage;
-    const engEl = document.getElementById(engineId);
-    if(engEl){
-      const box = engEl.querySelector('.engine-preview');
-      const im  = engEl.querySelector('.engine-preview img');
-      if(im) im.src = outputImage;
-      if(box){ box.classList.add('has-image'); applyEnginePreviewAspect(engineNode, outputImage); }
-    }
-    showPreview(outputImage);
-
-    // 4. Result 노드 자동 생성 (기존 있으면 업데이트)
-    let resultNode = nodes.find(n => n.type === 'result' && links.find(l => l.from === engineId && l.to === n.id));
-    if(resultNode){
-      resultNode.image = outputImage;
-      const rEl = document.getElementById(resultNode.id);
-      if(rEl){
-        rEl.querySelector('img').src = outputImage;
-        rEl.querySelector('.image-box').classList.add('has-image');
+    if(!ref){
+      // 1차 렌더: 엔진 창에만 표시
+      engineNode.previewImage = outputImage;
+      const engEl = document.getElementById(engineId);
+      if(engEl){
+        const box = engEl.querySelector('.engine-preview');
+        const im  = engEl.querySelector('.engine-preview img');
+        if(im) im.src = outputImage;
+        if(box){
+          box.classList.add('has-image');
+          applyEnginePreviewAspect(engineNode, outputImage);
+        }
       }
+      showPreview(outputImage);
     } else {
-      resultNode = {
+      // 2차 수정 렌더: Result 노드 생성
+      const resultNode = {
         id: uid('res_'),
         type: 'result',
         x: engineNode.x + 430,
-        y: engineNode.y,
+        y: engineNode.y + (nodes.filter(n => n.type === 'result' && links.find(l => l.from === engineId && l.to === n.id)).length * 280),
         image: outputImage
       };
       nodes.push(resultNode);
       renderNode(resultNode);
-      links.push({id: uid('ln_'), from: engineId, to: resultNode.id, toPort: 'in'});
+      links.push({ id: uid('ln_'), from: engineId, to: resultNode.id, toPort: 'in' });
+      showPreview(outputImage);
     }
 
     syncAllEnginePreviews();
