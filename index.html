@@ -19,7 +19,7 @@ button,input,select,textarea{font:inherit}
 .tb{height:36px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;cursor:pointer}.tb:hover{background:var(--panel2)}
 .notice{position:absolute;bottom:124px;left:16px;padding:8px 12px;border-radius:10px;background:rgba(28,28,28,.95);border:1px solid var(--line);color:var(--muted);font-size:12px;z-index:20}
 
-.node{position:absolute;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);user-select:none;transform-origin:top left}
+.node{position:absolute;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);user-select:none;transform-origin:top left;will-change:left,top}
 .node.source{min-width:300px;width:300px}
 .node.engine{min-width:340px;width:340px}
 .node-header{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);cursor:grab}
@@ -67,6 +67,8 @@ button,input,select,textarea{font:inherit}
 .previewEmpty{color:var(--muted);font-size:13px}
 
 .link-remove{pointer-events:all;cursor:pointer}
+.link-remove .hit{pointer-events:all;cursor:pointer}
+.link-remove .vis{pointer-events:none}
 .node.selected{outline:1px solid rgba(255,255,255,.28)}
 .line-hit-fat{pointer-events:stroke;cursor:pointer}
 #rightInner{padding:0 14px 14px;display:flex;flex-direction:column;gap:14px}
@@ -274,11 +276,21 @@ function bindNodeEvents(node, el){
     if(node.type==='engine') selectEngine(node.id);
   });
 
-  el.querySelector('.node-header').addEventListener('mousedown', e=>{
-    if(e.target.closest('.icon-btn')) return;
-    drag={id:node.id, dx:e.clientX-node.x, dy:e.clientY-node.y};
+  const startNodeDrag = (e) => {
+    if (e.button !== 0) return;
+    if (e.target.closest('.icon-btn, .port, select, textarea, button, input, .link-remove')) return;
+    const rect = canvas.getBoundingClientRect();
+    drag={
+      id:node.id,
+      offsetX:(e.clientX - rect.left)/canvasZoom - node.x,
+      offsetY:(e.clientY - rect.top)/canvasZoom - node.y
+    };
     bringToFront(el);
-  });
+    e.preventDefault();
+  };
+
+  el.querySelector('.node-header').addEventListener('mousedown', startNodeDrag);
+  el.querySelector('.node-body')?.addEventListener('mousedown', startNodeDrag);
 
   el.querySelector('.delete-node')?.addEventListener('click', e=>{e.stopPropagation(); removeNode(node.id);});
   el.querySelector('.duplicate-node')?.addEventListener('click', e=>{e.stopPropagation(); duplicateEngineNode(node.id);});
@@ -463,16 +475,41 @@ function redraw(){
     const cx=(from.x+to.x)/2, cy=(from.y+to.y)/2;
     const g=document.createElementNS('http://www.w3.org/2000/svg','g');
     g.setAttribute('class','link-remove');
+
+    const hit=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    hit.setAttribute('class','hit');
+    hit.setAttribute('cx',cx); hit.setAttribute('cy',cy); hit.setAttribute('r',24);
+    hit.setAttribute('fill','transparent');
+
     const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',12);
-    c.setAttribute('fill','#1f1f1f'); c.setAttribute('stroke','#8a8a8a');
+    c.setAttribute('class','vis');
+    c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',13);
+    c.setAttribute('fill','#191919'); c.setAttribute('stroke','#9a9a9a');
+
     const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.setAttribute('x',cx); t.setAttribute('y',cy+4.5); t.setAttribute('fill','#fff');
-    t.setAttribute('font-size','14'); t.setAttribute('text-anchor','middle');
+    t.setAttribute('class','vis');
+    t.setAttribute('x',cx); t.setAttribute('y',cy+5);
+    t.setAttribute('fill','#fff');
+    t.setAttribute('font-size','15');
+    t.setAttribute('font-weight','700');
+    t.setAttribute('text-anchor','middle');
     t.textContent='×';
-    g.appendChild(c); g.appendChild(t);
-    g.addEventListener('click', e=>{e.stopPropagation(); removeLink(link.id);});
-    g.addEventListener('dblclick', e=>{e.preventDefault(); e.stopPropagation(); removeLink(link.id);});
+
+    g.appendChild(hit); g.appendChild(c); g.appendChild(t);
+
+    const killLink = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      selectedLink = null;
+      removeLink(link.id);
+    };
+
+    ['mousedown','mouseup','click','dblclick'].forEach(evt => {
+      hit.addEventListener(evt, killLink);
+      c.addEventListener(evt, killLink);
+      g.addEventListener(evt, killLink);
+    });
+
     svg.appendChild(g);
   });
 
@@ -644,8 +681,9 @@ document.addEventListener('mousedown', e=>{ if(e.button===1) e.preventDefault();
 document.addEventListener('mousemove', e=>{
   if(drag){
     const node = nodes.find(n=>n.id===drag.id);
-    node.x = Math.max(20, e.clientX - drag.dx);
-    node.y = Math.max(20, e.clientY - drag.dy);
+    const rect = canvas.getBoundingClientRect();
+    node.x = Math.max(20, (e.clientX - rect.left)/canvasZoom - drag.offsetX);
+    node.y = Math.max(20, (e.clientY - rect.top)/canvasZoom - drag.offsetY);
     const el = document.getElementById(node.id);
     el.style.left = node.x + 'px';
     el.style.top = node.y + 'px';
