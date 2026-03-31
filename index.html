@@ -847,9 +847,17 @@ document.addEventListener('mousemove', e=>{
   if(drag){
     const node = nodes.find(n=>n.id===drag.id);
     const rect = canvas.getBoundingClientRect();
-    node.x = Math.max(20, (e.clientX - rect.left)/canvasZoom - drag.offsetX);
-    node.y = Math.max(20, (e.clientY - rect.top)/canvasZoom - drag.offsetY);
     const el = document.getElementById(node.id);
+
+    const rawX = (e.clientX - rect.left)/canvasZoom - drag.offsetX;
+    const rawY = (e.clientY - rect.top)/canvasZoom - drag.offsetY;
+
+    const maxX = Math.max(20, canvas.clientWidth / canvasZoom - el.offsetWidth - 20);
+    const maxY = Math.max(20, canvas.clientHeight / canvasZoom - el.offsetHeight - 20);
+
+    node.x = Math.max(20, Math.min(maxX, rawX));
+    node.y = Math.max(20, Math.min(maxY, rawY));
+
     el.style.left = node.x + 'px';
     el.style.top = node.y + 'px';
     redraw();
