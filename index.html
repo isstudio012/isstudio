@@ -59,7 +59,7 @@ button,input,select,textarea{font:inherit}
 .bottom-prompt::placeholder{color:#f2f2f2}
 .bottom-make{width:128px;border:none;border-radius:14px;background:#ffd400;color:#111;cursor:pointer;font-weight:700}
 .bottom-make:hover{filter:brightness(1.03)}
-.bottom-make:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.bottom-make:disabled{opacity:.45;cursor:not-allowed}
 
 /* Right preview */
 .previewTop{padding:14px 14px 10px;border-bottom:1px solid #2b2b2b}
@@ -147,7 +147,6 @@ let selectedNodeId = null;
 let canvasZoom = 1;
 let panMode = null;
 let sourceLauncherDrag = null;
-let sourceLauncherLastClickAt = 0;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
@@ -167,8 +166,8 @@ function saveWorkspace(){
       canvasLeft: canvas.style.left || '0px',
       canvasTop: canvas.style.top || '0px',
       bottomPrompt: bottomPrompt.value || '',
-      sourceLauncherLeft: sourceLauncher.style.left || '16px',
-      sourceLauncherTop: sourceLauncher.style.top || '16px'
+      sourceLauncherLeft: (typeof sourceLauncher !== 'undefined' && sourceLauncher) ? (sourceLauncher.style.left || '16px') : '16px',
+      sourceLauncherTop: (typeof sourceLauncher !== 'undefined' && sourceLauncher) ? (sourceLauncher.style.top || '16px') : '16px'
     };
     localStorage.setItem(LS_WORKSPACE, JSON.stringify(payload));
   }catch(_e){}
@@ -184,15 +183,6 @@ function restoreWorkspace(){
     nodes = data.nodes || [];
     links = data.links || [];
     const engineNodes = nodes.filter(n => n.type === 'engine');
-    engineNodes.forEach((n, idx) => {
-      if (typeof n.locked !== 'boolean') n.locked = idx === 0;
-    });
-    zCounter = Number(data.zCounter || 5);
-    selectedNodeId = data.selectedNodeId || null;
-    selectedEngineId = data.selectedEngineId || null;
-
-    // Safety: if workspace lost the engine node, recreate one so Make never stays dead.
-    const engineNodes = nodes.filter(n => n.type === 'engine');
     if (!engineNodes.length) {
       nodes.push({
         id: uid('eng_'),
@@ -205,25 +195,32 @@ function restoreWorkspace(){
         locked: true
       });
     } else {
-      // Normalize old broken saves: make sure only the first engine is the base locked node.
       engineNodes.forEach((n, idx) => {
         if (typeof n.locked !== 'boolean') n.locked = idx === 0;
       });
     }
 
+    zCounter = Number(data.zCounter || 5);
+    selectedNodeId = data.selectedNodeId || null;
+    selectedEngineId = data.selectedEngineId || null;
+
     canvas.style.left = data.canvasLeft || '0px';
     canvas.style.top = data.canvasTop || '0px';
-    sourceLauncher.style.left = data.sourceLauncherLeft || '16px';
-    sourceLauncher.style.top = data.sourceLauncherTop || '16px';
+    if (typeof sourceLauncher !== 'undefined' && sourceLauncher) {
+      sourceLauncher.style.left = data.sourceLauncherLeft || '16px';
+      sourceLauncher.style.top = data.sourceLauncherTop || '16px';
+    }
 
+    document.querySelectorAll('.node').forEach(el => el.remove());
     nodes.forEach(renderNode);
     syncAllEnginePreviews();
     redraw();
 
-    setCanvasZoom(typeof data.canvasZoom === 'number' ? data.canvasZoom : 1);
+    if (typeof data.canvasZoom === 'number') {
+      setCanvasZoom(data.canvasZoom);
+    }
 
     const firstEngine = nodes.find(n => n.type === 'engine') || null;
-
     if (selectedNodeId && nodes.find(n => n.id === selectedNodeId)) {
       selectNode(selectedNodeId);
     } else if (firstEngine) {
@@ -237,19 +234,11 @@ function restoreWorkspace(){
     } else if (firstEngine) {
       selectEngine(firstEngine.id);
     } else {
-      bottomPrompt.value = data.bottomPrompt || '';
+      bottomPrompt.value = '';
       bottomPrompt.disabled = true;
       bottomMake.disabled = true;
-      bottomMake.style.opacity = '.45';
     }
 
-    if (firstEngine) {
-      bottomPrompt.disabled = false;
-      bottomMake.disabled = false;
-      bottomMake.style.opacity = '1';
-    }
-
-    saveWorkspace();
     return true;
   }catch(_e){
     return false;
@@ -292,7 +281,7 @@ function renderNode(node){
     el.innerHTML = `
       <div class="node-header">
         <div class="node-title">Node</div>
-        <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button>${node.locked ? '' : '<button class="icon-btn delete-node">×</button>'}</div>
+        <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button></div>
       </div>
       <div class="node-body">
         <div class="image-box engine-preview ${node.previewImage?'has-image':''}">
@@ -369,9 +358,6 @@ function addEngineNode(x=760,y=150){
   renderNode(n);
   selectNode(n.id);
   selectEngine(n.id);
-  bottomPrompt.disabled = false;
-  bottomMake.disabled = false;
-  bottomMake.style.opacity = '1';
   saveWorkspace();
 }
 
@@ -385,12 +371,7 @@ function addImageNode(type, x, y, image){
 function bindNodeEvents(node, el){
   el.addEventListener('mousedown', ()=>{
     selectNode(node.id);
-    if(node.type==='engine') {
-      selectEngine(node.id);
-      bottomPrompt.disabled = false;
-      bottomMake.disabled = false;
-      bottomMake.style.opacity = '1';
-    }
+    if(node.type==='engine') selectEngine(node.id);
   });
 
   const startNodeDrag = (e) => {
@@ -409,7 +390,7 @@ function bindNodeEvents(node, el){
   el.querySelector('.node-header').addEventListener('mousedown', startNodeDrag);
   el.querySelector('.node-body')?.addEventListener('mousedown', startNodeDrag);
 
-  if(node.type==='source' || node.type==='result' || node.type==='final' || (node.type==='engine' && !node.locked)){
+  if(node.type==='source' || node.type==='result' || node.type==='final'){
     el.querySelector('.delete-node')?.addEventListener('click', e=>{e.stopPropagation(); removeNode(node.id);});
   }
   el.querySelector('.duplicate-node')?.addEventListener('click', e=>{e.stopPropagation(); duplicateEngineNode(node.id);});
@@ -477,7 +458,6 @@ function bringToFront(el){ zCounter += 1; el.style.zIndex = zCounter; }
 function duplicateEngineNode(id){
   const node = nodes.find(n=>n.id===id);
   if(!node || node.type!=='engine') return;
-
   const copy = {
     id: uid('eng_'),
     type: 'engine',
@@ -490,68 +470,22 @@ function duplicateEngineNode(id){
   nodes.push(copy);
   renderNode(copy);
 
-  // Copy only node state and rendered output, not input links.
-  // This lets the user branch from the same rendered state without reconnecting everything.
-  const downstreamResult = findDownstream(node.id, 'result');
-  const downstreamFinal = findDownstream(node.id, 'final');
-  const downstream = downstreamFinal || downstreamResult;
-
-  if(downstream && downstream.image){
-    const clonedImageNode = {
-      id: uid(downstream.type === 'final' ? 'fin_' : 'res_'),
-      type: downstream.type,
-      x: copy.x + 420,
-      y: copy.y + 10,
-      image: downstream.image
-    };
-    nodes.push(clonedImageNode);
-    renderNode(clonedImageNode);
-
-    links.push({
-      id: uid('ln_'),
-      from: copy.id,
-      to: clonedImageNode.id,
-      toPort: 'in'
-    });
-  }
-
+  // copy only node state, not links
+  syncEnginePreview(copy);
   selectNode(copy.id);
   selectEngine(copy.id);
-  bottomPrompt.disabled = false;
-  bottomMake.disabled = false;
-  bottomMake.style.opacity = '1';
   redraw();
   saveWorkspace();
 }
 
 function removeNode(id){
-  const targetNode = nodes.find(n=>n.id===id);
-  if(targetNode && targetNode.type==='engine' && targetNode.locked) return;
   links = links.filter(l=>l.from!==id && l.to!==id);
   nodes = nodes.filter(n=>n.id!==id);
   document.getElementById(id)?.remove();
-
+  if(selectedEngineId===id) selectEngine(null);
   if(selectedNodeId===id) selectedNodeId = null;
-  if(selectedEngineId===id) selectedEngineId = null;
-
   syncAllEnginePreviews();
   redraw();
-
-  const fallbackEngine = nodes.find(n=>n.type==='engine') || null;
-  if(fallbackEngine){
-    selectNode(fallbackEngine.id);
-    selectEngine(fallbackEngine.id);
-    bottomPrompt.disabled = false;
-    bottomMake.disabled = false;
-    bottomMake.style.opacity = '1';
-  } else {
-    clearPreview();
-    bottomPrompt.value = '';
-    bottomPrompt.disabled = true;
-    bottomMake.disabled = true;
-    bottomMake.style.opacity = '.45';
-  }
-
   saveWorkspace();
 }
 
@@ -823,18 +757,16 @@ function clearPreview(){
 }
 
 function selectEngine(id){
-  selectedEngineId = id || null;
-  const node = nodes.find(n=>n.id===selectedEngineId && n.type==='engine');
-  if(node){
+  selectedEngineId = id;
+  const node = nodes.find(n=>n.id===id);
+  if(node && node.type==='engine'){
     bottomPrompt.value = node.prompt || '';
     bottomPrompt.disabled = false;
     bottomMake.disabled = false;
-    bottomMake.style.opacity = '1';
   } else {
     bottomPrompt.value = '';
     bottomPrompt.disabled = true;
     bottomMake.disabled = true;
-    bottomMake.style.opacity = '.45';
   }
   saveWorkspace();
 }
@@ -854,7 +786,12 @@ bottomMake.addEventListener('click', ()=>{
 });
 
 
-
+sourceLauncher.addEventListener('dblclick', (e)=>{
+  e.preventDefault();
+  e.stopPropagation();
+  if(sourceLauncherDrag && sourceLauncherDrag.moved) return;
+  addSourceNode();
+});
 
 sourceLauncher.addEventListener('mousedown', (e)=>{
   if(e.button !== 0) return;
@@ -926,9 +863,8 @@ document.addEventListener('mousemove', e=>{
   }
 });
 
-document.addEventListener('mouseup', (e)=>{
-  const launcherDrag = sourceLauncherDrag;
-  const changed = !!drag || !!panMode || !!(launcherDrag && launcherDrag.moved);
+document.addEventListener('mouseup', ()=>{
+  const changed = !!drag || !!panMode || !!(sourceLauncherDrag && sourceLauncherDrag.moved);
   drag = null;
   connectStart = null;
   tempMouse = null;
@@ -937,25 +873,6 @@ document.addEventListener('mouseup', (e)=>{
   canvas.classList.remove('panning');
   redraw();
   if(changed) saveWorkspace();
-
-  // Reliable double-click on the yellow source button:
-  // drag does nothing, two quick plain clicks create a source + open file picker.
-  if(launcherDrag && !launcherDrag.moved && e.target === sourceLauncher){
-    const now = Date.now();
-    if(now - sourceLauncherLastClickAt < 350){
-      sourceLauncherLastClickAt = 0;
-      const pos = getNextSourcePosition();
-      const n = {id:uid('src_'),type:'source',x:pos.x,y:pos.y,image:null};
-      nodes.push(n);
-      renderNode(n);
-      selectNode(n.id);
-      pendingUploadNode = n.id;
-      saveWorkspace();
-      fileInput.click();
-    } else {
-      sourceLauncherLastClickAt = now;
-    }
-  }
 });
 
 document.addEventListener('keydown', e=>{
@@ -1039,11 +956,6 @@ if(!restoreWorkspace()){
   sourceLauncher.style.left = '16px';
   sourceLauncher.style.top = '16px';
   addEngineNode();
-  const firstEngine = nodes.find(n=>n.type==='engine');
-  if(firstEngine){
-    selectNode(firstEngine.id);
-    selectEngine(firstEngine.id);
-  }
   setTimeout(()=>{ saveWorkspace(); }, 0);
 }
 </script>
