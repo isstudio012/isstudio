@@ -12,9 +12,10 @@ button,input,select,textarea{font:inherit}
 #app{width:100%;height:100%;display:grid;grid-template-columns:1fr 420px;grid-template-rows:1fr;}
 #left{position:relative;overflow:hidden}
 #right{border-left:1px solid #2b2b2b;background:#151515;display:flex;flex-direction:column}
-#canvas{position:absolute;inset:0 0 108px 0;overflow:hidden;background:var(--bg);zoom:1}
+#canvas{position:absolute;inset:0 0 108px 0;overflow:hidden;background:var(--bg)}
 #canvas.panning{cursor:grabbing}
-#connections{position:absolute;inset:0;pointer-events:auto;z-index:2}
+#world{position:absolute;top:0;left:0;width:4000px;height:4000px;transform-origin:top left;}
+#connections{position:absolute;inset:0;pointer-events:auto;z-index:2;width:100%;height:100%}
 .toolbar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:20}
 .tb{height:36px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;cursor:pointer}.tb:hover{background:var(--panel2)}
 .source-launcher{position:absolute;left:16px;top:16px;height:42px;min-width:120px;padding:0 18px;border:1px solid #d2b100;background:#ffd400;color:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:grab;z-index:30;user-select:none;box-shadow:0 8px 24px rgba(0,0,0,.25)}
@@ -89,7 +90,7 @@ button,input,select,textarea{font:inherit}
       <button class="tb" id="zoomReset">100%</button>
       <button class="tb" id="zoomIn">+</button>
     </div>
-    <div id="canvas"><svg id="connections"></svg></div>
+    <div id="canvas"><div id="world"><svg id="connections"></svg></div></div>
     <div id="sourceLauncher" class="source-launcher">+ Source</div>
     <div class="bottom-bar">
       <textarea id="bottomPrompt" class="bottom-prompt" placeholder="Prompt"></textarea>
@@ -119,10 +120,11 @@ button,input,select,textarea{font:inherit}
 
 <script>
 const canvas = document.getElementById('canvas');
-canvas.style.transformOrigin = 'top left';
-canvas.style.transform = 'scale(1)';
-canvas.style.left = '0px';
-canvas.style.top = '0px';
+const world = document.getElementById('world');
+world.style.transformOrigin = 'top left';
+world.style.transform = 'scale(1)';
+world.style.left = '0px';
+world.style.top = '0px';
 const svg = document.getElementById('connections');
 const fileInput = document.getElementById('fileInput');
 const fullscreen = document.getElementById('fullscreen');
@@ -164,8 +166,8 @@ function saveWorkspace(){
       selectedNodeId,
       selectedEngineId,
       canvasZoom,
-      canvasLeft: canvas.style.left || '0px',
-      canvasTop: canvas.style.top || '0px',
+      canvasLeft: world.style.left || '0px',
+      canvasTop: world.style.top || '0px',
       bottomPrompt: bottomPrompt.value || '',
       sourceLauncherLeft: (typeof sourceLauncher !== 'undefined' && sourceLauncher) ? (sourceLauncher.style.left || '16px') : '16px',
       sourceLauncherTop: (typeof sourceLauncher !== 'undefined' && sourceLauncher) ? (sourceLauncher.style.top || '16px') : '16px'
@@ -215,8 +217,8 @@ function restoreWorkspace(){
     selectedNodeId = data.selectedNodeId || null;
     selectedEngineId = baseEngine.id;
 
-    canvas.style.left = data.canvasLeft || '0px';
-    canvas.style.top = data.canvasTop || '0px';
+    world.style.left = data.canvasLeft || '0px';
+    world.style.top = data.canvasTop || '0px';
     if (typeof sourceLauncher !== 'undefined' && sourceLauncher) {
       sourceLauncher.style.left = data.sourceLauncherLeft || '16px';
       sourceLauncher.style.top = data.sourceLauncherTop || '16px';
@@ -328,7 +330,7 @@ function renderNode(node){
       <div class="port in" data-port="in"></div>`;
   }
 
-  canvas.appendChild(el);
+  world.appendChild(el);
   if(node.type==='engine'){
     const sel = el.querySelector('.engine-select');
     const ta = el.querySelector('.prompt');
@@ -374,15 +376,15 @@ function bindNodeEvents(node, el){
   const startNodeDrag = (e) => {
     if (e.button !== 0) return;
     if (e.target.closest('.icon-btn, .port, select, textarea, button, input, .link-remove')) return;
-    const left = parseFloat(canvas.style.left || '0') || 0;
-    const top  = parseFloat(canvas.style.top  || '0') || 0;
-    const canvasParentRect = canvas.parentElement.getBoundingClientRect();
+    const left = parseFloat(world.style.left || '0') || 0;
+    const top  = parseFloat(world.style.top  || '0') || 0;
+    const canvasRect = canvas.getBoundingClientRect();
     drag={
       id: node.id,
-      canvasOriginX: canvasParentRect.left,
-      canvasOriginY: canvasParentRect.top,
-      offsetX: (e.clientX - canvasParentRect.left - left) / canvasZoom - node.x,
-      offsetY: (e.clientY - canvasParentRect.top  - top)  / canvasZoom - node.y
+      canvasOriginX: canvasRect.left,
+      canvasOriginY: canvasRect.top,
+      offsetX: (e.clientX - canvasRect.left - left) / canvasZoom - node.x,
+      offsetY: (e.clientY - canvasRect.top  - top)  / canvasZoom - node.y
     };
     bringToFront(el);
     e.preventDefault();
@@ -567,8 +569,8 @@ function syncEnginePreview(engineNode){
 function syncAllEnginePreviews(){ nodes.filter(n=>n.type==='engine').forEach(syncEnginePreview); }
 
 function redraw(){
-  svg.setAttribute('width', canvas.clientWidth);
-  svg.setAttribute('height', canvas.clientHeight);
+  svg.setAttribute('width', 4000);
+  svg.setAttribute('height', 4000);
   svg.innerHTML='';
 
   // Update ghosts
@@ -818,11 +820,11 @@ sourceLauncher.addEventListener('dblclick', (e)=>{
   e.preventDefault();
   e.stopPropagation();
   if(sourceLauncherDrag && sourceLauncherDrag.moved) return;
-  const parentRect = canvas.parentElement.getBoundingClientRect();
-  const left = parseFloat(canvas.style.left || '0') || 0;
-  const top  = parseFloat(canvas.style.top  || '0') || 0;
-  const cx = (parentRect.width  / 2 - left) / canvasZoom - 180;
-  const cy = (parentRect.height / 2 - top)  / canvasZoom - 150;
+  const canvasRect = canvas.getBoundingClientRect();
+  const left = parseFloat(world.style.left || '0') || 0;
+  const top  = parseFloat(world.style.top  || '0') || 0;
+  const cx = (canvasRect.width  / 2 - left) / canvasZoom - 180;
+  const cy = (canvasRect.height / 2 - top)  / canvasZoom - 150;
   const n = {id:uid('src_'),type:'source',x:Math.max(0,cx),y:Math.max(0,cy),image:null};
   nodes.push(n);
   renderNode(n);
@@ -870,8 +872,8 @@ document.addEventListener('mousedown', e=>{ if(e.button===1) e.preventDefault();
 document.addEventListener('mousemove', e=>{
   if(drag){
     const node = nodes.find(n=>n.id===drag.id);
-    const left = parseFloat(canvas.style.left || '0') || 0;
-    const top  = parseFloat(canvas.style.top  || '0') || 0;
+    const left = parseFloat(world.style.left || '0') || 0;
+    const top  = parseFloat(world.style.top  || '0') || 0;
     node.x = Math.max(0, (e.clientX - drag.canvasOriginX - left) / canvasZoom - drag.offsetX);
     node.y = Math.max(0, (e.clientY - drag.canvasOriginY - top)  / canvasZoom - drag.offsetY);
     const el = document.getElementById(node.id);
@@ -880,12 +882,12 @@ document.addEventListener('mousemove', e=>{
     redraw();
   }
   if(connectStart){
-    const left = parseFloat(canvas.style.left || '0') || 0;
-    const top  = parseFloat(canvas.style.top  || '0') || 0;
-    const parentRect = canvas.parentElement.getBoundingClientRect();
+    const left = parseFloat(world.style.left || '0') || 0;
+    const top  = parseFloat(world.style.top  || '0') || 0;
+    const canvasRect = canvas.getBoundingClientRect();
     tempMouse = {
-      x: (e.clientX - parentRect.left - left) / canvasZoom,
-      y: (e.clientY - parentRect.top  - top)  / canvasZoom
+      x: (e.clientX - canvasRect.left - left) / canvasZoom,
+      y: (e.clientY - canvasRect.top  - top)  / canvasZoom
     };
     redraw();
   }
@@ -894,8 +896,8 @@ document.addEventListener('mousemove', e=>{
     const dy = e.clientY - panMode.startY;
     const nextLeft = panMode.originLeft + dx;
     const nextTop = panMode.originTop + dy;
-    canvas.style.left = nextLeft + 'px';
-    canvas.style.top = nextTop + 'px';
+    world.style.left = nextLeft + 'px';
+    world.style.top = nextTop + 'px';
   }
   if(sourceLauncherDrag){
     const dx = e.clientX - sourceLauncherDrag.startX;
@@ -933,8 +935,8 @@ canvas.addEventListener('mousedown', (e)=>{
     panMode = {
       startX: e.clientX,
       startY: e.clientY,
-      originLeft: parseFloat(canvas.style.left || '0') || 0,
-      originTop: parseFloat(canvas.style.top || '0') || 0
+      originLeft: parseFloat(world.style.left || '0') || 0,
+      originTop: parseFloat(world.style.top || '0') || 0
     };
     canvas.classList.add('panning');
   }
@@ -965,9 +967,8 @@ canvas.addEventListener('wheel', (e)=>{
 }, { passive:false });
 function setCanvasZoom(v){
   canvasZoom = Math.max(0.1, Math.min(1.6, Math.round(v*10)/10));
-  canvas.style.zoom = '';
-  canvas.style.transformOrigin = 'top left';
-  canvas.style.transform = `scale(${canvasZoom})`;
+  world.style.transformOrigin = 'top left';
+  world.style.transform = `scale(${canvasZoom})`;
   document.getElementById('zoomReset').textContent = Math.round(canvasZoom*100) + '%';
   saveWorkspace();
 }
