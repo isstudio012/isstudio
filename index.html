@@ -710,49 +710,28 @@ async function runEngine(engineId){
     const apiKey = apiCodeInput.value.trim();
     if(!apiKey){ alert('API 코드를 입력해줘.'); return; }
 
-    let outputImage = null;
-
-    // Start prediction
-    const startRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
+    const res = await fetch('/api/render', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'wait'
-      },
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
       body: JSON.stringify({
-        input: {
-          prompt: String(engineNode.prompt || ''),
-          input_image: main,
-          ...(ref ? { reference_image: ref } : {})
-        }
+        apiKey,
+        engine: engineNode.engine,
+        prompt: String(engineNode.prompt || ''),
+        image: main,
+        refImage: ref
       })
     });
 
-    if(!startRes.ok){
-      const err = await startRes.json().catch(()=>({}));
-      alert('API 오류: ' + (err.detail || startRes.status));
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      alert('API 오류: ' + (err.error || res.status));
       return;
     }
 
-    const prediction = await startRes.json();
+    const data = await res.json();
+    const outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image);
 
-    // Poll until done
-    let result = prediction;
-    while(result.status !== 'succeeded' && result.status !== 'failed'){
-      await new Promise(r => setTimeout(r, 1500));
-      const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
-        headers: { 'Authorization': `Bearer ${apiKey}` }
-      });
-      result = await pollRes.json();
-    }
-
-    if(result.status === 'failed'){
-      alert('렌더링 실패: ' + (result.error || 'unknown error'));
-      return;
-    }
-
-    outputImage = Array.isArray(result.output) ? result.output[0] : result.output;
+    if(!outputImage){ alert('결과 이미지가 없어.'); return; }
 
     // Show result
     engineNode.previewImage = outputImage;
