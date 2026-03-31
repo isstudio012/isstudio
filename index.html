@@ -147,6 +147,7 @@ let selectedNodeId = null;
 let canvasZoom = 1;
 let panMode = null;
 let sourceLauncherDrag = null;
+let sourceLauncherLastClickAt = 0;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
@@ -191,8 +192,8 @@ function restoreWorkspace(){
     selectedEngineId = data.selectedEngineId || null;
 
     // Safety: if workspace lost the engine node, recreate one so Make never stays dead.
-    const engineExists = nodes.some(n => n.type === 'engine');
-    if (!engineExists) {
+    const engineNodes = nodes.filter(n => n.type === 'engine');
+    if (!engineNodes.length) {
       nodes.push({
         id: uid('eng_'),
         type: 'engine',
@@ -200,7 +201,13 @@ function restoreWorkspace(){
         y: 150,
         engine: 'Flux Kontext Pro',
         prompt: data.bottomPrompt || '',
-        previewImage: null
+        previewImage: null,
+        locked: true
+      });
+    } else {
+      // Normalize old broken saves: make sure only the first engine is the base locked node.
+      engineNodes.forEach((n, idx) => {
+        if (typeof n.locked !== 'boolean') n.locked = idx === 0;
       });
     }
 
@@ -847,19 +854,7 @@ bottomMake.addEventListener('click', ()=>{
 });
 
 
-sourceLauncher.addEventListener('dblclick', (e)=>{
-  e.preventDefault();
-  e.stopPropagation();
-  if(sourceLauncherDrag && sourceLauncherDrag.moved) return;
-  const pos = getNextSourcePosition();
-  const n = {id:uid('src_'),type:'source',x:pos.x,y:pos.y,image:null};
-  nodes.push(n);
-  renderNode(n);
-  selectNode(n.id);
-  pendingUploadNode = n.id;
-  saveWorkspace();
-  fileInput.click();
-});
+
 
 sourceLauncher.addEventListener('mousedown', (e)=>{
   if(e.button !== 0) return;
@@ -931,8 +926,9 @@ document.addEventListener('mousemove', e=>{
   }
 });
 
-document.addEventListener('mouseup', ()=>{
-  const changed = !!drag || !!panMode || !!(sourceLauncherDrag && sourceLauncherDrag.moved);
+document.addEventListener('mouseup', (e)=>{
+  const launcherDrag = sourceLauncherDrag;
+  const changed = !!drag || !!panMode || !!(launcherDrag && launcherDrag.moved);
   drag = null;
   connectStart = null;
   tempMouse = null;
@@ -941,6 +937,25 @@ document.addEventListener('mouseup', ()=>{
   canvas.classList.remove('panning');
   redraw();
   if(changed) saveWorkspace();
+
+  // Reliable double-click on the yellow source button:
+  // drag does nothing, two quick plain clicks create a source + open file picker.
+  if(launcherDrag && !launcherDrag.moved && e.target === sourceLauncher){
+    const now = Date.now();
+    if(now - sourceLauncherLastClickAt < 350){
+      sourceLauncherLastClickAt = 0;
+      const pos = getNextSourcePosition();
+      const n = {id:uid('src_'),type:'source',x:pos.x,y:pos.y,image:null};
+      nodes.push(n);
+      renderNode(n);
+      selectNode(n.id);
+      pendingUploadNode = n.id;
+      saveWorkspace();
+      fileInput.click();
+    } else {
+      sourceLauncherLastClickAt = now;
+    }
+  }
 });
 
 document.addEventListener('keydown', e=>{
@@ -1024,6 +1039,11 @@ if(!restoreWorkspace()){
   sourceLauncher.style.left = '16px';
   sourceLauncher.style.top = '16px';
   addEngineNode();
+  const firstEngine = nodes.find(n=>n.type==='engine');
+  if(firstEngine){
+    selectNode(firstEngine.id);
+    selectEngine(firstEngine.id);
+  }
   setTimeout(()=>{ saveWorkspace(); }, 0);
 }
 </script>
