@@ -357,7 +357,10 @@ function renderNode(node){
     el.innerHTML = `
       <div class="node-header">
         <div class="node-title">수정이미지</div>
-        <div class="node-actions"><button class="icon-btn delete-node">×</button></div>
+        <div class="node-actions">
+          <button class="icon-btn copy-result-btn" title="복사">⧉</button>
+          <button class="icon-btn delete-node">×</button>
+        </div>
       </div>
       <div class="node-body">
         <div class="image-box result-box ${node.image?'has-image':''}">
@@ -453,6 +456,23 @@ function bindNodeEvents(node, el){
   }
   el.querySelector('.save-result-btn')?.addEventListener('click', e=>{e.stopPropagation(); saveResultFromEngine(node.id);});
   el.querySelector('.duplicate-node')?.addEventListener('click', e=>{e.stopPropagation(); duplicateEngineNode(node.id);});
+
+  if(node.type==='result'){
+    el.querySelector('.copy-result-btn')?.addEventListener('click', e=>{
+      e.stopPropagation();
+      const copy = {
+        id: uid('res_'),
+        type: 'result',
+        x: node.x + 20,
+        y: node.y + 290,
+        image: node.image
+      };
+      nodes.push(copy);
+      renderNode(copy);
+      redraw();
+      saveWorkspace();
+    });
+  }
 
   if(node.type==='source'){
     el.querySelector('.source-box').addEventListener('click', e=>{
@@ -869,10 +889,9 @@ async function runEngine(engineId){
   loading.style.display = 'block';
   loading.textContent = 'Preparing...';
 
-  // 이미지 준비 (base64면 리사이즈, URL이면 그대로)
-  const isUrl = (s) => s && (s.startsWith('http://') || s.startsWith('https://'));
-  const mainSmall = isUrl(main) ? main : await resizeImageBase64(main);
-  const refSmall  = ref ? (isUrl(ref) ? ref : await resizeImageBase64(ref)) : null;
+  // 원본 이미지 그대로 전송 (render.js에서 20mb 허용)
+  const mainSmall = main;
+  const refSmall  = ref || null;
 
   try{
     loading.textContent = 'Rendering...';
@@ -919,7 +938,7 @@ async function runEngine(engineId){
     let outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image);
     if(!outputImage){ alert('결과 이미지가 없어.'); return; }
 
-    // 엔진 노드에만 결과 표시 (Result 노드는 자동 생성 안 함)
+    // 엔진에 결과 표시
     engineNode.previewImage = outputImage;
     const engEl = document.getElementById(engineId);
     if(engEl){
@@ -929,6 +948,23 @@ async function runEngine(engineId){
       if(box){ box.classList.add('has-image'); applyEnginePreviewAspect(engineNode, outputImage); }
     }
     showPreview(outputImage);
+
+    // Ref가 연결돼 있으면 수정이미지 노드 자동 생성 (매번 새로 추가)
+    const refLink = links.find(l => l.to === engineId && l.toPort === 'ref');
+    if(refLink){
+      const existingCount = nodes.filter(n => n.type==='result' && links.find(l => l.from===engineId && l.to===n.id)).length;
+      const newResult = {
+        id: uid('res_'),
+        type: 'result',
+        x: engineNode.x + 430,
+        y: engineNode.y + existingCount * 290,
+        image: outputImage
+      };
+      nodes.push(newResult);
+      renderNode(newResult);
+      links.push({id: uid('ln_'), from: engineId, to: newResult.id, toPort: 'in'});
+    }
+
     syncAllEnginePreviews();
     redraw();
     saveWorkspace();
@@ -1178,8 +1214,27 @@ function setCanvasZoom(v){
 
 function openImagePopup(src, title='Image'){
   if(!src) return;
-  fullscreenImg.src = src;
-  fullscreen.classList.add('on');
+  // URL이면 바로 새 탭
+  if(src.startsWith('http://') || src.startsWith('https://')){
+    window.open(src, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  // base64면 blob으로 변환해서 새 탭
+  try{
+    const arr = src.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while(n--) u8arr[n] = bstr.charCodeAt(n);
+    const blob = new Blob([u8arr], {type: mime});
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank', 'noopener,noreferrer');
+    if(w) setTimeout(()=> URL.revokeObjectURL(url), 10000);
+    else{ fullscreenImg.src = src; fullscreen.classList.add('on'); }
+  } catch(_e){
+    fullscreenImg.src = src; fullscreen.classList.add('on');
+  }
 }
 
 // Fullscreen
@@ -1220,15 +1275,14 @@ document.getElementById('pZoomIn').addEventListener('click',  ()=> setPreviewZoo
 document.getElementById('pZoomFit').addEventListener('click', ()=> fitPreviewToBox());
 
 previewImg.addEventListener('load', ()=>{
-  if(!previewImg.src) return;
-  // 이미지 비율에 맞게 previewBox 높이 설정
-  const img = previewImg;
+  if(!previewImg.src || previewImg.src === window.location.href) return;
   const boxW = previewBox.clientWidth - 4;
-  const ratio = img.naturalHeight / img.naturalWidth;
+  const ratio = previewImg.naturalHeight / previewImg.naturalWidth;
   const h = Math.min(Math.round(boxW * ratio), 520);
   previewBox.style.height = h + 'px';
-  setPreviewZoom(1);
   previewZoomBar.classList.add('on');
+  // 창에 맞게 자동 fit
+  setTimeout(()=> fitPreviewToBox(), 50);
 });
 
 // Initial
