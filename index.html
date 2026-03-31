@@ -117,7 +117,7 @@ button,input,select,textarea{font:inherit}
       </div>
       <div class="side-card">
         <div class="side-label">API Code</div>
-        <input id="apiCode" class="side-input" type="password" placeholder="r8_xxx" />
+        <input id="apiCode" class="side-input" type="password" placeholder="r8_xxxxxxxx..." maxlength="50" autocomplete="off" spellcheck="false" />
       </div>
     </div>
   </div>
@@ -162,8 +162,14 @@ let sourceLauncherDrag = null;
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
 const LS_WORKSPACE = 'vizmaker_workspace_v3';
-apiCodeInput.value = localStorage.getItem(LS_API_KEY) || '';
+apiCodeInput.value = (localStorage.getItem(LS_API_KEY) || '').trim();
 apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
+apiCodeInput.addEventListener('paste', e=>{
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text').trim();
+  apiCodeInput.value = text;
+  localStorage.setItem(LS_API_KEY, text);
+});
 
 function saveWorkspace(){
   try{
