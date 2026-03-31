@@ -174,7 +174,7 @@ let sourceLauncherDrag = null;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
-const LS_WORKSPACE = 'vizmaker_workspace_v3';
+const LS_WORKSPACE = 'vizmaker_workspace_v4';
 apiCodeInput.value = (localStorage.getItem(LS_API_KEY) || '').trim();
 apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
 apiCodeInput.addEventListener('paste', e=>{
@@ -527,14 +527,16 @@ function bindNodeEvents(node, el){
 }
 
 function bringToFront(el){ zCounter += 1; el.style.zIndex = zCounter; }
+
+function saveResultFromEngine(engineId){
   const node = nodes.find(n=>n.id===engineId);
   if(!node || !node.previewImage){ alert('렌더링된 이미지가 없어.'); return; }
-
+  const existingCount = nodes.filter(n=>n.type==='result' && links.find(l=>l.from===engineId&&l.to===n.id)).length;
   const resultNode = {
     id: uid('res_'),
     type: 'result',
     x: node.x + 430,
-    y: node.y + (nodes.filter(n=>n.type==='result' && links.find(l=>l.from===engineId&&l.to===n.id)).length * 280),
+    y: node.y + existingCount * 280,
     image: node.previewImage
   };
   nodes.push(resultNode);
@@ -765,10 +767,11 @@ function applyEnginePreviewAspect(engineNode, imgSrc){
 
 function getInputImages(engineId){
   const mainLink = links.find(l=>l.to===engineId && l.toPort==='in');
-  const refLink = links.find(l=>l.to===engineId && l.toPort==='ref');
+  const refLink  = links.find(l=>l.to===engineId && l.toPort==='ref');
   const mainNode = mainLink ? nodes.find(n=>n.id===mainLink.from) : null;
-  const refNode = refLink ? nodes.find(n=>n.id===refLink.from) : null;
-  return {main: mainNode?.image || null, ref: refNode?.image || null, mainType: mainNode?.type || null};
+  const refNode  = refLink  ? nodes.find(n=>n.id===refLink.from)  : null;
+  const getImg = n => n ? (n.image || n.previewImage || null) : null;
+  return {main: getImg(mainNode), ref: getImg(refNode), mainType: mainNode?.type || null};
 }
 
 function findDownstream(engineId, type){
