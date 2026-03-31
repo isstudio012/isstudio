@@ -126,11 +126,10 @@ let tempMouse = null;
 let selectedLink = null;
 let selectedEngineId = null;
 let selectedNodeId = null;
-let canvasZoom = parseFloat(localStorage.getItem(LS_CANVAS_ZOOM) || '1') || 1;
+let canvasZoom = 1;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
-const LS_CANVAS_ZOOM = 'vizmaker_canvas_zoom_v1';
 apiCodeInput.value = localStorage.getItem(LS_API_KEY) || '';
 apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
 
@@ -628,13 +627,12 @@ document.getElementById('zoomReset').addEventListener('click', ()=> setCanvasZoo
 
 canvas.addEventListener('wheel', (e)=>{
   e.preventDefault();
-  const delta = e.deltaY > 0 ? -0.1 : 0.1;
-  setCanvasZoom(canvasZoom + delta);
-}, {passive:false});
+  const step = e.deltaY > 0 ? -0.1 : 0.1;
+  setCanvasZoom(canvasZoom + step);
+}, { passive:false });
 function setCanvasZoom(v){
   canvasZoom = Math.max(0.7, Math.min(1.6, Math.round(v*10)/10));
   canvas.style.zoom = canvasZoom;
-  localStorage.setItem(LS_CANVAS_ZOOM, String(canvasZoom));
   document.getElementById('zoomReset').textContent = Math.round(canvasZoom*100) + '%';
 }
 
