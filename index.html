@@ -819,9 +819,7 @@ sourceLauncher.addEventListener('dblclick', (e)=>{
   nodes.push(n);
   renderNode(n);
   selectNode(n.id);
-  pendingUploadNode = n.id;
   saveWorkspace();
-  fileInput.click();
 });
 
 sourceLauncher.addEventListener('mousedown', (e)=>{
