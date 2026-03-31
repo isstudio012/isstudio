@@ -916,35 +916,16 @@ async function runEngine(engineId){
     let outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image);
     if(!outputImage){ alert('결과 이미지가 없어.'); return; }
 
-    if(!ref){
-      // 1차 렌더: 엔진 창에만 표시
-      engineNode.previewImage = outputImage;
-      const engEl = document.getElementById(engineId);
-      if(engEl){
-        const box = engEl.querySelector('.engine-preview');
-        const im  = engEl.querySelector('.engine-preview img');
-        if(im) im.src = outputImage;
-        if(box){
-          box.classList.add('has-image');
-          applyEnginePreviewAspect(engineNode, outputImage);
-        }
-      }
-      showPreview(outputImage);
-    } else {
-      // 2차 수정 렌더: Result 노드 생성
-      const resultNode = {
-        id: uid('res_'),
-        type: 'result',
-        x: engineNode.x + 430,
-        y: engineNode.y + (nodes.filter(n => n.type === 'result' && links.find(l => l.from === engineId && l.to === n.id)).length * 280),
-        image: outputImage
-      };
-      nodes.push(resultNode);
-      renderNode(resultNode);
-      links.push({ id: uid('ln_'), from: engineId, to: resultNode.id, toPort: 'in' });
-      showPreview(outputImage);
+    // 엔진 노드에만 결과 표시 (Result 노드는 자동 생성 안 함)
+    engineNode.previewImage = outputImage;
+    const engEl = document.getElementById(engineId);
+    if(engEl){
+      const box = engEl.querySelector('.engine-preview');
+      const im  = engEl.querySelector('.engine-preview img');
+      if(im) im.src = outputImage;
+      if(box){ box.classList.add('has-image'); applyEnginePreviewAspect(engineNode, outputImage); }
     }
-
+    showPreview(outputImage);
     syncAllEnginePreviews();
     redraw();
     saveWorkspace();
