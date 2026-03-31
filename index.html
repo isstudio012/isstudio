@@ -72,8 +72,15 @@ button,input,select,textarea{font:inherit}
 /* Right preview */
 .previewTop{padding:14px 14px 10px;border-bottom:1px solid #2b2b2b}
 .previewTitle{font-size:14px;color:#fff}
-.previewBox{margin:14px;border:1px solid #2b2b2b;border-radius:14px;background:#121212;overflow:hidden;display:flex;align-items:center;justify-content:center;height:360px;cursor:zoom-in}
-.previewBox img{width:100%;height:100%;object-fit:contain;display:none;background:#000}
+.previewBox{margin:14px;border:1px solid #2b2b2b;border-radius:14px;background:#121212;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;}
+.previewBox img{display:none;background:#000;transition:transform 0.15s;transform-origin:center center;}
+.previewBox.has-image img{display:block;}
+.previewEmpty{color:var(--muted);font-size:13px}
+.preview-zoom-bar{display:none;justify-content:center;align-items:center;gap:8px;padding:0 14px 10px;}
+.preview-zoom-bar.on{display:flex;}
+.preview-zoom-bar button{width:28px;height:28px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:14px;}
+.preview-zoom-bar button:hover{background:var(--panel2)}
+.preview-zoom-label{font-size:12px;color:var(--muted);min-width:36px;text-align:center;}
 .previewEmpty{color:var(--muted);font-size:13px}
 
 .link-remove{pointer-events:all;cursor:pointer}
@@ -113,6 +120,12 @@ button,input,select,textarea{font:inherit}
         <div class="previewBox" id="previewBox">
           <div class="previewEmpty" id="previewEmpty">미리보기</div>
           <img id="previewImg" alt="" />
+        </div>
+        <div class="preview-zoom-bar" id="previewZoomBar">
+          <button id="pZoomOut">−</button>
+          <span class="preview-zoom-label" id="pZoomLabel">100%</span>
+          <button id="pZoomIn">+</button>
+          <button id="pZoomFit" style="width:auto;padding:0 8px;font-size:11px;">Fit</button>
         </div>
       </div>
       <div class="side-card">
@@ -352,7 +365,8 @@ function renderNode(node){
           <div class="ghost">Image</div>
         </div>
       </div>
-      <div class="port in" data-port="in"></div>`;
+      <div class="port in" data-port="in"></div>
+      <div class="port out" data-port="out"></div>`;
   }
 
   if(node.type==='final'){
@@ -606,13 +620,26 @@ function getPortPosTo(nodeId, toPort){
 
 function syncEnginePreview(engineNode){
   const mainLink = links.find(l=>l.to===engineNode.id && l.toPort==='in');
+  const el = document.getElementById(engineNode.id);
+
+  // 렌더된 이미지가 있으면 그걸 유지, 없으면 소스 이미지 보여줌
+  if(engineNode.previewImage){
+    if(el){
+      const box = el.querySelector('.engine-preview');
+      const im = el.querySelector('.engine-preview img');
+      im.src = engineNode.previewImage;
+      box.classList.toggle('has-image', true);
+      applyEnginePreviewAspect(engineNode, engineNode.previewImage);
+    }
+    return;
+  }
+
+  // 렌더 전: 소스 이미지 표시
   let img = null;
   if(mainLink){
     const src = nodes.find(n=>n.id===mainLink.from);
     img = src?.image || null;
   }
-  engineNode.previewImage = img;
-  const el = document.getElementById(engineNode.id);
   if(el){
     const box = el.querySelector('.engine-preview');
     const im = el.querySelector('.engine-preview img');
@@ -620,7 +647,6 @@ function syncEnginePreview(engineNode){
     box.classList.toggle('has-image', !!img);
     applyEnginePreviewAspect(engineNode, img);
   }
-  if(selectedNodeId===engineNode.id){ if(img) showPreview(img); else clearPreview(); }
 }
 
 function syncAllEnginePreviews(){ nodes.filter(n=>n.type==='engine').forEach(syncEnginePreview); }
@@ -823,9 +849,10 @@ async function runEngine(engineId){
   loading.style.display = 'block';
   loading.textContent = 'Preparing...';
 
-  // 이미지 리사이즈 (413 방지)
-  const mainSmall = await resizeImageBase64(main);
-  const refSmall  = ref ? await resizeImageBase64(ref) : null;
+  // 이미지 준비 (base64면 리사이즈, URL이면 그대로)
+  const isUrl = (s) => s && (s.startsWith('http://') || s.startsWith('https://'));
+  const mainSmall = isUrl(main) ? main : await resizeImageBase64(main);
+  const refSmall  = ref ? (isUrl(ref) ? ref : await resizeImageBase64(ref)) : null;
 
   try{
     loading.textContent = 'Rendering...';
@@ -872,7 +899,7 @@ async function runEngine(engineId){
     let outputImage = Array.isArray(data.output) ? data.output[0] : (data.output || data.image);
     if(!outputImage){ alert('결과 이미지가 없어.'); return; }
 
-    // 3. Show result
+    // 3. 엔진 노드에 결과 표시
     engineNode.previewImage = outputImage;
     const engEl = document.getElementById(engineId);
     if(engEl){
@@ -882,6 +909,29 @@ async function runEngine(engineId){
       if(box){ box.classList.add('has-image'); applyEnginePreviewAspect(engineNode, outputImage); }
     }
     showPreview(outputImage);
+
+    // 4. Result 노드 자동 생성 (기존 있으면 업데이트)
+    let resultNode = nodes.find(n => n.type === 'result' && links.find(l => l.from === engineId && l.to === n.id));
+    if(resultNode){
+      resultNode.image = outputImage;
+      const rEl = document.getElementById(resultNode.id);
+      if(rEl){
+        rEl.querySelector('img').src = outputImage;
+        rEl.querySelector('.image-box').classList.add('has-image');
+      }
+    } else {
+      resultNode = {
+        id: uid('res_'),
+        type: 'result',
+        x: engineNode.x + 430,
+        y: engineNode.y,
+        image: outputImage
+      };
+      nodes.push(resultNode);
+      renderNode(resultNode);
+      links.push({id: uid('ln_'), from: engineId, to: resultNode.id, toPort: 'in'});
+    }
+
     syncAllEnginePreviews();
     redraw();
     saveWorkspace();
@@ -1152,6 +1202,42 @@ function toggleFullscreen(src){
 }
 fullscreen.addEventListener('click', ()=>{ fullscreen.classList.remove('on'); fullscreenImg.src=''; });
 previewBox.addEventListener('click', ()=>{ if(previewImg.src) openImagePopup(previewImg.src, 'Preview'); });
+
+// Preview zoom
+let previewZoom = 1;
+const previewZoomBar = document.getElementById('previewZoomBar');
+const pZoomLabel = document.getElementById('pZoomLabel');
+
+function setPreviewZoom(v){
+  previewZoom = Math.max(0.1, Math.min(4, Math.round(v*10)/10));
+  previewImg.style.transform = `scale(${previewZoom})`;
+  pZoomLabel.textContent = Math.round(previewZoom*100) + '%';
+}
+
+function fitPreviewToBox(){
+  if(!previewImg.naturalWidth) return;
+  const boxW = previewBox.clientWidth - 4;
+  const boxH = previewBox.clientHeight - 4;
+  const scaleW = boxW / previewImg.naturalWidth;
+  const scaleH = boxH / previewImg.naturalHeight;
+  setPreviewZoom(Math.min(scaleW, scaleH));
+}
+
+document.getElementById('pZoomOut').addEventListener('click', ()=> setPreviewZoom(previewZoom - 0.1));
+document.getElementById('pZoomIn').addEventListener('click',  ()=> setPreviewZoom(previewZoom + 0.1));
+document.getElementById('pZoomFit').addEventListener('click', ()=> fitPreviewToBox());
+
+previewImg.addEventListener('load', ()=>{
+  if(!previewImg.src) return;
+  // 이미지 비율에 맞게 previewBox 높이 설정
+  const img = previewImg;
+  const boxW = previewBox.clientWidth - 4;
+  const ratio = img.naturalHeight / img.naturalWidth;
+  const h = Math.min(Math.round(boxW * ratio), 520);
+  previewBox.style.height = h + 'px';
+  setPreviewZoom(1);
+  previewZoomBar.classList.add('on');
+});
 
 // Initial
 restoreWorkspace();
