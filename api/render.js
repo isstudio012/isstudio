@@ -6,46 +6,61 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { apiKey, prompt, image, width, height } = req.body;
+  const { apiKey, prompt, image, refImage, width, height } = req.body;
   if (!apiKey || !prompt || !image) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   const basePrompt = `Transform this 3D interior sketch into a photorealistic architectural render.
 
-STRICTLY PRESERVE (do not change):
-- Exact same camera angle and perspective
+STRICTLY PRESERVE:
+- Exact camera angle and perspective
 - All architectural elements: walls, ceiling, floor, windows, doors
 - All furniture positions and shapes
 - All structural and spatial layout
 
-APPLY USER INSTRUCTIONS EXACTLY AS SPECIFIED:
+APPLY EXACTLY AS SPECIFIED:
 ${prompt}
+${refImage ? 'Use the second reference image as a style and material guide for finishes, colors, and atmosphere.' : ''}
 
-ALWAYS APPLY:
-- Photorealistic material rendering: accurate texture, reflectivity, depth on all surfaces
-- Glass: realistic transparency and specular reflections
-- Metal: sharp highlights, brushed or polished finish
-- Painted surfaces: subtle texture and micro-detail
-- Shot on Canon EOS R5, 24mm f/8. Professional architectural photography, ultra realistic 8K.`;
+ALWAYS:
+- Photorealistic material rendering: accurate texture, reflectivity on all surfaces
+- Professional architectural photography, ultra realistic 8K`;
 
   try {
-    const response = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
+    let modelUrl, inputBody;
+
+    if (refImage) {
+      // 레퍼런스 이미지 있으면 multi-image 모델 사용
+      modelUrl = 'https://api.replicate.com/v1/models/flux-kontext-apps/multi-image-kontext-pro/predictions';
+      inputBody = {
+        prompt: basePrompt,
+        input_image1: image,
+        input_image2: refImage,
+        output_format: 'jpg',
+        output_quality: 95,
+        aspect_ratio: getAspectRatio(width, height)
+      };
+    } else {
+      // 단일 이미지
+      modelUrl = 'https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions';
+      inputBody = {
+        prompt: basePrompt,
+        input_image: image,
+        output_format: 'jpg',
+        output_quality: 95,
+        aspect_ratio: getAspectRatio(width, height)
+      };
+    }
+
+    const response = await fetch(modelUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Token ${apiKey}`,
         'Content-Type': 'application/json',
         'Prefer': 'wait'
       },
-      body: JSON.stringify({
-        input: {
-          prompt: basePrompt,
-          input_image: image,
-          output_format: 'jpg',
-          output_quality: 95,
-          aspect_ratio: getAspectRatio(width, height)
-        }
-      })
+      body: JSON.stringify({ input: inputBody })
     });
 
     const data = await response.json();
