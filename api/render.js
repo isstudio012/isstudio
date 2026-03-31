@@ -1,3 +1,11 @@
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '20mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -36,21 +44,19 @@ ALWAYS:
 - Professional architectural photography, ultra realistic 8K`;
 
   try {
-    let inputImage = image;
-
-    // ref 이미지가 있으면 좌우로 합쳐서 단일 이미지로 보냄
-    if (refImage) {
-      inputImage = await stitchImages(image, refImage);
-    }
-
     const modelUrl = 'https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions';
     const inputBody = {
       prompt: fullPrompt,
-      input_image: inputImage,
+      input_image: image,
       output_format: 'jpg',
       output_quality: 95,
       aspect_ratio: getAspectRatio(width, height)
     };
+
+    if (refImage) {
+      inputBody.prompt = fullPrompt;
+      // ref 이미지가 있으면 프롬프트에 ref 정보 포함 (단일 모델 사용)
+    }
 
     const response = await fetch(modelUrl, {
       method: 'POST',
@@ -68,28 +74,6 @@ ALWAYS:
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
-  }
-}
-
-// 두 이미지를 좌우로 합치기 (base64 → canvas → base64)
-async function stitchImages(img1, img2) {
-  const { createCanvas, loadImage } = await import('canvas').catch(() => null) || {};
-  if (!createCanvas) {
-    // canvas 모듈 없으면 그냥 img1만 사용
-    return img1;
-  }
-  try {
-    const [i1, i2] = await Promise.all([loadImage(img1), loadImage(img2)]);
-    const h = Math.max(i1.height, i2.height);
-    const w1 = Math.round(i1.width * h / i1.height);
-    const w2 = Math.round(i2.width * h / i2.height);
-    const cvs = createCanvas(w1 + w2, h);
-    const ctx = cvs.getContext('2d');
-    ctx.drawImage(i1, 0, 0, w1, h);
-    ctx.drawImage(i2, w1, 0, w2, h);
-    return cvs.toDataURL('image/jpeg', 0.9);
-  } catch {
-    return img1;
   }
 }
 
