@@ -11,25 +11,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const basePrompt = `Transform this 3D interior sketch into a photorealistic architectural render. Keep the exact same camera angle, spatial layout, furniture positions, ceiling design, windows and all architectural elements completely unchanged.
+  const basePrompt = `Transform this 3D interior sketch into a photorealistic architectural render.
 
-LIGHTING: ${prompt}
+STRICTLY PRESERVE (do not change):
+- Exact same camera angle and perspective
+- All architectural elements: walls, ceiling, floor, windows, doors
+- All furniture positions and shapes
+- All structural and spatial layout
 
-ALWAYS APPLY THESE REGARDLESS:
-- All recessed ceiling downlights are ON and glowing with visible light cones on walls and floor
-- Indirect cove lighting is ON with soft glow along ceiling perimeter
-- Neutral white light color temperature 4000-5000K, no yellow tint, no warm orange tint
-- Realistic white balance, accurate color rendering
-- Exterior view through windows is brighter than interior (natural HDR ratio)
-- Visible light reflections on glass, metal, and polished surfaces
+APPLY USER INSTRUCTIONS EXACTLY AS SPECIFIED:
+${prompt}
 
-MATERIALS - maximize realism:
-- Glass surfaces: high specular reflections, slight transparency, realistic refraction
-- Metal fixtures and hardware: sharp specular highlights, brushed or polished finish
-- Painted walls: subtle texture, soft bounce light
-- All surfaces: accurate texture depth, micro-detail, photorealistic shading
-
-Shot on Canon EOS R5, 24mm f/8, ISO 400. Professional architectural photography, ultra realistic 8K resolution.`;
+ALWAYS APPLY:
+- Photorealistic material rendering: accurate texture, reflectivity, depth on all surfaces
+- Glass: realistic transparency and specular reflections
+- Metal: sharp highlights, brushed or polished finish
+- Painted surfaces: subtle texture and micro-detail
+- Shot on Canon EOS R5, 24mm f/8. Professional architectural photography, ultra realistic 8K.`;
 
   try {
     const response = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
