@@ -182,6 +182,10 @@ function restoreWorkspace(){
 
     nodes = data.nodes || [];
     links = data.links || [];
+    const engineNodes = nodes.filter(n => n.type === 'engine');
+    engineNodes.forEach((n, idx) => {
+      if (typeof n.locked !== 'boolean') n.locked = idx === 0;
+    });
     zCounter = Number(data.zCounter || 5);
     selectedNodeId = data.selectedNodeId || null;
     selectedEngineId = data.selectedEngineId || null;
@@ -274,7 +278,7 @@ function renderNode(node){
     el.innerHTML = `
       <div class="node-header">
         <div class="node-title">Node</div>
-        <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button></div>
+        <div class="node-actions"><button class="icon-btn duplicate-node" title="Copy">⧉</button>${node.locked ? '' : '<button class="icon-btn delete-node">×</button>'}</div>
       </div>
       <div class="node-body">
         <div class="image-box engine-preview ${node.previewImage?'has-image':''}">
@@ -346,7 +350,7 @@ function addSourceNode(x,y){
 }
 
 function addEngineNode(x=760,y=150){
-  const n={id:uid('eng_'),type:'engine',x,y,engine:'Flux Kontext Pro',prompt:'',previewImage:null};
+  const n={id:uid('eng_'),type:'engine',x,y,engine:'Flux Kontext Pro',prompt:'',previewImage:null, locked:true};
   nodes.push(n);
   renderNode(n);
   selectNode(n.id);
@@ -383,7 +387,7 @@ function bindNodeEvents(node, el){
   el.querySelector('.node-header').addEventListener('mousedown', startNodeDrag);
   el.querySelector('.node-body')?.addEventListener('mousedown', startNodeDrag);
 
-  if(node.type==='source' || node.type==='result' || node.type==='final'){
+  if(node.type==='source' || node.type==='result' || node.type==='final' || (node.type==='engine' && !node.locked)){
     el.querySelector('.delete-node')?.addEventListener('click', e=>{e.stopPropagation(); removeNode(node.id);});
   }
   el.querySelector('.duplicate-node')?.addEventListener('click', e=>{e.stopPropagation(); duplicateEngineNode(node.id);});
@@ -451,6 +455,7 @@ function bringToFront(el){ zCounter += 1; el.style.zIndex = zCounter; }
 function duplicateEngineNode(id){
   const node = nodes.find(n=>n.id===id);
   if(!node || node.type!=='engine') return;
+
   const copy = {
     id: uid('eng_'),
     type: 'engine',
@@ -463,8 +468,31 @@ function duplicateEngineNode(id){
   nodes.push(copy);
   renderNode(copy);
 
-  // copy only node state, not links
-  syncEnginePreview(copy);
+  // Copy only node state and rendered output, not input links.
+  // This lets the user branch from the same rendered state without reconnecting everything.
+  const downstreamResult = findDownstream(node.id, 'result');
+  const downstreamFinal = findDownstream(node.id, 'final');
+  const downstream = downstreamFinal || downstreamResult;
+
+  if(downstream && downstream.image){
+    const clonedImageNode = {
+      id: uid(downstream.type === 'final' ? 'fin_' : 'res_'),
+      type: downstream.type,
+      x: copy.x + 420,
+      y: copy.y + 10,
+      image: downstream.image
+    };
+    nodes.push(clonedImageNode);
+    renderNode(clonedImageNode);
+
+    links.push({
+      id: uid('ln_'),
+      from: copy.id,
+      to: clonedImageNode.id,
+      toPort: 'in'
+    });
+  }
+
   selectNode(copy.id);
   selectEngine(copy.id);
   redraw();
@@ -472,6 +500,8 @@ function duplicateEngineNode(id){
 }
 
 function removeNode(id){
+  const targetNode = nodes.find(n=>n.id===id);
+  if(targetNode && targetNode.type==='engine' && targetNode.locked) return;
   links = links.filter(l=>l.from!==id && l.to!==id);
   nodes = nodes.filter(n=>n.id!==id);
   document.getElementById(id)?.remove();
