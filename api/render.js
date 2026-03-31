@@ -12,42 +12,45 @@ export default async function handler(req, res) {
 
   const basePrompt = prompt || 'Render this image photorealistically';
 
-  const fullPrompt = `Transform this 3D interior sketch into a photorealistic architectural render.
+  const fullPrompt = refImage
+    ? `Transform this interior image into a photorealistic architectural render.
 STRICTLY PRESERVE:
 - Exact camera angle and perspective
 - All architectural elements: walls, ceiling, floor, windows, doors
 - All furniture positions and shapes
-- All structural and spatial layout
 APPLY EXACTLY AS SPECIFIED:
 ${basePrompt}
-${refImage ? 'Use the second reference image as a style and material guide for finishes, colors, and atmosphere.' : ''}
+Use the reference image on the right side as a style and material guide for finishes, colors, and atmosphere.
+ALWAYS:
+- Photorealistic material rendering: accurate texture, reflectivity on all surfaces
+- Professional architectural photography, ultra realistic 8K`
+    : `Transform this interior image into a photorealistic architectural render.
+STRICTLY PRESERVE:
+- Exact camera angle and perspective
+- All architectural elements: walls, ceiling, floor, windows, doors
+- All furniture positions and shapes
+APPLY EXACTLY AS SPECIFIED:
+${basePrompt}
 ALWAYS:
 - Photorealistic material rendering: accurate texture, reflectivity on all surfaces
 - Professional architectural photography, ultra realistic 8K`;
 
   try {
-    let modelUrl, inputBody;
+    let inputImage = image;
 
+    // ref 이미지가 있으면 좌우로 합쳐서 단일 이미지로 보냄
     if (refImage) {
-      modelUrl = 'https://api.replicate.com/v1/models/flux-kontext-apps/multi-image-kontext-pro/predictions';
-      inputBody = {
-        prompt: fullPrompt,
-        input_image1: image,
-        input_image2: refImage,
-        output_format: 'jpg',
-        output_quality: 95,
-        aspect_ratio: getAspectRatio(width, height)
-      };
-    } else {
-      modelUrl = 'https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions';
-      inputBody = {
-        prompt: fullPrompt,
-        input_image: image,
-        output_format: 'jpg',
-        output_quality: 95,
-        aspect_ratio: getAspectRatio(width, height)
-      };
+      inputImage = await stitchImages(image, refImage);
     }
+
+    const modelUrl = 'https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions';
+    const inputBody = {
+      prompt: fullPrompt,
+      input_image: inputImage,
+      output_format: 'jpg',
+      output_quality: 95,
+      aspect_ratio: getAspectRatio(width, height)
+    };
 
     const response = await fetch(modelUrl, {
       method: 'POST',
@@ -65,6 +68,28 @@ ALWAYS:
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
+  }
+}
+
+// 두 이미지를 좌우로 합치기 (base64 → canvas → base64)
+async function stitchImages(img1, img2) {
+  const { createCanvas, loadImage } = await import('canvas').catch(() => null) || {};
+  if (!createCanvas) {
+    // canvas 모듈 없으면 그냥 img1만 사용
+    return img1;
+  }
+  try {
+    const [i1, i2] = await Promise.all([loadImage(img1), loadImage(img2)]);
+    const h = Math.max(i1.height, i2.height);
+    const w1 = Math.round(i1.width * h / i1.height);
+    const w2 = Math.round(i2.width * h / i2.height);
+    const cvs = createCanvas(w1 + w2, h);
+    const ctx = cvs.getContext('2d');
+    ctx.drawImage(i1, 0, 0, w1, h);
+    ctx.drawImage(i2, w1, 0, w2, h);
+    return cvs.toDataURL('image/jpeg', 0.9);
+  } catch {
+    return img1;
   }
 }
 
