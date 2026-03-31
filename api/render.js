@@ -2,27 +2,25 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { apiKey, prompt, image, refImage, width, height } = req.body;
-  if (!apiKey || !prompt || !image) {
+  if (!apiKey || !image) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const basePrompt = `Transform this 3D interior sketch into a photorealistic architectural render.
+  const basePrompt = prompt || 'Render this image photorealistically';
 
+  const fullPrompt = `Transform this 3D interior sketch into a photorealistic architectural render.
 STRICTLY PRESERVE:
 - Exact camera angle and perspective
 - All architectural elements: walls, ceiling, floor, windows, doors
 - All furniture positions and shapes
 - All structural and spatial layout
-
 APPLY EXACTLY AS SPECIFIED:
-${prompt}
+${basePrompt}
 ${refImage ? 'Use the second reference image as a style and material guide for finishes, colors, and atmosphere.' : ''}
-
 ALWAYS:
 - Photorealistic material rendering: accurate texture, reflectivity on all surfaces
 - Professional architectural photography, ultra realistic 8K`;
@@ -31,10 +29,9 @@ ALWAYS:
     let modelUrl, inputBody;
 
     if (refImage) {
-      // 레퍼런스 이미지 있으면 multi-image 모델 사용
       modelUrl = 'https://api.replicate.com/v1/models/flux-kontext-apps/multi-image-kontext-pro/predictions';
       inputBody = {
-        prompt: basePrompt,
+        prompt: fullPrompt,
         input_image1: image,
         input_image2: refImage,
         output_format: 'jpg',
@@ -42,10 +39,9 @@ ALWAYS:
         aspect_ratio: getAspectRatio(width, height)
       };
     } else {
-      // 단일 이미지
       modelUrl = 'https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions';
       inputBody = {
-        prompt: basePrompt,
+        prompt: fullPrompt,
         input_image: image,
         output_format: 'jpg',
         output_quality: 95,
@@ -56,7 +52,7 @@ ALWAYS:
     const response = await fetch(modelUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Token ${apiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
         'Prefer': 'wait'
       },
@@ -66,6 +62,7 @@ ALWAYS:
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || JSON.stringify(data));
     return res.status(200).json(data);
+
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
