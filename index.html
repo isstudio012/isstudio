@@ -158,7 +158,7 @@ let sourceLauncherDrag = null;
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
-const LS_WORKSPACE = 'vizmaker_workspace_v2';
+const LS_WORKSPACE = 'vizmaker_workspace_v3';
 apiCodeInput.value = localStorage.getItem(LS_API_KEY) || '';
 apiCodeInput.addEventListener('input', ()=> localStorage.setItem(LS_API_KEY, apiCodeInput.value.trim()));
 
@@ -216,6 +216,7 @@ function restoreWorkspace(){
         locked: true
       };
       nodes.push(baseEngine);
+      renderNode(baseEngine);
     }
 
     zCounter = Number(data.zCounter || 5);
