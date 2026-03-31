@@ -147,7 +147,7 @@ let selectedNodeId = null;
 let canvasZoom = 1;
 let panMode = null;
 let sourceLauncherDrag = null;
-let sourceLauncherLastClickAt = 0;
+
 
 const API_RENDER = '/api/render';
 const LS_API_KEY = 'vizmaker_api_code_v1';
@@ -814,7 +814,14 @@ sourceLauncher.addEventListener('dblclick', (e)=>{
   e.preventDefault();
   e.stopPropagation();
   if(sourceLauncherDrag && sourceLauncherDrag.moved) return;
-  addSourceNode();
+  const pos = getNextSourcePosition();
+  const n = {id:uid('src_'),type:'source',x:pos.x,y:pos.y,image:null};
+  nodes.push(n);
+  renderNode(n);
+  selectNode(n.id);
+  pendingUploadNode = n.id;
+  saveWorkspace();
+  fileInput.click();
 });
 
 sourceLauncher.addEventListener('mousedown', (e)=>{
@@ -899,22 +906,7 @@ document.addEventListener('mouseup', (e)=>{
   redraw();
   if(changed) saveWorkspace();
 
-  if(launcherDrag && !launcherDrag.moved && typeof sourceLauncher !== 'undefined' && sourceLauncher && e.target === sourceLauncher){
-    const now = Date.now();
-    if(now - sourceLauncherLastClickAt < 350){
-      sourceLauncherLastClickAt = 0;
-      const pos = getNextSourcePosition();
-      const n = {id:uid('src_'),type:'source',x:pos.x,y:pos.y,image:null};
-      nodes.push(n);
-      renderNode(n);
-      selectNode(n.id);
-      pendingUploadNode = n.id;
-      saveWorkspace();
-      fileInput.click();
-    } else {
-      sourceLauncherLastClickAt = now;
-    }
-  }
+
 });
 
 document.addEventListener('keydown', e=>{
