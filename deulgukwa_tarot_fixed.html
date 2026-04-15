@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>들국화 타로</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+KR:wght@300;400&display=swap');
@@ -50,9 +50,11 @@
     border: 1.5px solid #c4b5fd;
     overflow: hidden;
     color: #c4b5fd;
-    /* 항상 9:16 비율 — 둘 중 작은 쪽에 맞춤 */
-    width:  min(98vw, calc(98vh * 9 / 16));
-    height: min(98vh, calc(98vw * 16 / 9));
+    
+    /* 모바일 깨짐 방지를 위해 내부를 9:16 고정 해상도(540x960)로 설정하고 JS로 스케일링합니다 */
+    width: 540px;
+    height: 960px;
+    transform-origin: center;
   }
 
   /* ── 스크린 공통: app-frame을 100% 채움 ── */
@@ -212,6 +214,18 @@ padding:0 12px;">
     </div>
 
   </div></div><script>
+
+/* ── 모바일 및 모든 화면에서 UI가 깨지지 않고 9:16 비율을 유지하도록 스케일 조정 ── */
+function adjustAppScale() {
+  const frame = document.querySelector('.app-frame');
+  // 98%의 여백을 두고 기기 화면 크기에 맞게 자동으로 축소/확대시킵니다.
+  const scale = Math.min(window.innerWidth / 540, window.innerHeight / 960) * 0.98;
+  frame.style.transform = `scale(${scale})`;
+}
+window.addEventListener('resize', adjustAppScale);
+adjustAppScale();
+/* ─────────────────────────────────────────────────────────────── */
+
 const BACK_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217870/%EB%92%B7%EB%B3%80_%EC%B9%B4%EB%93%9C_-00005_jvjkc2.mp4";
 const FOOL_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217052/%EB%B0%94%EB%B3%B4_qevz75.mp4";
 const MOON_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776219434/MOON_oqihp1.mp4";
