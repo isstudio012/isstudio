@@ -9,26 +9,7 @@
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.card-slot:not(.sel):hover {
-  transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1) !important;
-  outline: 2px solid #ccccff; 
-  outline-offset: -2px;       
-}
-
-.card-slot {
-  transition: transform 0.25s;
-}
-
-.preview-slot.filled {
-  border: 1px solid #a78bfa;
-  box-shadow:
-    0 0 10px 2px #a78bfa,
-    0 0 30px 8px #a78bfa55,
-    0 0 60px 15px #a78bfa33,
-    inset 0 0 10px #a78bfa33;
-}
-
-  /* ── 전체 화면을 꽉 채우는 센터 래퍼 ── */
+  /* ── 전체 화면 중앙 정렬 ── */
   #root {
     position: fixed;
     inset: 0;
@@ -36,21 +17,27 @@
     align-items: center;
     justify-content: center;
     background: #000;
+    padding: 10px; /* 화면 끝에 붙지 않게 여백 추가 */
   }
 
-  /* ── 9:16 앱 컨테이너: 테두리가 항상 보이도록 95%로 조정 ── */
+  /* ── 1080x1920 (9:16) 앱 프레임 ── */
   .app-frame {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     background: #000;
-    border: 1.5px solid #c4b5fd;
+    border: 2px solid #c4b5fd; /* 테두리 가시성 확보 */
     overflow: hidden;
     color: #c4b5fd;
-    /* 엄격한 9:16 비율 유지 및 센터링 */
-    width:  min(95vw, calc(95vh * 9 / 16));
-    height: min(95vh, calc(95vw * 16 / 9));
+    
+    /* [핵심] 9:16 비율 강제 고정 및 화면 크기에 맞춘 스케일링 */
+    aspect-ratio: 9 / 16;
+    height: 95vh;
+    height: 95dvh;
+    width: auto;
+    max-width: 100%;
+    box-shadow: 0 0 20px rgba(196, 181, 253, 0.2);
   }
 
   .screen {
@@ -75,18 +62,24 @@
     overflow-y: auto;
   }
 
+  /* 카드 슬롯 스타일 */
   .card-slot {
     position: absolute; width: 75px; height: 110px;
     border-radius: 3px; overflow: hidden; cursor: pointer;
-    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s, filter 0.3s;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s, filter 0.3s;
   }
-  .card-slot:hover { filter: brightness(2.6); }
+  .card-slot:not(.sel):hover {
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1) !important;
+    outline: 2px solid #ccccff; 
+    outline-offset: -2px;       
+  }
   .card-slot.sel {
     transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.35) !important;
     box-shadow: 0 0 0 2px #a78bfa, 0 0 14px #a78bfa99 !important;
     filter: brightness(1.2) !important;
     z-index: 300 !important;
   }
+
   .btn-main {
     background: transparent;
     border: 1.5px solid #a78bfa;
@@ -97,6 +90,33 @@
   }
   .btn-main:hover { background: #a78bfa22; transform: scale(1.05); }
   .btn-main:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  /* 프리뷰 슬롯 */
+  .preview-slot {
+    width: 86px; height: 127px; border: 1px dashed #a78bfa33; border-radius: 7px;
+    overflow: hidden; background: #0a001a; display: flex; align-items: center; justify-content: center;
+  }
+  .preview-slot.filled {
+    border: 1px solid #a78bfa;
+    box-shadow: 0 0 10px 2px #a78bfa33;
+  }
+
+  /* 결과창 설정 */
+  .logo-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 20px 8px; width: 100%; flex-shrink: 0;
+  }
+  .logo-header img { width: 48px; height: 48px; object-fit: contain; }
+  .logo-title { font-family: 'Cinzel', serif; font-size: 18px; color: #a78bfa; letter-spacing: 3px; }
+  .logo-sub { font-family: 'Cinzel', serif; font-size: 9px; color: #7c5cbf; letter-spacing: 4px; }
+
+  #result-cards {
+    display: flex; gap: 8px; margin-bottom: 14px; width: 100%; padding: 0 12px;
+    height: 180px; flex-shrink: 0;
+  }
+  .rv-card { border-radius: 12px; overflow: hidden; flex: 1; position: relative; border: 1px solid #a78bfa33; }
+  .rv-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 8px 0; background: linear-gradient(transparent, #000); text-align: center; }
+
   .shimmer {
     background: linear-gradient(90deg, #0a0010 25%, #2d1a5e 50%, #0a0010 75%);
     background-size: 200% 100%; animation: sh 1.4s infinite;
@@ -105,53 +125,19 @@
   @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
   .fade-in { animation: fi 0.7s ease forwards; }
   @keyframes fi { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
-  
-  /* 결과 화면 카드 스타일 */
-  .rv-card {
-    border-radius: 12px; overflow: hidden; flex: 1;
-    position: relative; box-shadow: 0 8px 32px #00000088;
-    border: 1px solid #a78bfa33;
-    height: 100%;
-  }
-  .rv-label {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    padding: 10px 4px 5px;
-    background: linear-gradient(transparent, #000000cc);
-    text-align: center;
-  }
-  .logo-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 16px 20px 8px; width: 100%;
-    flex-shrink: 0;
-  }
-  .logo-header img { width: 48px; height: 48px; object-fit: contain; }
-  .logo-title { font-family: 'Cinzel', serif; font-size: 18px; color: #a78bfa; letter-spacing: 3px; }
-  .logo-sub   { font-family: 'Cinzel', serif; font-size: 9px;  color: #7c5cbf; letter-spacing: 4px; }
 
-  /* ── [핵심수정] 모바일 대응 및 결과창 UI ── */
+  /* ── [수정] 카드 뭉치가 화면 밖으로 나가지 않도록 스케일 조정 ── */
   #deck-container {
     transform-origin: center center;
-    transition: transform 0.3s;
-  }
-
-  #result-cards {
-    display: flex; gap: 8px; margin-bottom: 14px; width: 100%; padding: 0 12px;
-    height: 220px; /* 결과 카드 높이 고정 */
-    flex-shrink: 0;
+    transform: scale(0.7); /* 기본 스케일을 줄여서 테두리 안쪽으로 배치 */
   }
 
   @media (max-width: 500px) {
-    /* 모바일에서 카드 더미가 글자를 가리지 않도록 축소 */
-    #deck-container {
-      transform: scale(0.65);
-    }
-    .logo-header img { width: 100px !important; }
-    p { font-size: 18px !important; margin: 5px 0 !important; }
-    #pick-status { font-size: 16px !important; padding: 4px 15px !important; }
-    #chosen-preview { gap: 6px !important; padding: 5px 10px !important; }
+    #deck-container { transform: scale(0.55); }
+    p { font-size: 18px !important; }
+    #pick-status { font-size: 16px !important; }
     .preview-slot { width: 70px !important; height: 103px !important; }
-    .btn-main { padding: 10px 30px; font-size: 12px; }
-    #result-cards { height: 170px; } /* 모바일 결과카드 높이 미세 조정 */
+    #result-cards { height: 150px; }
   }
 </style>
 </head>
@@ -175,51 +161,45 @@
         style="width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;">
       </video>
       <div style="position:absolute;bottom:24px;right:16px;display:flex;gap:8px;z-index:10;">
-        <button id="sound-btn"
-          onclick="var v=document.getElementById('intro-video');v.muted=!v.muted;this.textContent=v.muted?'🔇':'🔊';"
-          style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;">🔊</button>
-        <button id="skip-btn"
-          style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;letter-spacing:1px;">SKIP ▶</button>
+        <button id="sound-btn" onclick="var v=document.getElementById('intro-video');v.muted=!v.muted;this.textContent=v.muted?'🔇':'🔊';" style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;">🔊</button>
+        <button id="skip-btn" style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;">SKIP ▶</button>
       </div>
     </div>
 
     <div id="screen-pick" class="screen">
-      <div class="logo-header" style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px 0 5px;">
-        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png" alt="logo" style="width:140px; height: auto; display: block;">
+      <div class="logo-header" style="flex-direction: column; align-items: center; padding-top: 20px;">
+        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png" alt="logo" style="width:120px; height: auto;">
       </div>
-      <p style="font-family:'Noto Serif KR',serif; font-size:24px; color:#ccccff; margin: 10px 0; text-align: center; width: 100%;">
-        무의식이 선택하는 단 세 장의 카드
-      </p>
-      <div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 20px; margin: 0 auto 10px; font-family:'Noto Serif KR',serif; font-size:20px; color:#ffffff; text-align:center; width: fit-content;">
-        카드를 3장 더 고르세요
+      <p style="font-family:'Noto Serif KR',serif; font-size:22px; color:#ccccff; margin: 10px 0; text-align: center;">무의식이 선택하는 세 장</p>
+      <div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 15px; margin-bottom: 10px; font-size:18px; color:#ffffff;">카드를 3장 더 고르세요</div>
+      
+      <div style="position:relative; flex:1; width:100%;">
+        <div id="deck-container" style="position:absolute; inset:0;"></div>
       </div>
-      <div style="position:relative;flex:1;width:100%;min-height:0;margin:4px 0;box-sizing:border-box;">
-        <div id="deck-container" style="position:absolute;inset:0;"></div>
+
+      <div id="chosen-preview" style="display:flex; gap:10px; padding:10px; justify-content:center; flex-shrink:0;">
+        <div class="preview-slot">✦</div>
+        <div class="preview-slot">✦</div>
+        <div class="preview-slot">✦</div>
       </div>
-      <div id="chosen-preview" style="display:flex;gap:10px;padding:6px 20px;justify-content:center;flex-shrink:0;">
-        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
-        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
-        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
-      </div>
-      <div style="padding:10px 20px 40px; flex-shrink:0; margin-top:10px;">
+      <div style="padding:15px 0 30px; flex-shrink:0;">
         <button id="confirm-btn" class="btn-main" disabled>리딩 시작</button>
       </div>
     </div>
 
     <div id="screen-result" class="screen">
       <div class="logo-header">
-        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220288/logo.png" alt="logo" onerror="this.style.display='none'">
+        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220288/logo.png" alt="logo">
         <div>
           <div class="logo-title">TAROT</div>
           <div class="logo-sub">DEULGUKWA</div>
         </div>
       </div>
-      <p style="font-family:'Cinzel',serif;font-size:13px;color:#a78bfa;margin:0 0 12px;letter-spacing:2px;flex-shrink:0;">카드가 전하는 이야기</p>
+      <p style="font-family:'Cinzel',serif;font-size:13px;color:#a78bfa;margin:10px 0;letter-spacing:2px;">CARDS REVEALED</p>
       
       <div id="result-cards"></div>
 
-      <div style="background:#080010;border:1px solid #a78bfa22;border-radius:16px;padding:16px 14px;margin:0 12px 16px;width:calc(100% - 24px); flex-shrink: 0;">
-        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:#a78bfa;margin-bottom:12px;text-align:center;">✦ 타로 해석 ✦</div>
+      <div style="background:#080010;border:1px solid #a78bfa22;border-radius:16px;padding:16px;margin:0 12px 16px;width:calc(100% - 24px); flex-shrink: 0;">
         <div id="ai-reading"></div>
       </div>
       <div style="padding:0 0 40px;text-align:center;flex-shrink:0;">
@@ -254,7 +234,6 @@ function shuffle(arr){
 function makeVideo(src){
   const v=document.createElement('video');
   v.src=src; v.muted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
-  v.disablePictureInPicture = true;
   v.style.cssText='width:100%;height:100%;object-fit:cover;';
   v.play().catch(()=>{});
   return v;
@@ -280,7 +259,7 @@ function initDeck(){
     el.className='card-slot';
     el.dataset.id=card.id;
     el.style.cssText=`--tx:${card.x}px;--ty:${card.y}px;--rot:${card.rotate}deg;`
-      +`left:50%;top:50%;margin-left:-30px;margin-top:-45px;`
+      +`left:50%;top:50%;margin-left:-37.5px;margin-top:-55px;`
       +`transform:translate(${card.x}px,${card.y}px) rotate(${card.rotate}deg);`
       +`opacity:0;z-index:${idx};`;
     el.appendChild(makeVideo(BACK_URL));
@@ -309,25 +288,22 @@ function updateUI(){
     const isSel=selected.includes(id);
     el.className='card-slot'+(isSel?' sel':'');
     el.style.cssText=`--tx:${card.x}px;--ty:${card.y}px;--rot:${card.rotate}deg;`
-      +`left:50%;top:50%;margin-left:-30px;margin-top:-45px;`
+      +`left:50%;top:50%;margin-left:-37.5px;margin-top:-55px;`
       +`transform:translate(${card.x}px,${card.y}px) rotate(${card.rotate}deg);`
       +`opacity:1;z-index:${isSel?300:deck.indexOf(card)};`;
-    if(!el.querySelector('video')){ el.appendChild(makeVideo(BACK_URL)); }
   });
   document.getElementById('pick-status').textContent=
-    selected.length===3 ? '3 장 선 택 완 료 ' : `카드를 ${3-selected.length}장 더 고르세요`;
+    selected.length===3 ? '선 택 완 료' : `카드를 ${3-selected.length}장 더 고르세요`;
   const slots=document.querySelectorAll('.preview-slot');
   slots.forEach((slot,idx)=>{
     const cardId=selected[idx];
     slot.innerHTML='';
     if(cardId!=null){
-    slot.classList.add('filled');
-      slot.style.border='1px solid #a78bfa66'; slot.style.background='transparent';
+      slot.classList.add('filled');
       slot.appendChild(makeVideo(BACK_URL));
     } else {
-    slot.classList.remove('filled');
-      slot.style.border='1px dashed #a78bfa33'; slot.style.background='#0a001a';
-      slot.innerHTML='<span style="font-size:16px;color:#a78bfa33;">✦</span>';
+      slot.classList.remove('filled');
+      slot.innerHTML='✦';
     }
   });
   document.getElementById('confirm-btn').disabled=selected.length<3;
@@ -350,48 +326,39 @@ async function handleConfirm(){
     div.appendChild(makeVideo(card.url));
     const label=document.createElement('div');
     label.className='rv-label';
-    label.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;color:#a78bfa;margin-bottom:3px;">${['과거','현재','미래'][idx]}</div>`
-      +`<div style="font-family:'Noto Serif KR',serif;font-size:10px;color:#c4b5fd;">${card.kr}</div>`;
+    label.innerHTML=`<div style="font-size:8px;color:#a78bfa;">${['과거','현재','미래'][idx]}</div>`
+      +`<div style="font-size:10px;color:#fff;">${card.kr}</div>`;
     div.appendChild(label);
     resultCards.appendChild(div);
   });
   const readingEl=document.getElementById('ai-reading');
-  readingEl.innerHTML=[100,80,90,70,85,60,75].map(w=>`<div class="shimmer" style="width:${w}%"></div>`).join('');
-  const prompt=`당신은 신비로운 타로 리더입니다. 다음 3장의 카드로 과거-현재-미래를 한국어로 따뜻하고 시적으로 해석해주세요.\n\n과거: ${chosenCards[0]?.kr} - ${chosenCards[0]?.meaning}\n현재: ${chosenCards[1]?.kr} - ${chosenCards[1]?.meaning}\n미래: ${chosenCards[2]?.kr} - ${chosenCards[2]?.meaning}\n\n각 카드마다 📍과거/현재/미래 제목 붙이고 2~3문장. 마지막에 ✨전체 흐름 한 문단. 반말로 친근하게.`;
+  readingEl.innerHTML=[100,80,90,70].map(w=>`<div class="shimmer" style="width:${w}%"></div>`).join('');
+  
+  const prompt=`당신은 신비로운 타로 리더입니다. 다음 3장의 카드로 과거-현재-미래를 한국어로 해석해주세요.\n\n과거: ${chosenCards[0]?.kr}\n현재: ${chosenCards[1]?.kr}\n미래: ${chosenCards[2]?.kr}\n\n반말로 친근하고 따뜻하게 한 문단으로 해석해줘.`;
   try{
     const res=await fetch("https://api.anthropic.com/v1/messages",{
       method:"POST", headers:{"Content-Type":"application/json"},
       body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
     });
     const data=await res.json();
-    const text=data.content?.map(b=>b.text||'').join('')||'해석을 불러오지 못했어요.';
-    readingEl.style.cssText="font-family:'Noto Serif KR',serif;font-size:12px;line-height:2.0;color:#c4b5fd;white-space:pre-wrap;";
-    readingEl.textContent=text;
-  } catch(err){ readingEl.textContent='에러: '+err.message; }
+    readingEl.style.cssText="font-family:'Noto Serif KR',serif;font-size:13px;line-height:1.8;color:#c4b5fd;white-space:pre-wrap;";
+    readingEl.textContent=data.content[0].text;
+  } catch(err){ readingEl.textContent='해석을 불러오는 중에 문제가 생겼어.'; }
 }
 
 document.getElementById('start-btn').addEventListener('click', () => {
   showScreen('intro');
   const v = document.getElementById('intro-video');
-  v.muted = false; 
-  v.play();        
+  v.muted = false; v.play();
 });
-
 document.getElementById('intro-video').addEventListener('ended',()=>{ showScreen('pick'); initDeck(); });
 document.getElementById('skip-btn').addEventListener('click',()=>{ 
   document.getElementById('intro-video').pause();
-  showScreen('pick'); 
-  initDeck(); 
+  showScreen('pick'); initDeck(); 
 });
 document.getElementById('confirm-btn').addEventListener('click', handleConfirm);
 document.getElementById('reset-btn').addEventListener('click',()=>{ 
-  selected=[]; 
-  document.querySelectorAll('.preview-slot').forEach(el=>{
-    el.innerHTML='✦';
-    el.classList.remove('filled');   
-  });
-  showScreen('pick'); 
-  initDeck(); 
+  selected=[]; showScreen('pick'); initDeck(); 
 });
 </script>
 </body>
