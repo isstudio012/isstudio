@@ -9,73 +9,44 @@
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.card-slot:not(.sel):hover {
-  transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1) !important;
-  outline: 2px solid #ccccff; 
-  outline-offset: -2px;       
-}
+  .card-slot:not(.sel):hover {
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1) !important;
+    outline: 2px solid #ccccff;
+    outline-offset: -2px;
+  }
+  .card-slot { transition: transform 0.25s; }
 
-.card-slot {
-  transition: transform 0.25s;
-}
-
-.preview-slot.filled {
-  border: 1px solid #a78bfa;
-  box-shadow:
-    0 0 10px 2px #a78bfa,
-    0 0 30px 8px #a78bfa55,
-    0 0 60px 15px #a78bfa33,
-    inset 0 0 10px #a78bfa33;
-}
-
-
-
-  /* ── 전체 화면 래퍼 ── */
-  #root {
-    position: fixed;
-    inset: 0;
-    background: #000;
+  .preview-slot.filled {
+    border: 1px solid #a78bfa !important;
+    box-shadow:
+      0 0 10px 2px #a78bfa,
+      0 0 30px 8px #a78bfa55,
+      0 0 60px 15px #a78bfa33,
+      inset 0 0 10px #a78bfa33;
   }
 
-  /* ── 앱 컨테이너: 뷰포트 100% 꽉 채움 ── */
+  #root { position: fixed; inset: 0; background: #000; }
+
   .app-frame {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: #000;
-    overflow: hidden;
-    color: #c4b5fd;
-    width: 100%;
-    height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    background: #000; overflow: hidden; color: #c4b5fd;
+    width: 100%; height: 100%;
   }
 
-  /* ── 스크린 공통: app-frame을 100% 채움 ── */
   .screen {
-    display: none;
-    position: absolute;
-    inset: 0;                  /* top/right/bottom/left: 0 */
-    flex-direction: column;
-    align-items: center;
-    overflow: hidden;
+    display: none; position: absolute; inset: 0;
+    flex-direction: column; align-items: center; overflow: hidden;
   }
-  .screen.active {
-    display: flex;
-  }
+  .screen.active { display: flex; }
 
-  /* 사운드 재생을 위한 시작 화면 추가 */
   #screen-start {
     z-index: 1000;
     background: radial-gradient(circle, #1a0b2e 0%, #000 80%);
     justify-content: center;
   }
+  #screen-result.active { overflow-y: auto; }
 
-  /* 결과 화면만 스크롤 허용 */
-  #screen-result.active {
-    overflow-y: auto;
-  }
-
-  /* ── 나머지 컴포넌트 스타일 ── */
   .card-slot {
     position: absolute;
     width: clamp(48px, 8vw, 75px);
@@ -90,26 +61,25 @@
     filter: brightness(1.2) !important;
     z-index: 300 !important;
   }
+
   .btn-main {
-    background: transparent;
-    border: 1.5px solid #a78bfa;
-    border-radius: 50px;
+    background: transparent; border: 1.5px solid #a78bfa; border-radius: 50px;
     padding: 13px 40px; color: #a78bfa;
     font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 2px;
     cursor: pointer; transition: all 0.2s;
   }
   .btn-main:hover { background: #a78bfa22; transform: scale(1.05); }
   .btn-main:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
   .shimmer {
     background: linear-gradient(90deg, #0a0010 25%, #2d1a5e 50%, #0a0010 75%);
     background-size: 200% 100%; animation: sh 1.4s infinite;
     border-radius: 6px; height: 14px; margin: 7px 0;
   }
-  @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+  @keyframes sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   .fade-in { animation: fi 0.7s ease forwards; }
-  @keyframes fi { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+  @keyframes fi { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
-  /* ── [수정1] rv-card: 선택 카드와 동일한 전면 glow ── */
   .rv-card {
     border-radius: 12px; overflow: hidden; flex: 1;
     position: relative;
@@ -122,36 +92,28 @@
     height: clamp(120px, 28vh, 220px);
     max-height: clamp(120px, 28vh, 220px);
   }
-
   .rv-label {
     position: absolute; bottom: 0; left: 0; right: 0;
     padding: 20px 8px 10px;
     background: linear-gradient(transparent, #00000099);
     text-align: center;
   }
-  .logo-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 16px 20px 8px; width: 100%;
-    flex-shrink: 0;
-  }
-  .logo-header img { width: 48px; height: 48px; object-fit: contain; }
-  .logo-title { font-family: 'Cinzel', serif; font-size: 18px; color: #a78bfa; letter-spacing: 3px; }
-  .logo-sub   { font-family: 'Cinzel', serif; font-size: 9px;  color: #7c5cbf; letter-spacing: 4px; }
 </style>
 </head>
 <body>
-
 <div id="root">
   <div class="app-frame">
 
+    <!-- 시작 화면 -->
     <div id="screen-start" class="screen active">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <div class="logo-title" style="font-size: 24px;">TAROT</div>
-        <div class="logo-sub" style="font-size: 12px;">DEULGUKWA</div>
+      <div style="text-align:center;margin-bottom:30px;">
+        <div style="font-family:'Cinzel',serif;font-size:24px;color:#a78bfa;letter-spacing:3px;">TAROT</div>
+        <div style="font-family:'Cinzel',serif;font-size:12px;color:#7c5cbf;letter-spacing:4px;">DEULGUKWA</div>
       </div>
       <button id="start-btn" class="btn-main">운명의 카드 보기</button>
     </div>
 
+    <!-- 인트로 영상 -->
     <div id="screen-intro" class="screen" style="justify-content:center;">
       <video id="intro-video"
         src="https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776217057/%EC%9D%B8%ED%8A%B8%EB%A1%9C_w0smg5.mp4"
@@ -167,40 +129,23 @@
       </div>
     </div>
 
+    <!-- 카드 선택 화면 -->
     <div id="screen-pick" class="screen" style="justify-content:space-between;">
 
-      <!-- 상단: 로고+텍스트 약 20vh -->
       <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:100%;padding:8px 0 4px;">
         <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png"
              alt="logo" style="width:clamp(70px,18vw,110px);height:auto;display:block;">
         <p style="font-family:'Noto Serif KR',serif;font-size:clamp(13px,3.8vw,20px);color:#ccccff;margin:4px 0 0;text-align:center;">무의식이 선택하는 단 세 장의 카드</p>
-
-        <!-- [수정2] pick-status: 전면 발광 (배경 자체가 빛남, 마젠타/핑크 계열) -->
-        <div id="pick-status" style="
-          background: radial-gradient(ellipse at center, #c026d388 0%, #86198f66 50%, #3b0764aa 100%);
-          border: 1px solid #e879f9;
-          border-radius: 10px;
-          padding: 4px 16px;
-          margin: 4px auto 0;
-          font-family: 'Noto Serif KR', serif;
-          font-size: clamp(12px,3.2vw,17px);
-          color: #ffffff;
-          text-align: center;
-          width: fit-content;
-          box-shadow:
-            0 0 12px 4px #c026d3aa,
-            0 0 30px 10px #c026d366,
-            0 0 60px 20px #c026d333,
-            inset 0 0 14px #e879f944;
-        ">카드를 3장 더 고르세요</div>
+        <div id="pick-status"
+          style="background:#0d001a;border:1px solid #a78bfa33;border-radius:10px;padding:4px 16px;margin:4px auto 0;font-family:'Noto Serif KR',serif;font-size:clamp(12px,3.2vw,17px);color:#ffffff;text-align:center;width:fit-content;transition:all 0.4s;">
+          카드를 3장 더 고르세요
+        </div>
       </div>
 
-      <!-- 중간: 카드 덱 약 55vh -->
       <div style="position:relative;flex:1;width:100%;min-height:0;overflow:hidden;">
         <div id="deck-container" style="position:absolute;inset:0;"></div>
       </div>
 
-      <!-- 하단: preview + 버튼 약 25vh -->
       <div style="flex-shrink:0;width:100%;display:flex;flex-direction:column;align-items:center;padding:6px 0 16px;">
         <div id="chosen-preview" style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
           <div class="preview-slot" style="width:clamp(55px,14vw,80px);height:clamp(80px,20.5vw,118px);border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
@@ -212,21 +157,22 @@
 
     </div>
 
+    <!-- 결과 화면 -->
     <div id="screen-result" class="screen">
-      <div class="logo-header">
-        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220288/logo.png" alt="logo" onerror="this.style.display='none'">
-        <div>
-          <div class="logo-title">TAROT</div>
-          <div class="logo-sub">DEULGUKWA</div>
-        </div>
+
+      <!-- 꽃잎 로고만, 텍스트 없음 -->
+      <div style="display:flex;align-items:center;padding:14px 16px 4px;width:100%;flex-shrink:0;">
+        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png"
+             alt="logo" style="width:clamp(36px,10vw,52px);height:auto;">
       </div>
 
-      <!-- [수정3] 카드가 전하는 이야기: 글씨 크기 동일, 색 밝은 보라 -->
-      <p style="font-family:'Noto Serif KR',serif;font-size:clamp(13px,3.8vw,20px);color:#d8b4fe;margin:0 0 12px;flex-shrink:0;">카드가 전하는 이야기</p>
+      <!-- 카드가 전하는 이야기: 센터, 크게 -->
+      <p style="font-family:'Noto Serif KR',serif;font-size:clamp(18px,5vw,26px);color:#d8b4fe;margin:0 0 12px;flex-shrink:0;text-align:center;width:100%;">카드가 전하는 이야기</p>
 
       <div id="result-cards" style="display:flex;gap:8px;margin-bottom:14px;width:100%;padding:0 12px;flex-shrink:0;"></div>
+
       <div style="background:#080010;border:1px solid #a78bfa22;border-radius:16px;padding:16px 14px;margin:0 12px 16px;width:calc(100% - 24px);flex:1;overflow-y:auto;min-height:0;">
-        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:#a78bfa;margin-bottom:12px;text-align:center;">✦ 타로 해석 ✦</div>
+        <div style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:3px;color:#a78bfa;margin-bottom:12px;text-align:center;">✦ 타로 해석 ✦</div>
         <div id="ai-reading"></div>
       </div>
       <div style="padding:0 0 20px;text-align:center;flex-shrink:0;">
@@ -234,7 +180,44 @@
       </div>
     </div>
 
-  </div></div><script>
+  </div>
+</div>
+
+<script>
+// ── Web Audio API 효과음 ──
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playCardSound(){
+  try{
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08);
+    gainNode.gain.setValueAtTime(0.18, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(660, ctx.currentTime);
+    osc2.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.06);
+    gain2.gain.setValueAtTime(0.10, ctx.currentTime);
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+    osc.connect(gainNode); gainNode.connect(ctx.destination);
+    osc2.connect(gain2);   gain2.connect(ctx.destination);
+
+    osc.start(ctx.currentTime);  osc.stop(ctx.currentTime + 0.5);
+    osc2.start(ctx.currentTime); osc2.stop(ctx.currentTime + 0.35);
+  } catch(e){}
+}
+
 const BACK_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776217870/%EB%92%B7%EB%B3%80_%EC%B9%B4%EB%93%9C_-00005_jvjkc2.mp4";
 const FOOL_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776217052/%EB%B0%94%EB%B3%B4_qevz75.mp4";
 const MOON_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776219434/MOON_oqihp1.mp4";
@@ -258,7 +241,7 @@ function shuffle(arr){
 function makeVideo(src){
   const v=document.createElement('video');
   v.src=src; v.muted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
-  v.disablePictureInPicture = true;
+  v.disablePictureInPicture=true;
   v.style.cssText='width:100%;height:100%;object-fit:cover;';
   v.play().catch(()=>{});
   return v;
@@ -267,35 +250,23 @@ function makeVideo(src){
 let deck=[], selected=[], timerRef=null;
 
 function buildDeck(){
-  const frame = document.querySelector('.app-frame');
-  const fw = frame.offsetWidth;
-  const fh = frame.offsetHeight;
-
-  // 덱 컨테이너 실제 높이 계산
-  const deckEl = document.getElementById('deck-container');
-  const dh = deckEl.offsetHeight || fh * 0.5;
-
-  // 카드 수
-  const total = CARD_DATA.length; // 22장
-
-  // 카드 크기: 화면 너비 기준, 폰/PC 모두 대응
-  const cardW = Math.min(75, Math.max(44, fw * 0.11));
-  const cardH = cardW * (110/75);
-
-  // 열 수: 카드가 가로에 딱 맞게
-  const cols = Math.max(4, Math.min(7, Math.round(fw / (cardW + 10))));
-  const rows = Math.ceil(total / cols);
-
-  // 간격: 덱 영역 높이에 맞게 rowGap 자동 계산
-  const colGap = fw / (cols + 0.5);
-  const rowGap = Math.min(cardH + 8, (dh * 0.92) / rows);
-
+  const frame=document.querySelector('.app-frame');
+  const fw=frame.offsetWidth;
+  const deckEl=document.getElementById('deck-container');
+  const dh=deckEl.offsetHeight||fw*0.5;
+  const total=CARD_DATA.length;
+  const cardW=Math.min(75,Math.max(44,fw*0.11));
+  const cardH=cardW*(110/75);
+  const cols=Math.max(4,Math.min(7,Math.round(fw/(cardW+10))));
+  const rows=Math.ceil(total/cols);
+  const colGap=fw/(cols+0.5);
+  const rowGap=Math.min(cardH+8,(dh*0.92)/rows);
   return shuffle(CARD_DATA).map((card,idx)=>{
-    const row=Math.floor(idx/cols), col=idx%cols;
+    const row=Math.floor(idx/cols),col=idx%cols;
     const x=(col-(cols-1)/2)*colGap;
-    const y=row*rowGap - ((rows-1)*rowGap/2);
+    const y=row*rowGap-((rows-1)*rowGap/2);
     const rotate=(Math.random()*14-7).toFixed(1);
-    return {...card, x, y, rotate, cardW, cardH};
+    return {...card,x,y,rotate,cardW,cardH};
   });
 }
 
@@ -303,10 +274,10 @@ function initDeck(){
   deck=buildDeck(); selected=[];
   const container=document.getElementById('deck-container');
   container.innerHTML='';
-  const cardW = deck[0]?.cardW || 75;
-  const cardH = deck[0]?.cardH || 110;
-  const mw = Math.round(cardW/2);
-  const mh = Math.round(cardH/2);
+  const cardW=deck[0]?.cardW||75;
+  const cardH=deck[0]?.cardH||110;
+  const mw=Math.round(cardW/2);
+  const mh=Math.round(cardH/2);
   deck.forEach((card,idx)=>{
     const el=document.createElement('div');
     el.className='card-slot';
@@ -323,12 +294,29 @@ function initDeck(){
   let cnt=0;
   clearInterval(timerRef);
   timerRef=setInterval(()=>{
-    if(cnt<deck.length){ container.children[cnt].style.opacity='1'; cnt++; }
+    if(cnt<deck.length){container.children[cnt].style.opacity='1';cnt++;}
     else clearInterval(timerRef);
   },80);
+  updatePickStatus(0);
+}
+
+function updatePickStatus(count){
+  const el=document.getElementById('pick-status');
+  if(count>=3){
+    el.textContent='3 장 선 택 완 료';
+    el.style.background='#0d001a';
+    el.style.border='1px solid #a78bfa';
+    el.style.boxShadow='0 0 10px 2px #a78bfa, 0 0 30px 8px #a78bfa55, 0 0 60px 15px #a78bfa33, inset 0 0 10px #a78bfa33';
+  } else {
+    el.textContent=`카드를 ${3-count}장 더 고르세요`;
+    el.style.background='#0d001a';
+    el.style.border='1px solid #a78bfa33';
+    el.style.boxShadow='none';
+  }
 }
 
 function toggleSelect(id){
+  playCardSound();
   if(selected.includes(id)) selected=selected.filter(s=>s!==id);
   else if(selected.length<3) selected.push(id);
   updateUI();
@@ -336,10 +324,10 @@ function toggleSelect(id){
 
 function updateUI(){
   const container=document.getElementById('deck-container');
-  const cardW = deck[0]?.cardW || 75;
-  const cardH = deck[0]?.cardH || 110;
-  const mw = Math.round(cardW/2);
-  const mh = Math.round(cardH/2);
+  const cardW=deck[0]?.cardW||75;
+  const cardH=deck[0]?.cardH||110;
+  const mw=Math.round(cardW/2);
+  const mh=Math.round(cardH/2);
   Array.from(container.children).forEach(el=>{
     const id=parseInt(el.dataset.id);
     const card=deck.find(c=>c.id===id);
@@ -352,19 +340,22 @@ function updateUI(){
       +`opacity:1;z-index:${isSel?300:deck.indexOf(card)};`;
     if(!el.querySelector('video')){ el.appendChild(makeVideo(BACK_URL)); }
   });
-  document.getElementById('pick-status').textContent=
-    selected.length===3 ? '3 장 선 택 완 료 ' : `카드를 ${3-selected.length}장 더 고르세요`;
+
+  updatePickStatus(selected.length);
+
   const slots=document.querySelectorAll('.preview-slot');
   slots.forEach((slot,idx)=>{
     const cardId=selected[idx];
     slot.innerHTML='';
     if(cardId!=null){
-    slot.classList.add('filled');
-      slot.style.border='1px solid #a78bfa66'; slot.style.background='transparent';
+      slot.classList.add('filled');
+      slot.style.border='1px solid #a78bfa66';
+      slot.style.background='transparent';
       slot.appendChild(makeVideo(BACK_URL));
     } else {
-    slot.classList.remove('filled');
-      slot.style.border='1px dashed #a78bfa33'; slot.style.background='#0a001a';
+      slot.classList.remove('filled');
+      slot.style.border='1px dashed #a78bfa33';
+      slot.style.background='#0a001a';
       slot.innerHTML='<span style="font-size:16px;color:#a78bfa33;">✦</span>';
     }
   });
@@ -403,43 +394,36 @@ async function handleConfirm(){
     });
     const data=await res.json();
     const text=data.content?.map(b=>b.text||'').join('')||'해석을 불러오지 못했어요.';
-    readingEl.style.cssText="font-family:'Noto Serif KR',serif;font-size:clamp(11px,1.5vw,14px);line-height:2.0;color:#c4b5fd;white-space:pre-wrap;";
+    readingEl.style.cssText="font-family:'Noto Serif KR',serif;font-size:clamp(13px,1.8vw,16px);line-height:2.0;color:#c4b5fd;white-space:pre-wrap;";
     readingEl.textContent=text;
   } catch(err){ readingEl.textContent='에러: '+err.message; }
 }
 
-document.getElementById('start-btn').addEventListener('click', () => {
+document.getElementById('start-btn').addEventListener('click',()=>{
   showScreen('intro');
-  const v = document.getElementById('intro-video');
-  v.muted = false;
-  v.play();
+  const v=document.getElementById('intro-video');
+  v.muted=false; v.play();
 });
-
 document.getElementById('intro-video').addEventListener('ended',()=>{ showScreen('pick'); initDeck(); });
-document.getElementById('skip-btn').addEventListener('click',()=>{ 
+document.getElementById('skip-btn').addEventListener('click',()=>{
   document.getElementById('intro-video').pause();
-  showScreen('pick'); 
-  initDeck(); 
+  showScreen('pick'); initDeck();
 });
 document.getElementById('confirm-btn').addEventListener('click', handleConfirm);
-document.getElementById('reset-btn').addEventListener('click',()=>{ 
-  selected=[]; 
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  selected=[];
   document.querySelectorAll('.preview-slot').forEach(el=>{
-    el.innerHTML='✦';
-    el.classList.remove('filled');   
+    el.innerHTML='✦'; el.classList.remove('filled');
   });
-  showScreen('pick'); 
-  initDeck(); 
+  showScreen('pick'); initDeck();
 });
 
 let resizeTimer;
-window.addEventListener('resize', () => {
+window.addEventListener('resize',()=>{
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    if (document.getElementById('screen-pick').classList.contains('active')) {
-      initDeck();
-    }
-  }, 200);
+  resizeTimer=setTimeout(()=>{
+    if(document.getElementById('screen-pick').classList.contains('active')) initDeck();
+  },200);
 });
 </script>
 </body>
