@@ -146,7 +146,7 @@
 
     <div id="screen-intro" class="screen" style="justify-content:center;">
       <video id="intro-video"
-        src="https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217057/%EC%9D%B8%ED%8A%B8%EB%A1%9C_w0smg5.mp4"
+        src="https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776217057/%EC%9D%B8%ED%8A%B8%EB%A1%9C_w0smg5.mp4"
         playsinline
         style="width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;">
       </video>
@@ -168,11 +168,11 @@
 
   </div>
 
-<p style="font-family:'Noto Serif KR',serif; font-size:24px; color:#ccccff; margin: 10px 0; text-align: center; width: 100%;">
+<p style="font-family:'Noto Serif KR',serif; font-size:clamp(14px,4vw,24px); color:#ccccff; margin: 10px 0; text-align: center; width: 100%;">
   무의식이 선택하는 단 세 장의 카드
 </p>
 
-<div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 20px; margin: 0 auto 10px; font-family:'Noto Serif KR',serif; font-size:20px; color:#ffffff; text-align:center; width: fit-content;">
+<div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 20px; margin: 0 auto 10px; font-family:'Noto Serif KR',serif; font-size:clamp(13px,3.5vw,20px); color:#ffffff; text-align:center; width: fit-content;">
   카드를 3장 더 고르세요
 
 </div>
@@ -209,10 +209,10 @@
     </div>
 
   </div></div><script>
-const BACK_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217870/%EB%92%B7%EB%B3%80_%EC%B9%B4%EB%93%9C_-00005_jvjkc2.mp4";
-const FOOL_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217052/%EB%B0%94%EB%B3%B4_qevz75.mp4";
-const MOON_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776219434/MOON_oqihp1.mp4";
-const TOWER_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776219434/tower_yhjkax.mp4";
+const BACK_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776217870/%EB%92%B7%EB%B3%80_%EC%B9%B4%EB%93%9C_-00005_jvjkc2.mp4";
+const FOOL_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776217052/%EB%B0%94%EB%B3%B4_qevz75.mp4";
+const MOON_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776219434/MOON_oqihp1.mp4";
+const TOWER_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776219434/tower_yhjkax.mp4";
 
 const CARD_DATA = [
   ...Array.from({length:7}, (_,i) => ({id:i,     kr:"바보",  meaning:"새로운 시작, 순수함, 모험",  url:FOOL_URL})),
@@ -244,17 +244,30 @@ function buildDeck(){
   const frame = document.querySelector('.app-frame');
   const fw = frame.offsetWidth;
   const fh = frame.offsetHeight;
-  // 덱 영역: 카드 크기 기준으로 동적 계산
-  const cardW = Math.min(75, fw * 0.08);
+
+  // 덱 컨테이너 실제 높이 계산
+  const deckEl = document.getElementById('deck-container');
+  const dh = deckEl.offsetHeight || fh * 0.5;
+
+  // 카드 수
+  const total = CARD_DATA.length; // 22장
+
+  // 카드 크기: 화면 너비 기준, 폰/PC 모두 대응
+  const cardW = Math.min(75, Math.max(44, fw * 0.11));
   const cardH = cardW * (110/75);
-  const cols = Math.max(4, Math.min(7, Math.floor(fw / (cardW + 14))));
-  const colGap = Math.min(92, (fw * 0.9) / cols);
-  const rowGap = Math.min(125, fh * 0.15);
+
+  // 열 수: 카드가 가로에 딱 맞게
+  const cols = Math.max(4, Math.min(7, Math.round(fw / (cardW + 10))));
+  const rows = Math.ceil(total / cols);
+
+  // 간격: 덱 영역 높이에 맞게 rowGap 자동 계산
+  const colGap = fw / (cols + 0.5);
+  const rowGap = Math.min(cardH + 8, (dh * 0.92) / rows);
 
   return shuffle(CARD_DATA).map((card,idx)=>{
     const row=Math.floor(idx/cols), col=idx%cols;
     const x=(col-(cols-1)/2)*colGap;
-    const y=row*rowGap - (rowGap * 1.5);
+    const y=row*rowGap - ((rows-1)*rowGap/2);
     const rotate=(Math.random()*14-7).toFixed(1);
     return {...card, x, y, rotate, cardW, cardH};
   });
