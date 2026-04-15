@@ -7,28 +7,10 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+KR:wght@300;400&display=swap');
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-.card-slot:not(.sel):hover {
-  transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1) !important;
-  outline: 2px solid #ccccff; 
-  outline-offset: -2px;       
-}
+  body { background: #000; overflow: hidden; position: fixed; width: 100%; height: 100%; }
 
-.card-slot {
-  transition: transform 0.25s;
-}
-
-.preview-slot.filled {
-  border: 1px solid #a78bfa;
-  box-shadow:
-    0 0 10px 2px #a78bfa,
-    0 0 30px 8px #a78bfa55,
-    0 0 60px 15px #a78bfa33,
-    inset 0 0 10px #a78bfa33;
-}
-
-  /* ── 전체 화면을 꽉 채우는 센터 래퍼 ── */
   #root {
     position: fixed;
     inset: 0;
@@ -36,10 +18,9 @@
     align-items: center;
     justify-content: center;
     background: #000;
-    overflow: hidden; /* 불필요한 스크롤 방지 */
   }
 
-  /* ── 9:16 앱 컨테이너 ── */
+  /* ── 9:16 앱 컨테이너 (고정 해상도 베이스) ── */
   .app-frame {
     position: relative;
     display: flex;
@@ -49,138 +30,236 @@
     border: 1.5px solid #c4b5fd;
     overflow: hidden;
     color: #c4b5fd;
-    
-    /* 핵심 수정: 내부 요소가 튀어나가지 않도록 기준 해상도를 540x960으로 고정합니다 */
-    width: 540px !important;
-    height: 960px !important;
+    /* 내부 레이아웃 기준점을 400x711 정도로 최적화 */
+    width: 400px !important;
+    height: 711px !important;
     transform-origin: center center;
+    flex-shrink: 0;
   }
 
-  /* ── 스크린 공통: app-frame을 100% 채움 ── */
   .screen {
     display: none;
     position: absolute;
-    inset: 0;                  /* top/right/bottom/left: 0 */
+    inset: 0;
     flex-direction: column;
     align-items: center;
     overflow: hidden;
   }
-  .screen.active {
-    display: flex;
-  }
+  .screen.active { display: flex; }
 
-  /* 사운드 재생을 위한 시작 화면 추가 */
   #screen-start {
     z-index: 1000;
     background: radial-gradient(circle, #1a0b2e 0%, #000 80%);
     justify-content: center;
   }
 
-  /* 결과 화면만 스크롤 허용 */
-  #screen-result.active {
-    overflow-y: auto;
-  }
+  #screen-result.active { overflow-y: auto; }
 
-  /* ── 나머지 컴포넌트 스타일 ── */
+  /* ── 카드 레이아웃 수정 (테두리 안으로 쏙 넣기) ── */
   .card-slot {
-    position: absolute; width: 75px; height: 110px;
-    border-radius: 3px; overflow: hidden; cursor: pointer;
-    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s, filter 0.3s;
+    position: absolute; 
+    width: 60px; /* 크기 약간 축소 */
+    height: 88px;
+    border-radius: 3px; 
+    overflow: hidden; 
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+    touch-action: manipulation;
   }
-  .card-slot:hover { filter: brightness(2.6); }
   .card-slot.sel {
-    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.35) !important;
-    box-shadow: 0 0 0 2px #a78bfa, 0 0 14px #a78bfa99 !important;
-    filter: brightness(1.2) !important;
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.2) !important;
+    box-shadow: 0 0 15px #a78bfa;
     z-index: 300 !important;
   }
+
   .btn-main {
     background: transparent;
     border: 1.5px solid #a78bfa;
     border-radius: 50px;
-    padding: 13px 40px; color: #a78bfa;
+    padding: 12px 35px; color: #a78bfa;
     font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 2px;
     cursor: pointer; transition: all 0.2s;
+    touch-action: manipulation;
+    z-index: 2000;
   }
-  .btn-main:hover { background: #a78bfa22; transform: scale(1.05); }
-  .btn-main:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
-  .shimmer {
-    background: linear-gradient(90deg, #0a0010 25%, #2d1a5e 50%, #0a0010 75%);
-    background-size: 200% 100%; animation: sh 1.4s infinite;
-    border-radius: 6px; height: 14px; margin: 7px 0;
+  .btn-main:active { background: #a78bfa44; transform: scale(0.95); }
+
+  .preview-slot {
+    width: 70px; height: 100px; /* 프리뷰 크기 조정 */
+    border: 1px dashed #a78bfa33; border-radius: 6px;
+    background: #0a001a; display: flex; align-items: center; justify-content: center;
   }
-  @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
-  .fade-in { animation: fi 0.7s ease forwards; }
-  @keyframes fi { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
-  .rv-card {
-    border-radius: 12px; overflow: hidden; flex: 1;
-    position: relative; box-shadow: 0 8px 32px #00000088;
-    border: 1px solid #a78bfa33;
-  }
-  .rv-label {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    padding: 20px 8px 10px;
-    background: linear-gradient(transparent, #00000099);
-    text-align: center;
-  }
+  .preview-slot.filled { border: 1px solid #a78bfa; box-shadow: 0 0 10px #a78bfa55; }
+
   .logo-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 16px 20px 8px; width: 100%;
-    flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center; 
+    padding: 15px 0 5px; width: 100%;
   }
-  .logo-header img { width: 48px; height: 48px; object-fit: contain; }
-  .logo-title { font-family: 'Cinzel', serif; font-size: 18px; color: #a78bfa; letter-spacing: 3px; }
-  .logo-sub   { font-family: 'Cinzel', serif; font-size: 9px;  color: #7c5cbf; letter-spacing: 4px; }
+  .logo-header img { width: 110px; height: auto; margin-bottom: 5px; }
+
+  #pick-status {
+    background: #0d001a; border: 1px solid #a78bfa33; border-radius: 8px;
+    padding: 5px 15px; margin-bottom: 10px; font-family: 'Noto Serif KR';
+    font-size: 16px; color: #fff;
+  }
 </style>
 </head>
 <body>
 
 <div id="root">
   <div class="app-frame">
-
     <div id="screen-start" class="screen active">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <div class="logo-title" style="font-size: 24px;">TAROT</div>
-        <div class="logo-sub" style="font-size: 12px;">DEULGUKWA</div>
+      <div style="text-align: center; margin-bottom: 40px;">
+        <div style="font-family:'Cinzel'; font-size: 26px; color:#a78bfa; letter-spacing:4px;">TAROT</div>
+        <div style="font-family:'Cinzel'; font-size: 12px; color:#7c5cbf; letter-spacing:5px;">DEULGUKWA</div>
       </div>
       <button id="start-btn" class="btn-main">운명의 카드 보기</button>
     </div>
 
     <div id="screen-intro" class="screen" style="justify-content:center;">
-      <video id="intro-video"
-        src="https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217057/%EC%9D%B8%ED%8A%B8%EB%A1%9C_w0smg5.mp4"
-        playsinline
-        style="width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;">
-      </video>
-      <div style="position:absolute;bottom:24px;right:16px;display:flex;gap:8px;z-index:10;">
-        <button id="sound-btn"
-          onclick="var v=document.getElementById('intro-video');v.muted=!v.muted;this.textContent=v.muted?'🔇':'🔊';"
-          style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;">🔊</button>
-        <button id="skip-btn"
-          style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;letter-spacing:1px;">SKIP ▶</button>
+      <video id="intro-video" src="https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217057/%EC%9D%B8%ED%8A%B8%EB%A1%9C_w0smg5.mp4" playsinline style="width:100%;height:100%;object-fit:contain;"></video>
+      <div style="position:absolute;bottom:20px;right:15px;display:flex;gap:10px;">
+        <button id="skip-btn" style="background:#00000066;border:1px solid #a78bfa;color:#fff;border-radius:20px;padding:5px 15px;font-size:11px;">SKIP ▶</button>
       </div>
     </div>
 
     <div id="screen-pick" class="screen">
-<div class="logo-header" style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px 0 5px;">
-  
-  <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png" 
-       alt="logo" 
-       style="width:140px; height: auto; display: block;">
-
-  </div>
-
-<p style="font-family:'Noto Serif KR',serif; font-size:24px; color:#ccccff; margin: 10px 0; text-align: center; width: 100%;">
-  무의식이 선택하는 단 세 장의 카드
-</p>
-
-<div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 20px; margin: 0 auto 10px; font-family:'Noto Serif KR',serif; font-size:20px; color:#ffffff; text-align:center; width: fit-content;">
-  카드를 3장 더 고르세요
-
-</div>
-      <div style="position:relative;flex:1;width:100%;min-height:0;border:0px solid rgba(255,255,255,0.18);margin:4px 12px;box-sizing:border-box;">
-        <div id="deck-container" style="position:absolute;inset:0;"></div>
+      <div class="logo-header">
+        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png" alt="logo">
       </div>
-      <div id="chosen-preview" style="display:flex;gap:10px;padding:6px 20px;justify-content:center;flex-shrink:0;">
-        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
-        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a
+      <p style="font-family:'Noto Serif KR'; font-size:16px; color:#ccccff; margin-bottom:10px;">무의식이 선택하는 단 세 장의 카드</p>
+      <div id="pick-status">카드를 3장 고르세요</div>
+      
+      <div style="position:relative; flex:1; width:100%; overflow:hidden;">
+        <div id="deck-container" style="position:absolute; inset:0;"></div>
+      </div>
+
+      <div id="chosen-preview" style="display:flex; gap:8px; padding:10px; justify-content:center;">
+        <div class="preview-slot">✦</div>
+        <div class="preview-slot">✦</div>
+        <div class="preview-slot">✦</div>
+      </div>
+      <div style="padding-bottom:30px;">
+        <button id="confirm-btn" class="btn-main" disabled>리딩 시작</button>
+      </div>
+    </div>
+
+    <div id="screen-result" class="screen">
+        <div id="result-content" style="padding:20px 15px; width:100%;">
+            <div id="result-cards" style="display:flex; gap:5px; margin-bottom:20px; justify-content:center;"></div>
+            <div id="ai-reading" style="background:#080010; border:1px solid #a78bfa33; border-radius:12px; padding:15px; font-size:13px; line-height:1.8; color:#c4b5fd;"></div>
+            <div style="text-align:center; margin-top:20px; padding-bottom:30px;">
+                <button id="reset-btn" class="btn-main">다시 뽑기</button>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── 화면 비율 자동 맞춤 스크립트 ── */
+function adjustLayout() {
+  const frame = document.querySelector('.app-frame');
+  const scale = Math.min(window.innerWidth / 400, window.innerHeight / 711) * 0.96;
+  frame.style.transform = `scale(${scale})`;
+}
+window.addEventListener('resize', adjustLayout);
+adjustLayout();
+
+const BACK_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217870/%EB%92%B7%EB%B3%80_%EC%B9%B4%EB%93%9C_-00005_jvjkc2.mp4";
+const CARD_DATA = [
+  {id:1, kr:"바보", url:"https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217052/%EB%B0%94%EB%B3%B4_qevz75.mp4"},
+  {id:2, kr:"달", url:"https://res.cloudinary.com/dla7g4hwb/video/upload/v1776219434/MOON_oqihp1.mp4"},
+  {id:3, kr:"타워", url:"https://res.cloudinary.com/dla7g4hwb/video/upload/v1776219434/tower_yhjkax.mp4"}
+];
+
+let selected = [];
+let deck = [];
+
+function initDeck() {
+  const container = document.getElementById('deck-container');
+  container.innerHTML = '';
+  selected = [];
+  
+  // 21장 생성 (7개씩 3줄로 테두리 안 배치)
+  for(let i=0; i<21; i++) {
+    const cardData = CARD_DATA[i % 3];
+    const col = i % 7;
+    const row = Math.floor(i / 7);
+    
+    // 간격 최적화 (테두리 400px 내외에 맞춤)
+    const tx = (col - 3) * 52; 
+    const ty = (row - 1) * 95 - 20;
+    const rot = Math.random() * 10 - 5;
+
+    const el = document.createElement('div');
+    el.className = 'card-slot';
+    el.innerHTML = `<video src="${BACK_URL}" muted loop autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>`;
+    el.style.left = '50%'; el.style.top = '50%';
+    el.style.marginLeft = '-30px'; el.style.marginTop = '-44px';
+    el.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg)`;
+    el.dataset.id = i;
+    
+    el.onclick = () => {
+      if(selected.includes(i)) {
+        selected = selected.filter(id => id !== i);
+        el.classList.remove('sel');
+      } else if(selected.length < 3) {
+        selected.push(i);
+        el.classList.add('sel');
+      }
+      updateUI();
+    };
+    container.appendChild(el);
+  }
+}
+
+function updateUI() {
+  const slots = document.querySelectorAll('.preview-slot');
+  slots.forEach((slot, idx) => {
+    slot.innerHTML = selected[idx] !== undefined ? `<video src="${BACK_URL}" muted loop autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>` : '✦';
+    selected[idx] !== undefined ? slot.classList.add('filled') : slot.classList.remove('filled');
+  });
+  document.getElementById('pick-status').textContent = selected.length === 3 ? '선택 완료!' : `카드를 ${3-selected.length}장 더 고르세요`;
+  document.getElementById('confirm-btn').disabled = selected.length < 3;
+}
+
+// 시작 버튼 클릭 이벤트 (모바일 대응 강화)
+document.getElementById('start-btn').addEventListener('click', function() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-intro').classList.add('active');
+  const v = document.getElementById('intro-video');
+  v.play().catch(e => console.log("자동재생 방지 대기"));
+});
+
+document.getElementById('skip-btn').onclick = () => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-pick').classList.add('active');
+  initDeck();
+};
+
+document.getElementById('intro-video').onended = () => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-pick').classList.add('active');
+  initDeck();
+};
+
+document.getElementById('confirm-btn').onclick = () => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-result').classList.add('active');
+    const resDiv = document.getElementById('result-cards');
+    resDiv.innerHTML = '';
+    [0,1,2].forEach(i => {
+        const c = document.createElement('div');
+        c.className = 'preview-slot filled';
+        c.style.width = '100px'; c.style.height = '150px';
+        c.innerHTML = `<video src="${CARD_DATA[i].url}" muted loop autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>`;
+        resDiv.appendChild(c);
+    });
+    document.getElementById('ai-reading').textContent = "카드를 해석 중입니다... 잠시만 기다려 주세요.";
+};
+
+document.getElementById('reset-btn').onclick = () => location.reload();
+</script>
+</body>
+</html>
