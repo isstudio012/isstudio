@@ -108,13 +108,21 @@
   @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
   .fade-in { animation: fi 0.7s ease forwards; }
   @keyframes fi { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+
+  /* ── [수정1] rv-card: 선택 카드와 동일한 전면 glow ── */
   .rv-card {
     border-radius: 12px; overflow: hidden; flex: 1;
-    position: relative; box-shadow: 0 8px 32px #00000088;
-    border: 1px solid #a78bfa33;
+    position: relative;
+    border: 1px solid #a78bfa;
+    box-shadow:
+      0 0 10px 2px #a78bfa,
+      0 0 30px 8px #a78bfa55,
+      0 0 60px 15px #a78bfa33,
+      inset 0 0 10px #a78bfa33;
     height: clamp(120px, 28vh, 220px);
     max-height: clamp(120px, 28vh, 220px);
   }
+
   .rv-label {
     position: absolute; bottom: 0; left: 0; right: 0;
     padding: 20px 8px 10px;
@@ -166,7 +174,25 @@
         <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png"
              alt="logo" style="width:clamp(70px,18vw,110px);height:auto;display:block;">
         <p style="font-family:'Noto Serif KR',serif;font-size:clamp(13px,3.8vw,20px);color:#ccccff;margin:4px 0 0;text-align:center;">무의식이 선택하는 단 세 장의 카드</p>
-        <div id="pick-status" style="background:#0d001a;border:1px solid #a78bfa33;border-radius:10px;padding:4px 16px;margin:4px auto 0;font-family:'Noto Serif KR',serif;font-size:clamp(12px,3.2vw,17px);color:#ffffff;text-align:center;width:fit-content;">카드를 3장 더 고르세요</div>
+
+        <!-- [수정2] pick-status: 전면 발광 (배경 자체가 빛남, 마젠타/핑크 계열) -->
+        <div id="pick-status" style="
+          background: radial-gradient(ellipse at center, #c026d388 0%, #86198f66 50%, #3b0764aa 100%);
+          border: 1px solid #e879f9;
+          border-radius: 10px;
+          padding: 4px 16px;
+          margin: 4px auto 0;
+          font-family: 'Noto Serif KR', serif;
+          font-size: clamp(12px,3.2vw,17px);
+          color: #ffffff;
+          text-align: center;
+          width: fit-content;
+          box-shadow:
+            0 0 12px 4px #c026d3aa,
+            0 0 30px 10px #c026d366,
+            0 0 60px 20px #c026d333,
+            inset 0 0 14px #e879f944;
+        ">카드를 3장 더 고르세요</div>
       </div>
 
       <!-- 중간: 카드 덱 약 55vh -->
@@ -194,7 +220,10 @@
           <div class="logo-sub">DEULGUKWA</div>
         </div>
       </div>
-      <p style="font-family:'Cinzel',serif;font-size:13px;color:#a78bfa;margin:0 0 12px;letter-spacing:2px;flex-shrink:0;">카드가 전하는 이야기</p>
+
+      <!-- [수정3] 카드가 전하는 이야기: 글씨 크기 동일, 색 밝은 보라 -->
+      <p style="font-family:'Noto Serif KR',serif;font-size:clamp(13px,3.8vw,20px);color:#d8b4fe;margin:0 0 12px;flex-shrink:0;">카드가 전하는 이야기</p>
+
       <div id="result-cards" style="display:flex;gap:8px;margin-bottom:14px;width:100%;padding:0 12px;flex-shrink:0;"></div>
       <div style="background:#080010;border:1px solid #a78bfa22;border-radius:16px;padding:16px 14px;margin:0 12px 16px;width:calc(100% - 24px);flex:1;overflow-y:auto;min-height:0;">
         <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:#a78bfa;margin-bottom:12px;text-align:center;">✦ 타로 해석 ✦</div>
@@ -379,14 +408,11 @@ async function handleConfirm(){
   } catch(err){ readingEl.textContent='에러: '+err.message; }
 }
 
-/* ──────────────────────────────────────────────────────────
-   [수정됨] 사운드 재생을 위한 이벤트 리스너
-   ────────────────────────────────────────────────────────── */
 document.getElementById('start-btn').addEventListener('click', () => {
   showScreen('intro');
   const v = document.getElementById('intro-video');
-  v.muted = false; // 소리 켜기
-  v.play();        // 영상 재생
+  v.muted = false;
+  v.play();
 });
 
 document.getElementById('intro-video').addEventListener('ended',()=>{ showScreen('pick'); initDeck(); });
@@ -406,7 +432,6 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
   initDeck(); 
 });
 
-// 화면 크기 바뀔 때 덱 재계산 (가로/세로 전환 등)
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
