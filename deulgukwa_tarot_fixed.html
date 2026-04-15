@@ -38,7 +38,7 @@
     background: #000;
   }
 
-  /* ── 9:16 앱 컨테이너 (모바일 최적화 수정) ── */
+  /* ── 9:16 앱 컨테이너: 화면에 가득 차도록 수정 ── */
   .app-frame {
     position: relative;
     display: flex;
@@ -48,13 +48,11 @@
     border: 1.5px solid #c4b5fd;
     overflow: hidden;
     color: #c4b5fd;
-    /* 핸드폰 화면에 꽉 차도록 수정 */
     width: 100vw;
     height: 100vh;
-    height: 100dvh; /* 모바일 브라우저 주소창 대응 */
+    height: 100dvh; /* 모바일 주소창 대응 */
   }
 
-  /* ── 스크린 공통 ── */
   .screen {
     display: none;
     position: absolute;
@@ -74,7 +72,7 @@
   }
 
   #screen-result.active {
-    overflow-y: auto;
+    overflow-y: auto; /* 결과창 스크롤 허용 */
   }
 
   .card-slot {
@@ -107,15 +105,18 @@
   @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
   .fade-in { animation: fi 0.7s ease forwards; }
   @keyframes fi { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+  
+  /* 결과 화면 카드 스타일 수정 */
   .rv-card {
     border-radius: 12px; overflow: hidden; flex: 1;
     position: relative; box-shadow: 0 8px 32px #00000088;
     border: 1px solid #a78bfa33;
+    height: 100%; /* 부모 컨테이너 높이에 맞춤 */
   }
   .rv-label {
     position: absolute; bottom: 0; left: 0; right: 0;
-    padding: 20px 8px 10px;
-    background: linear-gradient(transparent, #00000099);
+    padding: 10px 4px 5px;
+    background: linear-gradient(transparent, #000000cc);
     text-align: center;
   }
   .logo-header {
@@ -127,10 +128,16 @@
   .logo-title { font-family: 'Cinzel', serif; font-size: 18px; color: #a78bfa; letter-spacing: 3px; }
   .logo-sub   { font-family: 'Cinzel', serif; font-size: 9px;  color: #7c5cbf; letter-spacing: 4px; }
 
-  /* ── [신규 추가] 모바일 대응 자동 스케일링 ── */
+  /* ── 결과 화면 카드 영역 높이 제한 (UI 깨짐 방지) ── */
+  #result-cards {
+    display: flex; gap: 8px; margin-bottom: 14px; width: 100%; padding: 0 12px;
+    height: 220px; /* 카드 세로 길이 고정 */
+    flex-shrink: 0;
+  }
+
   @media (max-width: 500px) {
     #deck-container {
-      transform: scale(0.65); /* 카드가 화면 밖으로 나가지 않게 축소 */
+      transform: scale(0.65);
       transform-origin: center center;
     }
     .logo-header img { width: 100px !important; }
@@ -139,6 +146,12 @@
     #chosen-preview { gap: 6px !important; padding: 5px 10px !important; }
     .preview-slot { width: 70px !important; height: 103px !important; }
     .btn-main { padding: 10px 30px; font-size: 12px; }
+    
+    /* 모바일 결과화면 최적화 */
+    #result-cards {
+      height: 170px; /* 모바일에서 카드 높이 소폭 축소 */
+    }
+    .rv-label div { font-size: 8px !important; }
   }
 </style>
 </head>
@@ -171,23 +184,16 @@
     </div>
 
     <div id="screen-pick" class="screen">
-<div class="logo-header" style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px 0 5px;">
-  
-  <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png" 
-       alt="logo" 
-       style="width:140px; height: auto; display: block;">
-
-  </div>
-
-<p style="font-family:'Noto Serif KR',serif; font-size:24px; color:#ccccff; margin: 10px 0; text-align: center; width: 100%;">
-  무의식이 선택하는 단 세 장의 카드
-</p>
-
-<div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 20px; margin: 0 auto 10px; font-family:'Noto Serif KR',serif; font-size:20px; color:#ffffff; text-align:center; width: fit-content;">
-  카드를 3장 더 고르세요
-
-</div>
-      <div style="position:relative;flex:1;width:100%;min-height:0;border:0px solid rgba(255,255,255,0.18);margin:4px 0;box-sizing:border-box;">
+      <div class="logo-header" style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px 0 5px;">
+        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png" alt="logo" style="width:140px; height: auto; display: block;">
+      </div>
+      <p style="font-family:'Noto Serif KR',serif; font-size:24px; color:#ccccff; margin: 10px 0; text-align: center; width: 100%;">
+        무의식이 선택하는 단 세 장의 카드
+      </p>
+      <div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 20px; margin: 0 auto 10px; font-family:'Noto Serif KR',serif; font-size:20px; color:#ffffff; text-align:center; width: fit-content;">
+        카드를 3장 더 고르세요
+      </div>
+      <div style="position:relative;flex:1;width:100%;min-height:0;margin:4px 0;box-sizing:border-box;">
         <div id="deck-container" style="position:absolute;inset:0;"></div>
       </div>
       <div id="chosen-preview" style="display:flex;gap:10px;padding:6px 20px;justify-content:center;flex-shrink:0;">
@@ -195,7 +201,7 @@
         <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
         <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
       </div>
- <div style="padding:10px 20px 40px; flex-shrink:0; margin-top:10px;">
+      <div style="padding:10px 20px 40px; flex-shrink:0; margin-top:10px;">
         <button id="confirm-btn" class="btn-main" disabled>리딩 시작</button>
       </div>
     </div>
@@ -209,19 +215,22 @@
         </div>
       </div>
       <p style="font-family:'Cinzel',serif;font-size:13px;color:#a78bfa;margin:0 0 12px;letter-spacing:2px;flex-shrink:0;">카드가 전하는 이야기</p>
-      <div id="result-cards"style="display:flex;gap:8px;margin-bottom:14px;width:100%;
-padding:0 12px;">
-</div>
-      <div style="background:#080010;border:1px solid #a78bfa22;border-radius:16px;padding:16px 14px;margin:0 12px 16px;width:calc(100% - 24px);">
+      
+      <div id="result-cards"></div>
+
+      <div style="background:#080010;border:1px solid #a78bfa22;border-radius:16px;padding:16px 14px;margin:0 12px 16px;width:calc(100% - 24px); flex-shrink: 0;">
         <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:#a78bfa;margin-bottom:12px;text-align:center;">✦ 타로 해석 ✦</div>
         <div id="ai-reading"></div>
       </div>
-      <div style="padding:0 0 20px;text-align:center;flex-shrink:0;">
+      <div style="padding:0 0 40px;text-align:center;flex-shrink:0;">
         <button id="reset-btn" class="btn-main">다시 뽑기</button>
       </div>
     </div>
 
-  </div></div><script>
+  </div>
+</div>
+
+<script>
 const BACK_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217870/%EB%92%B7%EB%B3%80_%EC%B9%B4%EB%93%9C_-00005_jvjkc2.mp4";
 const FOOL_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217052/%EB%B0%94%EB%B3%B4_qevz75.mp4";
 const MOON_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776219434/MOON_oqihp1.mp4";
