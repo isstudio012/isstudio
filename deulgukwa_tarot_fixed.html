@@ -9,49 +9,52 @@
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── 전체 화면을 꽉 채우는 센터 래퍼 ── */
+.card-slot:not(.sel):hover {
+  transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1) !important;
+  outline: 2px solid #ccccff; 
+  outline-offset: -2px;       
+}
+
+.card-slot {
+  transition: transform 0.25s;
+}
+
+.preview-slot.filled {
+  border: 1px solid #a78bfa;
+  box-shadow:
+    0 0 10px 2px #a78bfa,
+    0 0 30px 8px #a78bfa55,
+    0 0 60px 15px #a78bfa33,
+    inset 0 0 10px #a78bfa33;
+}
+
+
+
+  /* ── 전체 화면 래퍼 ── */
   #root {
     position: fixed;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: #000;
   }
 
-  /* ── 9:16 앱 컨테이너 ── */
+  /* ── 앱 컨테이너: 뷰포트 100% 꽉 채움 ── */
   .app-frame {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     background: #000;
-    border: 1.5px solid #c4b5fd;
     overflow: hidden;
     color: #c4b5fd;
-    width:  min(98vw, calc(98vh * 9 / 16));
-    height: min(98vh, calc(98vw * 16 / 9));
+    width: 100%;
+    height: 100%;
   }
 
-  /* [수정] 카드 뭉치 크기 조절 (중심점 고정 및 반응형 스케일) */
-  #deck-container {
-    position: absolute;
-    inset: 0;
-    transform-origin: center center;
-    transform: scale(1.0); /* 기본(PC): 시원하게 크게 보임 */
-    transition: transform 0.3s ease;
-  }
-
-  @media (max-width: 600px) {
-    #deck-container {
-      transform: scale(0.65); /* 핸드폰: 화면에 쏙 들어오게 축소 */
-    }
-  }
-
+  /* ── 스크린 공통: app-frame을 100% 채움 ── */
   .screen {
     display: none;
     position: absolute;
-    inset: 0;
+    inset: 0;                  /* top/right/bottom/left: 0 */
     flex-direction: column;
     align-items: center;
     overflow: hidden;
@@ -60,26 +63,27 @@
     display: flex;
   }
 
+  /* 사운드 재생을 위한 시작 화면 추가 */
   #screen-start {
     z-index: 1000;
     background: radial-gradient(circle, #1a0b2e 0%, #000 80%);
     justify-content: center;
   }
 
+  /* 결과 화면만 스크롤 허용 */
   #screen-result.active {
     overflow-y: auto;
   }
 
+  /* ── 나머지 컴포넌트 스타일 ── */
   .card-slot {
-    position: absolute; width: 75px; height: 110px;
+    position: absolute;
+    width: clamp(48px, 8vw, 75px);
+    height: clamp(70px, 11.7vw, 110px);
     border-radius: 3px; overflow: hidden; cursor: pointer;
     transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s, filter 0.3s;
   }
-  .card-slot:not(.sel):hover {
-    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1) !important;
-    outline: 2px solid #ccccff; 
-    outline-offset: -2px;       
-  }
+  .card-slot:hover { filter: brightness(2.6); }
   .card-slot.sel {
     transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.35) !important;
     box-shadow: 0 0 0 2px #a78bfa, 0 0 14px #a78bfa99 !important;
@@ -96,20 +100,6 @@
   }
   .btn-main:hover { background: #a78bfa22; transform: scale(1.05); }
   .btn-main:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
-
-  .preview-slot.filled {
-    border: 1px solid #a78bfa;
-    box-shadow: 0 0 10px 2px #a78bfa, 0 0 30px 8px #a78bfa55, 0 0 60px 15px #a78bfa33, inset 0 0 10px #a78bfa33;
-  }
-
-  .logo-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 16px 20px 8px; width: 100%; flex-shrink: 0;
-  }
-  .logo-header img { width: 48px; height: 48px; object-fit: contain; }
-  .logo-title { font-family: 'Cinzel', serif; font-size: 18px; color: #a78bfa; letter-spacing: 3px; }
-  .logo-sub { font-family: 'Cinzel', serif; font-size: 9px; color: #7c5cbf; letter-spacing: 4px; }
-
   .shimmer {
     background: linear-gradient(90deg, #0a0010 25%, #2d1a5e 50%, #0a0010 75%);
     background-size: 200% 100%; animation: sh 1.4s infinite;
@@ -118,8 +108,27 @@
   @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
   .fade-in { animation: fi 0.7s ease forwards; }
   @keyframes fi { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
-  .rv-card { border-radius: 12px; overflow: hidden; flex: 1; position: relative; box-shadow: 0 8px 32px #00000088; border: 1px solid #a78bfa33; }
-  .rv-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 8px 10px; background: linear-gradient(transparent, #00000099); text-align: center; }
+  .rv-card {
+    border-radius: 12px; overflow: hidden; flex: 1;
+    position: relative; box-shadow: 0 8px 32px #00000088;
+    border: 1px solid #a78bfa33;
+    height: clamp(120px, 28vh, 220px);
+    max-height: clamp(120px, 28vh, 220px);
+  }
+  .rv-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 20px 8px 10px;
+    background: linear-gradient(transparent, #00000099);
+    text-align: center;
+  }
+  .logo-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 20px 8px; width: 100%;
+    flex-shrink: 0;
+  }
+  .logo-header img { width: 48px; height: 48px; object-fit: contain; }
+  .logo-title { font-family: 'Cinzel', serif; font-size: 18px; color: #a78bfa; letter-spacing: 3px; }
+  .logo-sub   { font-family: 'Cinzel', serif; font-size: 9px;  color: #7c5cbf; letter-spacing: 4px; }
 </style>
 </head>
 <body>
@@ -142,28 +151,40 @@
         style="width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;">
       </video>
       <div style="position:absolute;bottom:24px;right:16px;display:flex;gap:8px;z-index:10;">
-        <button id="sound-btn" onclick="var v=document.getElementById('intro-video');v.muted=!v.muted;this.textContent=v.muted?'🔇':'🔊';" style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;">🔊</button>
-        <button id="skip-btn" style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;letter-spacing:1px;">SKIP ▶</button>
+        <button id="sound-btn"
+          onclick="var v=document.getElementById('intro-video');v.muted=!v.muted;this.textContent=v.muted?'🔇':'🔊';"
+          style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;">🔊</button>
+        <button id="skip-btn"
+          style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;letter-spacing:1px;">SKIP ▶</button>
       </div>
     </div>
 
     <div id="screen-pick" class="screen">
-      <div class="logo-header" style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px 0 5px;">
-        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png" alt="logo" style="width:140px; height: auto; display: block;">
-      </div>
-      <p style="font-family:'Noto Serif KR',serif; font-size:24px; color:#ccccff; margin: 10px 0; text-align: center; width: 100%;">무의식이 선택하는 단 세 장의 카드</p>
-      <div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 20px; margin: 0 auto 10px; font-family:'Noto Serif KR',serif; font-size:20px; color:#ffffff; text-align:center; width: fit-content;">카드를 3장 더 고르세요</div>
-      
-      <div style="position:relative;flex:1;width:100%;min-height:0;margin:4px 12px;box-sizing:border-box;">
-        <div id="deck-container"></div>
-      </div>
+<div class="logo-header" style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px 0 5px;">
+  
+  <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png" 
+       alt="logo" 
+       style="width:140px; height: auto; display: block;">
 
-      <div id="chosen-preview" style="display:flex;gap:10px;padding:6px 20px;justify-content:center;flex-shrink:0;">
-        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
-        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
-        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
+  </div>
+
+<p style="font-family:'Noto Serif KR',serif; font-size:24px; color:#ccccff; margin: 10px 0; text-align: center; width: 100%;">
+  무의식이 선택하는 단 세 장의 카드
+</p>
+
+<div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 20px; margin: 0 auto 10px; font-family:'Noto Serif KR',serif; font-size:20px; color:#ffffff; text-align:center; width: fit-content;">
+  카드를 3장 더 고르세요
+
+</div>
+      <div style="position:relative;flex:1;width:100%;min-height:0;border:0px solid rgba(255,255,255,0.18);margin:4px 12px;box-sizing:border-box;">
+        <div id="deck-container" style="position:absolute;inset:0;"></div>
       </div>
-      <div style="padding:10px 20px 40px; flex-shrink:0; margin-top:20px;">
+      <div id="chosen-preview" style="display:flex;gap:10px;padding:6px 20px;justify-content:center;flex-shrink:0;">
+        <div class="preview-slot" style="width:clamp(60px,16vw,86px);height:clamp(88px,23.5vw,127px);border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
+        <div class="preview-slot" style="width:clamp(60px,16vw,86px);height:clamp(88px,23.5vw,127px);border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
+        <div class="preview-slot" style="width:clamp(60px,16vw,86px);height:clamp(88px,23.5vw,127px);border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
+      </div>
+ <div style="padding:10px 20px 40px; flex-shrink:0; margin-top:20px;">
         <button id="confirm-btn" class="btn-main" disabled>리딩 시작</button>
       </div>
     </div>
@@ -177,8 +198,8 @@
         </div>
       </div>
       <p style="font-family:'Cinzel',serif;font-size:13px;color:#a78bfa;margin:0 0 12px;letter-spacing:2px;flex-shrink:0;">카드가 전하는 이야기</p>
-      <div id="result-cards" style="display:flex;gap:8px;margin-bottom:14px;width:100%;padding:0 12px;"></div>
-      <div style="background:#080010;border:1px solid #a78bfa22;border-radius:16px;padding:16px 14px;margin:0 12px 16px;width:calc(100% - 24px);">
+      <div id="result-cards" style="display:flex;gap:8px;margin-bottom:14px;width:100%;padding:0 12px;flex-shrink:0;"></div>
+      <div style="background:#080010;border:1px solid #a78bfa22;border-radius:16px;padding:16px 14px;margin:0 12px 16px;width:calc(100% - 24px);flex:1;overflow-y:auto;min-height:0;">
         <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:#a78bfa;margin-bottom:12px;text-align:center;">✦ 타로 해석 ✦</div>
         <div id="ai-reading"></div>
       </div>
@@ -187,10 +208,7 @@
       </div>
     </div>
 
-  </div>
-</div>
-
-<script>
+  </div></div><script>
 const BACK_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217870/%EB%92%B7%EB%B3%80_%EC%B9%B4%EB%93%9C_-00005_jvjkc2.mp4";
 const FOOL_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217052/%EB%B0%94%EB%B3%B4_qevz75.mp4";
 const MOON_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776219434/MOON_oqihp1.mp4";
@@ -223,11 +241,22 @@ function makeVideo(src){
 let deck=[], selected=[], timerRef=null;
 
 function buildDeck(){
+  const frame = document.querySelector('.app-frame');
+  const fw = frame.offsetWidth;
+  const fh = frame.offsetHeight;
+  // 덱 영역: 카드 크기 기준으로 동적 계산
+  const cardW = Math.min(75, fw * 0.08);
+  const cardH = cardW * (110/75);
+  const cols = Math.max(4, Math.min(7, Math.floor(fw / (cardW + 14))));
+  const colGap = Math.min(92, (fw * 0.9) / cols);
+  const rowGap = Math.min(125, fh * 0.15);
+
   return shuffle(CARD_DATA).map((card,idx)=>{
-    const cols=6, row=Math.floor(idx/cols), col=idx%cols;
-    const x=(col-(cols-1)/2)*92, y=row*125 - 200;
+    const row=Math.floor(idx/cols), col=idx%cols;
+    const x=(col-(cols-1)/2)*colGap;
+    const y=row*rowGap - (rowGap * 1.5);
     const rotate=(Math.random()*14-7).toFixed(1);
-    return {...card, x, y, rotate};
+    return {...card, x, y, rotate, cardW, cardH};
   });
 }
 
@@ -235,12 +264,17 @@ function initDeck(){
   deck=buildDeck(); selected=[];
   const container=document.getElementById('deck-container');
   container.innerHTML='';
+  const cardW = deck[0]?.cardW || 75;
+  const cardH = deck[0]?.cardH || 110;
+  const mw = Math.round(cardW/2);
+  const mh = Math.round(cardH/2);
   deck.forEach((card,idx)=>{
     const el=document.createElement('div');
     el.className='card-slot';
     el.dataset.id=card.id;
     el.style.cssText=`--tx:${card.x}px;--ty:${card.y}px;--rot:${card.rotate}deg;`
-      +`left:50%;top:50%;margin-left:-37.5px;margin-top:-55px;`
+      +`width:${cardW}px;height:${cardH}px;`
+      +`left:50%;top:50%;margin-left:-${mw}px;margin-top:-${mh}px;`
       +`transform:translate(${card.x}px,${card.y}px) rotate(${card.rotate}deg);`
       +`opacity:0;z-index:${idx};`;
     el.appendChild(makeVideo(BACK_URL));
@@ -263,13 +297,18 @@ function toggleSelect(id){
 
 function updateUI(){
   const container=document.getElementById('deck-container');
+  const cardW = deck[0]?.cardW || 75;
+  const cardH = deck[0]?.cardH || 110;
+  const mw = Math.round(cardW/2);
+  const mh = Math.round(cardH/2);
   Array.from(container.children).forEach(el=>{
     const id=parseInt(el.dataset.id);
     const card=deck.find(c=>c.id===id);
     const isSel=selected.includes(id);
     el.className='card-slot'+(isSel?' sel':'');
     el.style.cssText=`--tx:${card.x}px;--ty:${card.y}px;--rot:${card.rotate}deg;`
-      +`left:50%;top:50%;margin-left:-37.5px;margin-top:-55px;`
+      +`width:${cardW}px;height:${cardH}px;`
+      +`left:50%;top:50%;margin-left:-${mw}px;margin-top:-${mh}px;`
       +`transform:translate(${card.x}px,${card.y}px) rotate(${card.rotate}deg);`
       +`opacity:1;z-index:${isSel?300:deck.indexOf(card)};`;
     if(!el.querySelector('video')){ el.appendChild(makeVideo(BACK_URL)); }
@@ -281,11 +320,11 @@ function updateUI(){
     const cardId=selected[idx];
     slot.innerHTML='';
     if(cardId!=null){
-      slot.classList.add('filled');
+    slot.classList.add('filled');
       slot.style.border='1px solid #a78bfa66'; slot.style.background='transparent';
       slot.appendChild(makeVideo(BACK_URL));
     } else {
-      slot.classList.remove('filled');
+    slot.classList.remove('filled');
       slot.style.border='1px dashed #a78bfa33'; slot.style.background='#0a001a';
       slot.innerHTML='<span style="font-size:16px;color:#a78bfa33;">✦</span>';
     }
@@ -325,16 +364,19 @@ async function handleConfirm(){
     });
     const data=await res.json();
     const text=data.content?.map(b=>b.text||'').join('')||'해석을 불러오지 못했어요.';
-    readingEl.style.cssText="font-family:'Noto Serif KR',serif;font-size:12px;line-height:2.0;color:#c4b5fd;white-space:pre-wrap;";
+    readingEl.style.cssText="font-family:'Noto Serif KR',serif;font-size:clamp(11px,1.5vw,14px);line-height:2.0;color:#c4b5fd;white-space:pre-wrap;";
     readingEl.textContent=text;
   } catch(err){ readingEl.textContent='에러: '+err.message; }
 }
 
+/* ──────────────────────────────────────────────────────────
+   [수정됨] 사운드 재생을 위한 이벤트 리스너
+   ────────────────────────────────────────────────────────── */
 document.getElementById('start-btn').addEventListener('click', () => {
   showScreen('intro');
   const v = document.getElementById('intro-video');
-  v.muted = false;
-  v.play();
+  v.muted = false; // 소리 켜기
+  v.play();        // 영상 재생
 });
 
 document.getElementById('intro-video').addEventListener('ended',()=>{ showScreen('pick'); initDeck(); });
@@ -352,6 +394,17 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
   });
   showScreen('pick'); 
   initDeck(); 
+});
+
+// 화면 크기 바뀔 때 덱 재계산 (가로/세로 전환 등)
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (document.getElementById('screen-pick').classList.contains('active')) {
+      initDeck();
+    }
+  }, 200);
 });
 </script>
 </body>
