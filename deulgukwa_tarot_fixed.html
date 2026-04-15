@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>들국화 타로</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+KR:wght@300;400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.card-slot:not(.sel):hover {
+  transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1) !important;
+  outline: 2px solid #ccccff; 
+  outline-offset: -2px;       
+}
+
+.card-slot {
+  transition: transform 0.25s;
+}
+
+.preview-slot.filled {
+  border: 1px solid #a78bfa;
+  box-shadow:
+    0 0 10px 2px #a78bfa,
+    0 0 30px 8px #a78bfa55,
+    0 0 60px 15px #a78bfa33,
+    inset 0 0 10px #a78bfa33;
+}
+
+
+
+  /* ── 전체 화면을 꽉 채우는 센터 래퍼 ── */
+  #root {
+    position: fixed;          /* viewport 기준으로 고정 — 줌과 무관 */
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+  }
+
+  /* ── 9:16 앱 컨테이너 ── */
+  .app-frame {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #000;
+    border: 1.5px solid #c4b5fd;
+    overflow: hidden;
+    color: #c4b5fd;
+    /* 항상 9:16 비율 — 둘 중 작은 쪽에 맞춤 */
+    width:  min(98vw, calc(98vh * 9 / 16));
+    height: min(98vh, calc(98vw * 16 / 9));
+  }
+
+  /* ── 스크린 공통: app-frame을 100% 채움 ── */
+  .screen {
+    display: none;
+    position: absolute;
+    inset: 0;                  /* top/right/bottom/left: 0 */
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+  .screen.active {
+    display: flex;
+  }
+
+  /* 사운드 재생을 위한 시작 화면 추가 */
+  #screen-start {
+    z-index: 1000;
+    background: radial-gradient(circle, #1a0b2e 0%, #000 80%);
+    justify-content: center;
+  }
+
+  /* 결과 화면만 스크롤 허용 */
+  #screen-result.active {
+    overflow-y: auto;
+  }
+
+  /* ── 나머지 컴포넌트 스타일 ── */
+  .card-slot {
+    position: absolute; width: 75px; height: 110px;
+    border-radius: 3px; overflow: hidden; cursor: pointer;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s, filter 0.3s;
+  }
+  .card-slot:hover { filter: brightness(2.6); }
+  .card-slot.sel {
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.35) !important;
+    box-shadow: 0 0 0 2px #a78bfa, 0 0 14px #a78bfa99 !important;
+    filter: brightness(1.2) !important;
+    z-index: 300 !important;
+  }
+  .btn-main {
+    background: transparent;
+    border: 1.5px solid #a78bfa;
+    border-radius: 50px;
+    padding: 13px 40px; color: #a78bfa;
+    font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 2px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-main:hover { background: #a78bfa22; transform: scale(1.05); }
+  .btn-main:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  .shimmer {
+    background: linear-gradient(90deg, #0a0010 25%, #2d1a5e 50%, #0a0010 75%);
+    background-size: 200% 100%; animation: sh 1.4s infinite;
+    border-radius: 6px; height: 14px; margin: 7px 0;
+  }
+  @keyframes sh { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+  .fade-in { animation: fi 0.7s ease forwards; }
+  @keyframes fi { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+  .rv-card {
+    border-radius: 12px; overflow: hidden; flex: 1;
+    position: relative; box-shadow: 0 8px 32px #00000088;
+    border: 1px solid #a78bfa33;
+  }
+  .rv-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 20px 8px 10px;
+    background: linear-gradient(transparent, #00000099);
+    text-align: center;
+  }
+  .logo-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 20px 8px; width: 100%;
+    flex-shrink: 0;
+  }
+  .logo-header img { width: 48px; height: 48px; object-fit: contain; }
+  .logo-title { font-family: 'Cinzel', serif; font-size: 18px; color: #a78bfa; letter-spacing: 3px; }
+  .logo-sub   { font-family: 'Cinzel', serif; font-size: 9px;  color: #7c5cbf; letter-spacing: 4px; }
+</style>
+</head>
+<body>
+
+<div id="root">
+  <div class="app-frame">
+
+    <div id="screen-start" class="screen active">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div class="logo-title" style="font-size: 24px;">TAROT</div>
+        <div class="logo-sub" style="font-size: 12px;">DEULGUKWA</div>
+      </div>
+      <button id="start-btn" class="btn-main">운명의 카드 보기</button>
+    </div>
+
+    <div id="screen-intro" class="screen" style="justify-content:center;">
+      <video id="intro-video"
+        src="https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217057/%EC%9D%B8%ED%8A%B8%EB%A1%9C_w0smg5.mp4"
+        playsinline
+        style="width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;">
+      </video>
+      <div style="position:absolute;bottom:24px;right:16px;display:flex;gap:8px;z-index:10;">
+        <button id="sound-btn"
+          onclick="var v=document.getElementById('intro-video');v.muted=!v.muted;this.textContent=v.muted?'🔇':'🔊';"
+          style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;">🔊</button>
+        <button id="skip-btn"
+          style="background:#ffffff22;border:1px solid #a78bfa44;color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;letter-spacing:1px;">SKIP ▶</button>
+      </div>
+    </div>
+
+    <div id="screen-pick" class="screen">
+<div class="logo-header" style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px 0 5px;">
+  
+  <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png" 
+       alt="logo" 
+       style="width:140px; height: auto; display: block;">
+
+  </div>
+
+<p style="font-family:'Noto Serif KR',serif; font-size:24px; color:#ccccff; margin: 10px 0; text-align: center; width: 100%;">
+  무의식이 선택하는 단 세 장의 카드
+</p>
+
+<div id="pick-status" style="background:#0d001a; border:1px solid #a78bfa33; border-radius:10px; padding:6px 20px; margin: 0 auto 10px; font-family:'Noto Serif KR',serif; font-size:20px; color:#ffffff; text-align:center; width: fit-content;">
+  카드를 3장 더 고르세요
+
+</div>
+      <div style="position:relative;flex:1;width:100%;min-height:0;border:0px solid rgba(255,255,255,0.18);margin:4px 12px;box-sizing:border-box;">
+        <div id="deck-container" style="position:absolute;inset:0;"></div>
+      </div>
+      <div id="chosen-preview" style="display:flex;gap:10px;padding:6px 20px;justify-content:center;flex-shrink:0;">
+        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
+        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
+        <div class="preview-slot" style="width:86px;height:127px;border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
+      </div>
+ <div style="padding:10px 20px 40px; flex-shrink:0; margin-top:20px;">
+        <button id="confirm-btn" class="btn-main" disabled>리딩 시작</button>
+      </div>
+    </div>
+
+    <div id="screen-result" class="screen">
+      <div class="logo-header">
+        <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220288/logo.png" alt="logo" onerror="this.style.display='none'">
+        <div>
+          <div class="logo-title">TAROT</div>
+          <div class="logo-sub">DEULGUKWA</div>
+        </div>
+      </div>
+      <p style="font-family:'Cinzel',serif;font-size:13px;color:#a78bfa;margin:0 0 12px;letter-spacing:2px;flex-shrink:0;">카드가 전하는 이야기</p>
+      <div id="result-cards"style="display:flex;gap:8px;margin-bottom:14px;width:100%;
+padding:0 12px;">
+</div>
+      <div style="background:#080010;border:1px solid #a78bfa22;border-radius:16px;padding:16px 14px;margin:0 12px 16px;width:calc(100% - 24px);">
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:#a78bfa;margin-bottom:12px;text-align:center;">✦ 타로 해석 ✦</div>
+        <div id="ai-reading"></div>
+      </div>
+      <div style="padding:0 0 20px;text-align:center;flex-shrink:0;">
+        <button id="reset-btn" class="btn-main">다시 뽑기</button>
+      </div>
+    </div>
+
+  </div></div><script>
+const BACK_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217870/%EB%92%B7%EB%B3%80_%EC%B9%B4%EB%93%9C_-00005_jvjkc2.mp4";
+const FOOL_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776217052/%EB%B0%94%EB%B3%B4_qevz75.mp4";
+const MOON_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776219434/MOON_oqihp1.mp4";
+const TOWER_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776219434/tower_yhjkax.mp4";
+
+const CARD_DATA = [
+  ...Array.from({length:7}, (_,i) => ({id:i,     kr:"바보",  meaning:"새로운 시작, 순수함, 모험",  url:FOOL_URL})),
+  ...Array.from({length:8}, (_,i) => ({id:100+i, kr:"달",    meaning:"환상, 불안, 무의식",          url:MOON_URL})),
+  ...Array.from({length:7}, (_,i) => ({id:200+i, kr:"타워",  meaning:"붕괴, 각성, 급격한 변화",     url:TOWER_URL})),
+];
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let n=a.length-1;n>0;n--){
+    const m=Math.floor(Math.random()*(n+1));
+    [a[n],a[m]]=[a[m],a[n]];
+  }
+  return a;
+}
+
+function makeVideo(src){
+  const v=document.createElement('video');
+  v.src=src; v.muted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
+  v.disablePictureInPicture = true;
+  v.style.cssText='width:100%;height:100%;object-fit:cover;';
+  v.play().catch(()=>{});
+  return v;
+}
+
+let deck=[], selected=[], timerRef=null;
+
+function buildDeck(){
+  return shuffle(CARD_DATA).map((card,idx)=>{
+    const cols=6, row=Math.floor(idx/cols), col=idx%cols;
+    const x=(col-(cols-1)/2)*92, y=row*125 - 200;
+    const rotate=(Math.random()*14-7).toFixed(1);
+    return {...card, x, y, rotate};
+  });
+}
+
+function initDeck(){
+  deck=buildDeck(); selected=[];
+  const container=document.getElementById('deck-container');
+  container.innerHTML='';
+  deck.forEach((card,idx)=>{
+    const el=document.createElement('div');
+    el.className='card-slot';
+    el.dataset.id=card.id;
+    el.style.cssText=`--tx:${card.x}px;--ty:${card.y}px;--rot:${card.rotate}deg;`
+      +`left:50%;top:50%;margin-left:-30px;margin-top:-45px;`
+      +`transform:translate(${card.x}px,${card.y}px) rotate(${card.rotate}deg);`
+      +`opacity:0;z-index:${idx};`;
+    el.appendChild(makeVideo(BACK_URL));
+    el.addEventListener('click',()=>toggleSelect(card.id));
+    container.appendChild(el);
+  });
+  let cnt=0;
+  clearInterval(timerRef);
+  timerRef=setInterval(()=>{
+    if(cnt<deck.length){ container.children[cnt].style.opacity='1'; cnt++; }
+    else clearInterval(timerRef);
+  },80);
+}
+
+function toggleSelect(id){
+  if(selected.includes(id)) selected=selected.filter(s=>s!==id);
+  else if(selected.length<3) selected.push(id);
+  updateUI();
+}
+
+function updateUI(){
+  const container=document.getElementById('deck-container');
+  Array.from(container.children).forEach(el=>{
+    const id=parseInt(el.dataset.id);
+    const card=deck.find(c=>c.id===id);
+    const isSel=selected.includes(id);
+    el.className='card-slot'+(isSel?' sel':'');
+    el.style.cssText=`--tx:${card.x}px;--ty:${card.y}px;--rot:${card.rotate}deg;`
+      +`left:50%;top:50%;margin-left:-30px;margin-top:-45px;`
+      +`transform:translate(${card.x}px,${card.y}px) rotate(${card.rotate}deg);`
+      +`opacity:1;z-index:${isSel?300:deck.indexOf(card)};`;
+    if(!el.querySelector('video')){ el.appendChild(makeVideo(BACK_URL)); }
+  });
+  document.getElementById('pick-status').textContent=
+    selected.length===3 ? '3 장 선 택 완 료 ' : `카드를 ${3-selected.length}장 더 고르세요`;
+  const slots=document.querySelectorAll('.preview-slot');
+  slots.forEach((slot,idx)=>{
+    const cardId=selected[idx];
+    slot.innerHTML='';
+    if(cardId!=null){
+    slot.classList.add('filled');
+      slot.style.border='1px solid #a78bfa66'; slot.style.background='transparent';
+      slot.appendChild(makeVideo(BACK_URL));
+    } else {
+    slot.classList.remove('filled');
+      slot.style.border='1px dashed #a78bfa33'; slot.style.background='#0a001a';
+      slot.innerHTML='<span style="font-size:16px;color:#a78bfa33;">✦</span>';
+    }
+  });
+  document.getElementById('confirm-btn').disabled=selected.length<3;
+}
+
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+}
+
+async function handleConfirm(){
+  showScreen('result');
+  const chosenCards=selected.map(id=>deck.find(c=>c.id===id));
+  const resultCards=document.getElementById('result-cards');
+  resultCards.innerHTML='';
+  chosenCards.forEach((card,idx)=>{
+    const div=document.createElement('div');
+    div.className='rv-card fade-in';
+    div.style.animationDelay=`${idx*0.2}s`;
+    div.appendChild(makeVideo(card.url));
+    const label=document.createElement('div');
+    label.className='rv-label';
+    label.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;color:#a78bfa;margin-bottom:3px;">${['과거','현재','미래'][idx]}</div>`
+      +`<div style="font-family:'Noto Serif KR',serif;font-size:10px;color:#c4b5fd;">${card.kr}</div>`;
+    div.appendChild(label);
+    resultCards.appendChild(div);
+  });
+  const readingEl=document.getElementById('ai-reading');
+  readingEl.innerHTML=[100,80,90,70,85,60,75].map(w=>`<div class="shimmer" style="width:${w}%"></div>`).join('');
+  const prompt=`당신은 신비로운 타로 리더입니다. 다음 3장의 카드로 과거-현재-미래를 한국어로 따뜻하고 시적으로 해석해주세요.\n\n과거: ${chosenCards[0]?.kr} - ${chosenCards[0]?.meaning}\n현재: ${chosenCards[1]?.kr} - ${chosenCards[1]?.meaning}\n미래: ${chosenCards[2]?.kr} - ${chosenCards[2]?.meaning}\n\n각 카드마다 📍과거/현재/미래 제목 붙이고 2~3문장. 마지막에 ✨전체 흐름 한 문단. 반말로 친근하게.`;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||'').join('')||'해석을 불러오지 못했어요.';
+    readingEl.style.cssText="font-family:'Noto Serif KR',serif;font-size:12px;line-height:2.0;color:#c4b5fd;white-space:pre-wrap;";
+    readingEl.textContent=text;
+  } catch(err){ readingEl.textContent='에러: '+err.message; }
+}
+
+/* ──────────────────────────────────────────────────────────
+   [수정됨] 사운드 재생을 위한 이벤트 리스너
+   ────────────────────────────────────────────────────────── */
+document.getElementById('start-btn').addEventListener('click', () => {
+  showScreen('intro');
+  const v = document.getElementById('intro-video');
+  v.muted = false; // 소리 켜기
+  v.play();        // 영상 재생
+});
+
+document.getElementById('intro-video').addEventListener('ended',()=>{ showScreen('pick'); initDeck(); });
+document.getElementById('skip-btn').addEventListener('click',()=>{ 
+  document.getElementById('intro-video').pause();
+  showScreen('pick'); 
+  initDeck(); 
+});
+document.getElementById('confirm-btn').addEventListener('click', handleConfirm);
+document.getElementById('reset-btn').addEventListener('click',()=>{ 
+  selected=[]; 
+  document.querySelectorAll('.preview-slot').forEach(el=>{
+    el.innerHTML='✦';
+    el.classList.remove('filled');   
+  });
+  showScreen('pick'); 
+  initDeck(); 
+});
+</script>
+</body>
+</html>
