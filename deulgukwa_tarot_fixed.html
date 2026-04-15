@@ -38,7 +38,7 @@
     background: #000;
   }
 
-  /* ── 9:16 앱 컨테이너: 화면에 가득 차도록 수정 ── */
+  /* ── 9:16 앱 컨테이너: 테두리가 항상 보이도록 95%로 조정 ── */
   .app-frame {
     position: relative;
     display: flex;
@@ -48,9 +48,9 @@
     border: 1.5px solid #c4b5fd;
     overflow: hidden;
     color: #c4b5fd;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh; /* 모바일 주소창 대응 */
+    /* 엄격한 9:16 비율 유지 및 센터링 */
+    width:  min(95vw, calc(95vh * 9 / 16));
+    height: min(95vh, calc(95vw * 16 / 9));
   }
 
   .screen {
@@ -72,7 +72,7 @@
   }
 
   #screen-result.active {
-    overflow-y: auto; /* 결과창 스크롤 허용 */
+    overflow-y: auto;
   }
 
   .card-slot {
@@ -106,12 +106,12 @@
   .fade-in { animation: fi 0.7s ease forwards; }
   @keyframes fi { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
   
-  /* 결과 화면 카드 스타일 수정 */
+  /* 결과 화면 카드 스타일 */
   .rv-card {
     border-radius: 12px; overflow: hidden; flex: 1;
     position: relative; box-shadow: 0 8px 32px #00000088;
     border: 1px solid #a78bfa33;
-    height: 100%; /* 부모 컨테이너 높이에 맞춤 */
+    height: 100%;
   }
   .rv-label {
     position: absolute; bottom: 0; left: 0; right: 0;
@@ -128,17 +128,22 @@
   .logo-title { font-family: 'Cinzel', serif; font-size: 18px; color: #a78bfa; letter-spacing: 3px; }
   .logo-sub   { font-family: 'Cinzel', serif; font-size: 9px;  color: #7c5cbf; letter-spacing: 4px; }
 
-  /* ── 결과 화면 카드 영역 높이 제한 (UI 깨짐 방지) ── */
+  /* ── [핵심수정] 모바일 대응 및 결과창 UI ── */
+  #deck-container {
+    transform-origin: center center;
+    transition: transform 0.3s;
+  }
+
   #result-cards {
     display: flex; gap: 8px; margin-bottom: 14px; width: 100%; padding: 0 12px;
-    height: 220px; /* 카드 세로 길이 고정 */
+    height: 220px; /* 결과 카드 높이 고정 */
     flex-shrink: 0;
   }
 
   @media (max-width: 500px) {
+    /* 모바일에서 카드 더미가 글자를 가리지 않도록 축소 */
     #deck-container {
       transform: scale(0.65);
-      transform-origin: center center;
     }
     .logo-header img { width: 100px !important; }
     p { font-size: 18px !important; margin: 5px 0 !important; }
@@ -146,12 +151,7 @@
     #chosen-preview { gap: 6px !important; padding: 5px 10px !important; }
     .preview-slot { width: 70px !important; height: 103px !important; }
     .btn-main { padding: 10px 30px; font-size: 12px; }
-    
-    /* 모바일 결과화면 최적화 */
-    #result-cards {
-      height: 170px; /* 모바일에서 카드 높이 소폭 축소 */
-    }
-    .rv-label div { font-size: 8px !important; }
+    #result-cards { height: 170px; } /* 모바일 결과카드 높이 미세 조정 */
   }
 </style>
 </head>
