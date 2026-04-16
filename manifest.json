@@ -1,0 +1,22 @@
+{
+  "name": "Wildflower Tarot",
+  "short_name": "Wildflower Tarot",
+  "description": "들국화 타로 - Your personal tarot reading app",
+  "start_url": "/deulgukwa_tarot_fixed.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#7B5EA7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
