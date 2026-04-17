@@ -100,106 +100,108 @@
 
   /* ══════════════════════════════════════════
      주의사항/질문 입력 페이지
+     배경 이미지는 비율 유지(contain), 잘림 없음.
+     텍스트/제목/카테고리 라벨은 이미지에 이미 포함되어 있음.
+     그 위에 투명 입력창/버튼만 절대 위치로 얹음.
      ══════════════════════════════════════════ */
   #screen-notice {
-    background: #000;
+    background: #e8d9c4; /* 이미지 위아래 여백 색상 (이미지 배경톤과 맞춤) */
     padding: 0;
     justify-content: flex-start;
+    align-items: center;
   }
-  #screen-notice.active { overflow-y: auto; }
 
+  /* 이미지 비율(9:16 가정)을 유지하며 프레임 안에 꽉 맞추는 래퍼 */
+  .notice-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
   .notice-bg {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* 이미지 전체가 보이도록 */
+    object-position: center center;
     z-index: 0;
     pointer-events: none;
+    user-select: none;
   }
-  .notice-inner {
-    position: relative;
+
+  /* 이미지 비율 기준 좌표 래퍼: 이미지와 동일한 9:16 박스를 만들고
+     그 안에 % 단위로 요소들을 배치. 이미지가 어떻게 스케일되든 위치 유지됨. */
+  .notice-overlay {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    aspect-ratio: 9 / 16;
+    height: 100%;
+    max-width: 100%;
     z-index: 1;
-    width: 100%;
-    max-width: 500px;
-    padding: 7% 7% 6%;
-    color: #3a2418;
-    font-family: 'Noto Serif KR', serif;
-    display: flex;
-    flex-direction: column;
-    gap: clamp(10px, 2.5vw, 18px);
   }
-  .notice-title {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(16px, 4.5vw, 22px);
-    font-weight: 700;
-    margin-top: 2%;
+  /* 화면이 9:16보다 가로로 긴 경우 (거의 없지만 대비) */
+  @media (min-aspect-ratio: 9/16) {
+    .notice-overlay { height: 100%; width: auto; }
   }
-  .notice-text {
-    font-size: clamp(11px, 3vw, 14px);
-    line-height: 1.55;
-    color: #2b1a12;
+  /* 화면이 9:16보다 세로로 긴 경우: 너비 기준으로 맞춤 */
+  @media (max-aspect-ratio: 9/16) {
+    .notice-overlay { width: 100%; height: auto; aspect-ratio: 9/16; }
   }
-  .notice-question {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(13px, 3.5vw, 17px);
-    text-align: center;
-    margin-top: 6%;
-    color: #2b1a12;
-    font-weight: 600;
-  }
+
+  /* 입력창: 이미지 속 흰 박스 위치에 맞춤 */
   #notice-textarea {
-    width: 100%;
-    min-height: clamp(110px, 22vw, 170px);
-    padding: 12px 14px;
+    position: absolute;
+    left: 6%;
+    top: 30%;
+    width: 88%;
+    height: 20%;
+    padding: 3% 4%;
     border: none;
-    background: #ffffff;
+    background: transparent;
     font-family: 'Noto Serif KR', serif;
-    font-size: clamp(13px, 3.3vw, 16px);
+    font-size: clamp(12px, 2.8vw, 16px);
     color: #2b1a12;
     resize: none;
     outline: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   }
-  /* DRAW 버튼 */
+  /* DRAW 버튼: 이미지 속 DRAW 글자 위치에 투명 클릭 영역 */
   #draw-btn {
-    align-self: center;
-    margin-top: 4%;
+    position: absolute;
+    left: 30%;
+    top: 54%;
+    width: 40%;
+    height: 6%;
     background: transparent;
     border: none;
-    font-family: 'Cinzel', serif;
-    font-size: clamp(20px, 5.5vw, 28px);
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: #2b1a12;
     cursor: pointer;
-    transition: transform 0.2s ease, text-shadow 0.2s ease;
-    padding: 6px 30px;
+    transition: transform 0.2s ease, filter 0.2s ease;
   }
   #draw-btn:hover {
-    transform: scale(1.15);
-    text-shadow: 0 0 10px rgba(200, 80, 40, 0.4);
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 8px rgba(200, 80, 40, 0.5));
   }
-  /* 카테고리 버튼 그리드 (동작 없음, 디자인만) */
-  .cat-grid {
-    margin-top: 6%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(14px, 4vw, 22px) clamp(10px, 3vw, 18px);
-  }
+  /* 카테고리 버튼 6개: 이미지 속 각 글자 위치에 투명 클릭 영역만 */
   .cat-btn {
+    position: absolute;
     background: transparent;
     border: none;
-    font-family: 'Noto Serif KR', serif;
-    font-size: clamp(12px, 3.2vw, 15px);
-    color: #2b1a12;
-    padding: 6px 4px;
-    border-bottom: 1px solid #3a2418;
     cursor: pointer;
-    text-align: center;
-    transition: color 0.2s;
+    font-size: 0; /* 텍스트 숨김 (이미지에 이미 있음) */
   }
-  .cat-btn:hover { color: #8b3a1a; }
+  .cat-btn:hover { background: rgba(139, 58, 26, 0.08); border-radius: 4px; }
+
+  /* 카테고리 버튼 좌표 (이미지 기준) */
+  .cat-btn.c1 { left: 8%;  top: 72%; width: 38%; height: 4.5%; }
+  .cat-btn.c2 { left: 54%; top: 72%; width: 38%; height: 4.5%; }
+  .cat-btn.c3 { left: 8%;  top: 78%; width: 38%; height: 4.5%; }
+  .cat-btn.c4 { left: 54%; top: 78%; width: 38%; height: 4.5%; }
+  .cat-btn.c5 { left: 8%;  top: 84%; width: 38%; height: 4.5%; }
+  .cat-btn.c6 { left: 54%; top: 84%; width: 38%; height: 4.5%; }
 
   /* ── 카드 슬롯 (덱) ── */
   .card-slot {
@@ -293,32 +295,28 @@
 
     <!-- ══════════════════════════════════════
          주의사항 / 질문 입력 화면
+         - 배경 이미지에 모든 디자인(텍스트/제목/라벨/선) 포함
+         - HTML은 입력창과 투명 클릭 영역만 오버레이
          ══════════════════════════════════════ -->
     <div id="screen-notice" class="screen">
-      <img class="notice-bg"
-           src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776434242/3%EB%B2%88%ED%8E%98%EC%9D%B4%EC%A7%80-02_ezouvp.jpg"
-           alt="">
-      <div class="notice-inner">
-        <div class="notice-title">Notice</div>
-        <div class="notice-text">
-          Love &amp; Relationships Notice<br>
-          Tarot reveals energy and possibilities,<br>
-          not exact feelings.<br>
-          For important decisions,<br>
-          open and honest communication matters most.
-        </div>
-        <div class="notice-question">“What energy surrounds your question?”</div>
-        <textarea id="notice-textarea" placeholder="오늘은 장사가 안돼서 너무 힘들었어요!"></textarea>
-        <button id="draw-btn">DRAW</button>
+      <div class="notice-stage">
+        <img class="notice-bg"
+             src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776434242/3%EB%B2%88%ED%8E%98%EC%9D%B4%EC%A7%80-02_ezouvp.jpg"
+             alt="">
+        <div class="notice-overlay">
+          <!-- 입력창 (이미지 속 흰 박스 위치) -->
+          <textarea id="notice-textarea" placeholder="오늘은 장사가 안돼서 너무 힘들었어요!"></textarea>
 
-        <!-- 카테고리 버튼 (디자인만, 동작 없음) -->
-        <div class="cat-grid">
-          <button class="cat-btn" type="button">오늘의 운세</button>
-          <button class="cat-btn" type="button">상대방의 속마음</button>
-          <button class="cat-btn" type="button">오늘의 운세</button>
-          <button class="cat-btn" type="button">상대방의 속마음</button>
-          <button class="cat-btn" type="button">오늘의 운세</button>
-          <button class="cat-btn" type="button">상대방의 속마음</button>
+          <!-- DRAW 버튼 (이미지 속 DRAW 글자 위치에 투명 클릭 영역) -->
+          <button id="draw-btn" type="button" aria-label="DRAW"></button>
+
+          <!-- 카테고리 버튼 6개 (투명 클릭 영역만, 동작 없음) -->
+          <button class="cat-btn c1" type="button" aria-label="오늘의 운세"></button>
+          <button class="cat-btn c2" type="button" aria-label="상대방의 속마음"></button>
+          <button class="cat-btn c3" type="button" aria-label="오늘의 운세"></button>
+          <button class="cat-btn c4" type="button" aria-label="상대방의 속마음"></button>
+          <button class="cat-btn c5" type="button" aria-label="오늘의 운세"></button>
+          <button class="cat-btn c6" type="button" aria-label="상대방의 속마음"></button>
         </div>
       </div>
     </div>
@@ -670,8 +668,18 @@ document.getElementById('door-btn').addEventListener('click', () => {
   playBtnSound();
   showScreen('intro');
   const v = document.getElementById('intro-video');
+  // 일부 모바일에선 소리 있는 자동재생이 차단됨 → 먼저 muted로 재생 후 바로 unmute 시도
   v.muted = false;
-  v.play();
+  const p = v.play();
+  if(p && p.catch){
+    p.catch(() => {
+      // 소리 있는 재생 실패 → muted로 재생 (사용자가 스피커 버튼 누르면 소리 켜짐)
+      v.muted = true;
+      v.play().catch(()=>{});
+      const soundBtn = document.getElementById('sound-btn');
+      if(soundBtn) soundBtn.textContent = '🔇';
+    });
+  }
 });
 
 // ════════════════════════════════════════════
