@@ -153,15 +153,16 @@
     .notice-overlay { width: 100%; height: auto; aspect-ratio: 9/16; }
   }
 
-  /* 입력창: 흰 배경 + 얇은 회색 테두리 + 둥근 모서리 */
+  /* 입력창: 흰 배경 + 얇은 회색 테두리 + 둥근 모서리
+     "What energy..." 아래부터 하단 선 위까지 */
   #notice-textarea {
     position: absolute;
-    left: 6%;
-    top: 30%;
-    width: 88%;
-    height: 20%;
+    left: 7%;
+    top: 34%;
+    width: 86%;
+    height: 15%;
     padding: 3% 4%;
-    border: 1px solid #c8b9a8;
+    border: 1px solid #b8a898;
     border-radius: 6px;
     background: #ffffff;
     font-family: 'Noto Serif KR', serif;
@@ -169,26 +170,37 @@
     color: #2b1a12;
     resize: none;
     outline: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
   #notice-textarea:focus {
     border-color: #8b6a4a;
   }
-  /* DRAW 버튼: hover 시 확대 + 흰색 발광 */
+  /* DRAW 버튼: 입력창 아래 (약간 왼쪽, 위로) */
   #draw-btn {
     position: absolute;
-    left: 30%;
-    top: 54%;
-    width: 40%;
+    left: 32%;
+    top: 52%;
+    width: 30%;
     height: 6%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: transform 0.2s ease, filter 0.2s ease;
+    font-family: 'Cinzel', serif;
+    font-size: clamp(20px, 5.5vw, 30px);
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #2b1a12;
+    transition: transform 0.2s ease, filter 0.2s ease, text-shadow 0.2s ease;
   }
   #draw-btn:hover {
-    transform: scale(1.12);
-    filter: drop-shadow(0 0 8px rgba(255,255,255,0.95)) drop-shadow(0 0 16px rgba(255,255,255,0.6));
+    transform: scale(1.15);
+    text-shadow:
+      0 0 8px rgba(255,255,255,1),
+      0 0 16px rgba(255,255,255,0.8),
+      0 0 28px rgba(255,255,255,0.5);
   }
   /* 카테고리 버튼 6개: 이미지 속 각 글자 위치에 투명 클릭 영역만 */
   .cat-btn {
@@ -200,13 +212,13 @@
   }
   .cat-btn:hover { background: rgba(139, 58, 26, 0.08); border-radius: 4px; }
 
-  /* 카테고리 버튼 좌표 (이미지 기준) */
-  .cat-btn.c1 { left: 8%;  top: 72%; width: 38%; height: 4.5%; }
-  .cat-btn.c2 { left: 54%; top: 72%; width: 38%; height: 4.5%; }
-  .cat-btn.c3 { left: 8%;  top: 78%; width: 38%; height: 4.5%; }
-  .cat-btn.c4 { left: 54%; top: 78%; width: 38%; height: 4.5%; }
-  .cat-btn.c5 { left: 8%;  top: 84%; width: 38%; height: 4.5%; }
-  .cat-btn.c6 { left: 54%; top: 84%; width: 38%; height: 4.5%; }
+  /* 카테고리 버튼 좌표 (이미지 속 밑줄 글자 위치) */
+  .cat-btn.c1 { left: 8%;  top: 67%; width: 38%; height: 4.5%; }
+  .cat-btn.c2 { left: 54%; top: 67%; width: 38%; height: 4.5%; }
+  .cat-btn.c3 { left: 8%;  top: 73%; width: 38%; height: 4.5%; }
+  .cat-btn.c4 { left: 54%; top: 73%; width: 38%; height: 4.5%; }
+  .cat-btn.c5 { left: 8%;  top: 79%; width: 38%; height: 4.5%; }
+  .cat-btn.c6 { left: 54%; top: 79%; width: 38%; height: 4.5%; }
 
   /* ── 카드 슬롯 (덱) ── */
   .card-slot {
@@ -306,14 +318,14 @@
     <div id="screen-notice" class="screen">
       <div class="notice-stage">
         <img class="notice-bg"
-             src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776436132/3%EB%B2%88%ED%8E%98%EC%9D%B4%EC%A7%80-5555_wcria9.jpg"
+             src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776437262/3%EB%B2%88%ED%8E%98%EC%9D%B4%EC%A7%80777777_wmed5y.jpg"
              alt="">
         <div class="notice-overlay">
-          <!-- 입력창 (이미지 속 흰 박스 위치) -->
+          <!-- 입력창 -->
           <textarea id="notice-textarea" placeholder="오늘은 장사가 안돼서 너무 힘들었어요!"></textarea>
 
-          <!-- DRAW 버튼 (이미지 속 DRAW 글자 위치에 투명 클릭 영역) -->
-          <button id="draw-btn" type="button" aria-label="DRAW"></button>
+          <!-- DRAW 버튼 (HTML 글자, hover 시 확대 + 흰색 발광) -->
+          <button id="draw-btn" type="button">DRAW</button>
 
           <!-- 카테고리 버튼 6개 (투명 클릭 영역만, 동작 없음) -->
           <button class="cat-btn c1" type="button" aria-label="오늘의 운세"></button>
@@ -393,8 +405,8 @@ const SOUND_BB_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776415
 // 오디오 객체 풀링: 재생 중에도 빠르게 다시 재생 가능하도록 2개씩 준비
 const audioAA = [new Audio(SOUND_AA_URL), new Audio(SOUND_AA_URL)];
 const audioBB = [new Audio(SOUND_BB_URL), new Audio(SOUND_BB_URL)];
-audioAA.forEach(a => a.volume = 0.8);
-audioBB.forEach(a => a.volume = 0.2);
+audioAA.forEach(a => a.volume = 0.4);
+audioBB.forEach(a => a.volume = 0.08);
 let aaIdx = 0, bbIdx = 0;
 
 function playCardSound(){
@@ -694,11 +706,10 @@ document.getElementById('door-btn').addEventListener('click', () => {
 //    실제 표시되는 영상 영역 기준으로 문 위치 계산
 // ════════════════════════════════════════════
 const DOOR_POS = {
-  // 9:16 원본 영상 기준 문의 상대 위치 (0~1)
-  cx: 0.50,    // 가로 중앙
-  cy: 0.72,    // 세로 72% 지점 (문 중심)
-  w:  0.18,    // 영상 가로의 18%
-  h:  0.14     // 영상 세로의 14%
+  cx: 0.49,
+  cy: 0.79,
+  w:  0.22,
+  h:  0.19
 };
 const VIDEO_RATIO = 9 / 16; // 영상 원본 비율
 
