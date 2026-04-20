@@ -19,7 +19,7 @@
 <meta property="og:url" content="https://isstudio012.github.io">
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+KR:wght@300;400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+KR:wght@300;400&family=Abhaya+Libre:wght@800&family=Lisu+Bosa&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -55,10 +55,10 @@
     background: #000; overflow: hidden; color: #c4b5fd;
     width: 100%; height: 100%;
   }
-  /* PC 등 가로가 넓은 화면에서는 9:16 세로 프레임으로 고정 (양옆 검은 여백) */
-  @media (min-aspect-ratio: 9/16) {
+  /* PC 등 가로가 넓은 화면에서는 393:852 세로 프레임으로 고정 (양옆 검은 여백) */
+  @media (min-aspect-ratio: 393/852) {
     .app-frame {
-      width: calc(100vh * 9 / 16);
+      width: calc(100vh * 393 / 852);
       height: 100vh;
       max-width: 100vw;
     }
@@ -71,9 +71,7 @@
   }
   .screen.active { display: flex; }
 
-  /* ── 메인(시작) 화면: 배경 영상 + 문 클릭 버튼 ──
-     영상은 9:16 비율. object-fit:cover로 화면 가득 채움.
-     문 버튼은 JS로 영상 실제 표시 영역 기준 위치 계산 (디바이스 비율 대응) */
+  /* ── 메인(시작) 화면 ── */
   #screen-start {
     z-index: 1000;
     background: #000;
@@ -88,7 +86,6 @@
     object-fit: cover;
     z-index: 0;
   }
-  /* 문 중앙의 투명 클릭 영역 (hover 시 발광) - 위치/크기는 JS로 동적 설정 */
   #door-btn {
     position: absolute;
     border-radius: 8px;
@@ -104,130 +101,180 @@
       0 0 60px 20px rgba(255,220,150,0.2);
   }
 
-  /* ── 결과 화면 스크롤 ── */
   #screen-result.active { overflow-y: auto; }
 
   /* ══════════════════════════════════════════
-     주의사항/질문 입력 페이지
-     배경 이미지는 비율 유지(contain), 잘림 없음.
-     텍스트/제목/카테고리 라벨은 이미지에 이미 포함되어 있음.
-     그 위에 투명 입력창/버튼만 절대 위치로 얹음.
+     주의사항/질문 입력 페이지 (피그마 기반, 393×852 비율)
+     배경 이미지 없이 #DED361 기본색
+     좌표 확인용 레이아웃
      ══════════════════════════════════════════ */
   #screen-notice {
-    background: #e8d9c4; /* 이미지 위아래 여백 색상 (이미지 배경톤과 맞춤) */
+    background: #DED361;
     padding: 0;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
   }
 
-  /* 이미지 비율(9:16 가정)을 유지하며 프레임 안에 꽉 맞추는 래퍼 */
+  /* 393×852 피그마 캔버스 - 피그마 원본 그대로 (전체 180도 회전) */
   .notice-stage {
     position: relative;
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
+    width: 393px;
+    height: 852px;
+    transform-origin: top left;
+    background: #DED361;
     overflow: hidden;
   }
-  .notice-bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* 이미지 전체가 보이도록 */
-    object-position: center center;
-    z-index: 0;
-    pointer-events: none;
-    user-select: none;
-  }
 
-  /* 이미지 비율 기준 좌표 래퍼: 이미지와 동일한 9:16 박스를 만들고
-     그 안에 % 단위로 요소들을 배치. 이미지가 어떻게 스케일되든 위치 유지됨. */
-  .notice-overlay {
+  /* 상단 placeholder 이미지들 (나중에 실제 이미지로 교체) */
+  .nt-img {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    aspect-ratio: 9 / 16;
-    height: 100%;
-    max-width: 100%;
-    z-index: 1;
-  }
-  /* 화면이 9:16보다 가로로 긴 경우 (거의 없지만 대비) */
-  @media (min-aspect-ratio: 9/16) {
-    .notice-overlay { height: 100%; width: auto; }
-  }
-  /* 화면이 9:16보다 세로로 긴 경우: 너비 기준으로 맞춤 */
-  @media (max-aspect-ratio: 9/16) {
-    .notice-overlay { width: 100%; height: auto; aspect-ratio: 9/16; }
-  }
-
-  /* 입력창: 흰 배경 + 얇은 회색 테두리 + 둥근 모서리
-     "What energy..." 아래부터 하단 선 위까지 */
-  #notice-textarea {
-    position: absolute;
-    left: 7%;
-    top: 34%;
-    width: 86%;
-    height: 15%;
-    padding: 3% 4%;
-    border: 1px solid #b8a898;
-    border-radius: 6px;
-    background: #ffffff;
-    font-family: 'Noto Serif KR', serif;
-    font-size: clamp(12px, 2.8vw, 16px);
-    color: #2b1a12;
-    resize: none;
-    outline: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-  #notice-textarea:focus {
-    border-color: #8b6a4a;
-  }
-  /* DRAW 버튼: 입력창 아래 (약간 왼쪽, 위로) */
-  #draw-btn {
-    position: absolute;
-    left: 32%;
-    top: 52%;
-    width: 30%;
-    height: 6%;
+    background: #ccc;
+    mix-blend-mode: darken;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #666;
+    font-size: 10px;
+    font-family: sans-serif;
+  }
+  /* 피그마 원본 좌표 그대로 */
+  .nt-img-1 {
+    width: 138px; height: 25px;
+    left: 0px; top: 490px; /* 138,515에서 회전 -> 0,490 */
+  }
+  .nt-img-2 {
+    width: 138px; height: 25px;
+    left: 255px; top: 490px;
+  }
+  .nt-img-3 {
+    width: 95px; height: 29px;
+    left: 11px; top: 62px; /* 106,91에서 회전 -> 11,62 */
+  }
+  .nt-img-4 {
+    width: 393px; height: 34px;
+    left: 0px; top: 253px; /* 393,287에서 회전 -> 0,253 */
+  }
+  .nt-img-5 {
+    width: 122px; height: 18px;
+    left: 29px; top: 605px; /* 151,623에서 회전 -> 29,605 */
+  }
+  .nt-img-6 {
+    width: 122px; height: 18px;
+    left: 246px; top: 605px;
+  }
+  .nt-img-7 {
+    width: 45px; height: 87px;
+    left: 330px; top: 185px; /* 375,272에서 회전 -> 330,185 */
+  }
+
+  /* 흰색 박스 (360×141) */
+  .nt-white-box {
+    position: absolute;
+    width: 360px; height: 141px;
+    left: 15px; top: 332px; /* 375,473에서 회전 -> 15,332 */
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #C5C5C5;
+  }
+
+  /* "Notice" 라벨 */
+  .nt-notice-label {
+    position: absolute;
+    width: 49px; height: 12px;
+    left: 51px; top: 65px; /* 100,77에서 회전 -> 51,65 */
+    color: black;
+    font-size: 14px;
+    font-family: 'Lisu Bosa', serif;
+    font-weight: 400;
+  }
+
+  /* 메인 질문 타이틀 "What energy surrounds your question?" */
+  .nt-question-title {
+    position: absolute;
+    width: 335px; height: 22px;
+    left: 29px; top: 297px; /* 364,319에서 회전 -> 29,297 */
+    color: black;
+    font-size: 20px;
+    font-family: 'Abhaya Libre', serif;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /* 베이지색 글씨창 (292×141) */
+  .nt-textarea-wrap {
+    position: absolute;
+    width: 292px; height: 141px;
+    left: 15px; top: 100px; /* 307,241에서 회전 -> 15,100 */
+  }
+  .nt-textarea-wrap-bg {
+    position: absolute;
+    inset: 0;
+    background: #EBDFD1;
+    border-radius: 10px;
+    border: 1px solid #FFFFFF;
+  }
+  #notice-textarea {
+    position: absolute;
+    inset: 13px;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: 'Times New Roman', serif;
+    font-size: 12px;
+    color: black;
+    text-align: center;
+  }
+  #notice-textarea::placeholder {
+    color: #666;
+  }
+
+  /* DRAW 버튼 */
+  #draw-btn {
+    position: absolute;
+    width: 89px; height: 28px;
+    left: 157px; top: 487px; /* 246,515에서 회전 -> 157,487 */
     background: transparent;
     border: none;
     cursor: pointer;
-    font-family: 'Cinzel', serif;
-    font-size: clamp(20px, 5.5vw, 30px);
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: #2b1a12;
-    transition: transform 0.2s ease, filter 0.2s ease, text-shadow 0.2s ease;
+    font-family: 'Times New Roman', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: black;
+    text-align: center;
+    letter-spacing: 1px;
+    transition: filter 0.2s, text-shadow 0.2s;
+    z-index: 10;
   }
   #draw-btn:hover {
-    transform: scale(1.15);
-    text-shadow:
-      0 0 8px rgba(255,255,255,1),
-      0 0 16px rgba(255,255,255,0.8),
-      0 0 28px rgba(255,255,255,0.5);
+    text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 16px rgba(255,255,255,0.6);
   }
-  /* 카테고리 버튼 6개: 이미지 속 각 글자 위치에 투명 클릭 영역만 */
-  .cat-btn {
-    position: absolute;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 0; /* 텍스트 숨김 (이미지에 이미 있음) */
-  }
-  .cat-btn:hover { background: rgba(139, 58, 26, 0.08); border-radius: 4px; }
 
-  /* 카테고리 버튼 좌표 (이미지 속 밑줄 글자 위치) */
-  .cat-btn.c1 { left: 8%;  top: 67%; width: 38%; height: 4.5%; }
-  .cat-btn.c2 { left: 54%; top: 67%; width: 38%; height: 4.5%; }
-  .cat-btn.c3 { left: 8%;  top: 73%; width: 38%; height: 4.5%; }
-  .cat-btn.c4 { left: 54%; top: 73%; width: 38%; height: 4.5%; }
-  .cat-btn.c5 { left: 8%;  top: 79%; width: 38%; height: 4.5%; }
-  .cat-btn.c6 { left: 54%; top: 79%; width: 38%; height: 4.5%; }
+  /* 하단 카테고리 버튼 "상대방의 속마음" */
+  .cat-btn-new {
+    position: absolute;
+    padding: 10px;
+    background: transparent;
+    border: 1px dashed rgba(0,0,0,0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    color: black;
+    font-size: 12px;
+    font-family: 'HYHeadLine-Medium', 'Noto Serif KR', sans-serif;
+    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background 0.2s;
+    z-index: 10;
+  }
+  .cat-btn-new:hover {
+    background: rgba(0,0,0,0.08);
+  }
+  .cat-btn-new.cb1 {
+    left: 53px; top: 590px; /* 피그마 padding 박스 좌표 그대로 */
+  }
 
   /* ── 카드 슬롯 (덱) ── */
   .card-slot {
@@ -291,13 +338,12 @@
   <div class="app-frame">
 
     <!-- ══════════════════════════════════════
-         메인(시작) 화면: 배경 영상 + 문 클릭 버튼
+         메인(시작) 화면
          ══════════════════════════════════════ -->
     <div id="screen-start" class="screen active">
       <video id="start-video"
              src="https://res.cloudinary.com/dla7g4hwb/video/upload/v1776429009/%EB%A9%94%EC%9D%B8-001_mbfwlv.mp4"
              autoplay muted loop playsinline></video>
-      <!-- 문 중앙 투명 클릭 영역 (hover 시 발광) -->
       <div id="door-btn"></div>
     </div>
 
@@ -320,30 +366,42 @@
     </div>
 
     <!-- ══════════════════════════════════════
-         주의사항 / 질문 입력 화면
-         - 배경 이미지에 모든 디자인(텍스트/제목/라벨/선) 포함
-         - HTML은 입력창과 투명 클릭 영역만 오버레이
+         주의사항 / 질문 입력 화면 (피그마 기반 - 좌표 확인용)
+         배경 #DED361, 393×852 고정 캔버스를 스케일링
          ══════════════════════════════════════ -->
     <div id="screen-notice" class="screen">
-      <div class="notice-stage">
-        <img class="notice-bg"
-             src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776437262/3%EB%B2%88%ED%8E%98%EC%9D%B4%EC%A7%80777777_wmed5y.jpg"
-             alt="">
-        <div class="notice-overlay">
-          <!-- 입력창 -->
-          <textarea id="notice-textarea" placeholder="오늘은 장사가 안돼서 너무 힘들었어요!"></textarea>
+      <div class="notice-stage" id="notice-stage">
 
-          <!-- DRAW 버튼 (HTML 글자, hover 시 확대 + 흰색 발광) -->
-          <button id="draw-btn" type="button">DRAW</button>
+        <!-- Placeholder 이미지들 (나중에 실제 이미지로 교체) -->
+        <div class="nt-img nt-img-1">138×25</div>
+        <div class="nt-img nt-img-2">138×25</div>
+        <div class="nt-img nt-img-3">95×29</div>
+        <div class="nt-img nt-img-4">393×34</div>
+        <div class="nt-img nt-img-5">122×18</div>
+        <div class="nt-img nt-img-6">122×18</div>
+        <div class="nt-img nt-img-7">45×87</div>
 
-          <!-- 카테고리 버튼 6개 (투명 클릭 영역만, 동작 없음) -->
-          <button class="cat-btn c1" type="button" aria-label="오늘의 운세"></button>
-          <button class="cat-btn c2" type="button" aria-label="상대방의 속마음"></button>
-          <button class="cat-btn c3" type="button" aria-label="오늘의 운세"></button>
-          <button class="cat-btn c4" type="button" aria-label="상대방의 속마음"></button>
-          <button class="cat-btn c5" type="button" aria-label="오늘의 운세"></button>
-          <button class="cat-btn c6" type="button" aria-label="상대방의 속마음"></button>
+        <!-- 흰색 박스 -->
+        <div class="nt-white-box"></div>
+
+        <!-- Notice 라벨 -->
+        <div class="nt-notice-label">Notice</div>
+
+        <!-- 메인 질문 타이틀 -->
+        <div class="nt-question-title">"What energy surrounds your question?</div>
+
+        <!-- 베이지 입력창 -->
+        <div class="nt-textarea-wrap">
+          <div class="nt-textarea-wrap-bg"></div>
+          <textarea id="notice-textarea" placeholder=" &quot;당신의 고민을 들려주세요&quot;"></textarea>
         </div>
+
+        <!-- DRAW 버튼 (카드 선택 화면으로 이동) -->
+        <button id="draw-btn" type="button">DRAW</button>
+
+        <!-- 하단 카테고리 버튼: "상대방의 속마음" -->
+        <button class="cat-btn-new cb1" type="button">상대방의 속마음</button>
+
       </div>
     </div>
 
@@ -352,7 +410,6 @@
          ══════════════════════════════════════ -->
     <div id="screen-pick" class="screen" style="justify-content:space-between;">
 
-      <!-- 상단: 로고 + 안내문 + 선택 카운터 -->
       <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;width:100%;padding:8px 0 4px;">
         <img src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776220791/LOGO2_ofb84j.png"
              alt="logo" style="width:clamp(70px,18vw,110px);height:auto;display:block;">
@@ -363,12 +420,10 @@
         </div>
       </div>
 
-      <!-- 중앙: 카드 덱 -->
       <div style="position:relative;flex:1;width:100%;min-height:0;overflow:hidden;">
         <div id="deck-container" style="position:absolute;inset:0;"></div>
       </div>
 
-      <!-- 하단: 선택한 카드 미리보기 + 확인 버튼 -->
       <div style="flex-shrink:0;width:100%;display:flex;flex-direction:column;align-items:center;padding:6px 0 16px;">
         <div id="chosen-preview" style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
           <div class="preview-slot" style="width:clamp(55px,14vw,80px);height:clamp(80px,20.5vw,118px);border:1px dashed #a78bfa33;border-radius:7px;overflow:hidden;background:#0a001a;display:flex;align-items:center;justify-content:center;font-size:16px;color:#a78bfa33;">✦</div>
@@ -406,12 +461,11 @@
 
 <script>
 // ════════════════════════════════════════════
-//  효과음 (Cloudinary URL 로드 - 경량화)
+//  효과음
 // ════════════════════════════════════════════
-const SOUND_AA_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776415549/AA_rqd7b9.mp3"; // 카드 선택음
-const SOUND_BB_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776415549/BB_y1lav2.mp3"; // 버튼 클릭음
+const SOUND_AA_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776415549/AA_rqd7b9.mp3";
+const SOUND_BB_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/v1776415549/BB_y1lav2.mp3";
 
-// 오디오 객체 풀링: 재생 중에도 빠르게 다시 재생 가능하도록 2개씩 준비
 const audioAA = [new Audio(SOUND_AA_URL), new Audio(SOUND_AA_URL)];
 const audioBB = [new Audio(SOUND_BB_URL), new Audio(SOUND_BB_URL)];
 audioAA.forEach(a => a.volume = 0.4);
@@ -419,7 +473,6 @@ audioBB.forEach(a => a.volume = 0.08);
 let aaIdx = 0, bbIdx = 0;
 
 function playCardSound(){
-  // 3장 이미 선택한 상태에서는 재생 안 함
   if(selected.length >= 3) return;
   try {
     const a = audioAA[aaIdx];
@@ -438,26 +491,19 @@ function playBtnSound(){
 }
 
 // ════════════════════════════════════════════
-//  미디어 URL 정의
+//  미디어 URL
 // ════════════════════════════════════════════
-const BACK_IMG_URL = "https://res.cloudinary.com/dla7g4hwb/image/upload/v1776350552/1776350465030_cb33w9.jpg"; // 카드 뒷면 (이미지)
-
+const BACK_IMG_URL = "https://res.cloudinary.com/dla7g4hwb/image/upload/v1776350552/1776350465030_cb33w9.jpg";
 const FOOL_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776217052/%EB%B0%94%EB%B3%B4_qevz75.mp4";
 const MOON_URL  = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776219434/MOON_oqihp1.mp4";
 const TOWER_URL = "https://res.cloudinary.com/dla7g4hwb/video/upload/q_100/v1776219434/tower_yhjkax.mp4";
 
-// ════════════════════════════════════════════
-//  카드 데이터 (바보 7장 + 달 8장 + 타워 7장 = 22장)
-// ════════════════════════════════════════════
 const CARD_DATA = [
   ...Array.from({length:7}, (_,i) => ({id:i,     kr:"바보",  meaning:"새로운 시작, 순수함, 모험",  url:FOOL_URL})),
   ...Array.from({length:8}, (_,i) => ({id:100+i, kr:"달",    meaning:"환상, 불안, 무의식",          url:MOON_URL})),
   ...Array.from({length:7}, (_,i) => ({id:200+i, kr:"타워",  meaning:"붕괴, 각성, 급격한 변화",     url:TOWER_URL})),
 ];
 
-// ════════════════════════════════════════════
-//  유틸 함수
-// ════════════════════════════════════════════
 function shuffle(arr){
   const a = [...arr];
   for(let n = a.length - 1; n > 0; n--){
@@ -467,7 +513,6 @@ function shuffle(arr){
   return a;
 }
 
-// 카드 앞면 영상 엘리먼트 생성 (무음, 자동재생, 반복)
 function makeVideo(src){
   const v = document.createElement('video');
   v.src = src; v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
@@ -477,7 +522,6 @@ function makeVideo(src){
   return v;
 }
 
-// 카드 뒷면 이미지 엘리먼트 생성
 function makeBackImg(){
   const img = document.createElement('img');
   img.src = BACK_IMG_URL;
@@ -487,7 +531,7 @@ function makeBackImg(){
 }
 
 // ════════════════════════════════════════════
-//  덱 레이아웃 계산 및 초기화
+//  덱
 // ════════════════════════════════════════════
 let deck = [], selected = [], fadeTimer = null;
 
@@ -533,12 +577,11 @@ function initDeck(){
       `left:50%;top:50%;margin-left:-${mw}px;margin-top:-${mh}px;` +
       `transform:translate(${card.x}px,${card.y}px) rotate(${card.rotate}deg);` +
       `opacity:0;z-index:${idx};`;
-    el.appendChild(makeBackImg()); // 뒷면: 이미지 사용 (가벼움)
+    el.appendChild(makeBackImg());
     el.addEventListener('click', () => toggleSelect(card.id));
     container.appendChild(el);
   });
 
-  // 카드 순차 페이드인
   let cnt = 0;
   clearInterval(fadeTimer);
   fadeTimer = setInterval(() => {
@@ -553,9 +596,6 @@ function initDeck(){
   updatePickStatus(0);
 }
 
-// ════════════════════════════════════════════
-//  카드 선택/해제
-// ════════════════════════════════════════════
 function updatePickStatus(count){
   const el = document.getElementById('pick-status');
   if(count >= 3){
@@ -583,7 +623,6 @@ function updateUI(){
   const mw = Math.round(cardW / 2);
   const mh = Math.round(cardH / 2);
 
-  // 덱 카드들 업데이트 (이미지 DOM은 재활용)
   Array.from(container.children).forEach(el => {
     const id = parseInt(el.dataset.id);
     const card = deck.find(c => c.id === id);
@@ -599,7 +638,6 @@ function updateUI(){
 
   updatePickStatus(selected.length);
 
-  // 미리보기 슬롯: 선택한 카드의 "앞면 영상" 표시
   const slots = document.querySelectorAll('.preview-slot');
   slots.forEach((slot, idx) => {
     const cardId = selected[idx];
@@ -608,7 +646,7 @@ function updateUI(){
       const card = deck.find(c => c.id === cardId);
       slot.classList.add('filled');
       slot.style.background = 'transparent';
-      slot.appendChild(makeVideo(card.url)); // 앞면 영상
+      slot.appendChild(makeVideo(card.url));
     } else {
       slot.classList.remove('filled');
       slot.style.border = '1px dashed #a78bfa33';
@@ -620,22 +658,15 @@ function updateUI(){
   document.getElementById('confirm-btn').disabled = selected.length < 3;
 }
 
-// ════════════════════════════════════════════
-//  화면 전환
-// ════════════════════════════════════════════
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
 }
 
-// ════════════════════════════════════════════
-//  AI 리딩 (Claude API)
-// ════════════════════════════════════════════
 async function handleConfirm(){
   showScreen('result');
   const chosenCards = selected.map(id => deck.find(c => c.id === id));
 
-  // 결과 카드 영상 표시
   const resultCards = document.getElementById('result-cards');
   resultCards.innerHTML = '';
   chosenCards.forEach((card, idx) => {
@@ -646,11 +677,9 @@ async function handleConfirm(){
     resultCards.appendChild(div);
   });
 
-  // 로딩 표시
   const readingEl = document.getElementById('ai-reading');
   readingEl.innerHTML = [100, 80, 90, 70, 85, 60, 75].map(w => `<div class="shimmer" style="width:${w}%"></div>`).join('');
 
-  // 프롬프트 생성
   const prompt = `당신은 신비로운 타로 리더입니다. 다음 3장의 카드로 과거-현재-미래를 한국어로 따뜻하고 시적으로 해석해주세요.
 
 과거: ${chosenCards[0]?.kr} - ${chosenCards[0]?.meaning}
@@ -673,7 +702,6 @@ async function handleConfirm(){
     const text = data.content?.map(b => b.text || '').join('') || '해석을 불러오지 못했어요.';
 
     readingEl.style.cssText = "font-family:'Noto Serif KR',serif;font-size:clamp(13px,1.8vw,16px);line-height:1.9;color:#ffffff;";
-    // 간단한 마크다운 파싱
     const html = text
       .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#e9d5ff">$1</strong>')
       .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #7c3aed55;margin:12px 0;">')
@@ -686,20 +714,16 @@ async function handleConfirm(){
 }
 
 // ════════════════════════════════════════════
-//  이벤트 핸들러
+//  이벤트
 // ════════════════════════════════════════════
-
-// 메인 화면: 문 클릭 → 인트로 영상
 document.getElementById('door-btn').addEventListener('click', () => {
   playBtnSound();
   showScreen('intro');
   const v = document.getElementById('intro-video');
-  // 일부 모바일에선 소리 있는 자동재생이 차단됨 → 먼저 muted로 재생 후 바로 unmute 시도
   v.muted = false;
   const p = v.play();
   if(p && p.catch){
     p.catch(() => {
-      // 소리 있는 재생 실패 → muted로 재생 (사용자가 스피커 버튼 누르면 소리 켜짐)
       v.muted = true;
       v.play().catch(()=>{});
       const soundBtn = document.getElementById('sound-btn');
@@ -708,19 +732,9 @@ document.getElementById('door-btn').addEventListener('click', () => {
   }
 });
 
-// ════════════════════════════════════════════
-//  문 버튼 위치 자동 계산
-//  - 영상은 9:16 비율, object-fit:cover로 화면 꽉 채움
-//  - 화면 비율에 따라 영상이 잘리는 영역이 달라지므로
-//    실제 표시되는 영상 영역 기준으로 문 위치 계산
-// ════════════════════════════════════════════
-const DOOR_POS = {
-  cx: 0.49,
-  cy: 0.79,
-  w:  0.22,
-  h:  0.19
-};
-const VIDEO_RATIO = 9 / 16; // 영상 원본 비율
+// 문 버튼 위치 계산
+const DOOR_POS = { cx: 0.49, cy: 0.79, w: 0.22, h: 0.19 };
+const VIDEO_RATIO = 9 / 16;
 
 function positionDoorBtn(){
   const screen = document.getElementById('screen-start');
@@ -731,66 +745,66 @@ function positionDoorBtn(){
   const sh = screen.offsetHeight;
   const screenRatio = sw / sh;
 
-  // object-fit:cover 기준 실제 표시 영상 크기/위치 계산
   let vw, vh, vx, vy;
   if(screenRatio > VIDEO_RATIO){
-    // 화면이 영상보다 가로로 넓음 → 영상 가로가 화면 꽉 채움, 위아래 잘림
-    vw = sw;
-    vh = sw / VIDEO_RATIO;
-    vx = 0;
-    vy = (sh - vh) / 2;
+    vw = sw; vh = sw / VIDEO_RATIO; vx = 0; vy = (sh - vh) / 2;
   } else {
-    // 화면이 영상보다 세로로 김 → 영상 세로가 화면 꽉 채움, 양옆 잘림
-    vh = sh;
-    vw = sh * VIDEO_RATIO;
-    vy = 0;
-    vx = (sw - vw) / 2;
+    vh = sh; vw = sh * VIDEO_RATIO; vy = 0; vx = (sw - vw) / 2;
   }
 
-  // 문 버튼 위치/크기 설정
   const btnW = vw * DOOR_POS.w;
   const btnH = vh * DOOR_POS.h;
-  const btnX = vx + vw * DOOR_POS.cx - btnW / 2;
-  const btnY = vy + vh * DOOR_POS.cy - btnH / 2;
-
-  btn.style.left   = btnX + 'px';
-  btn.style.top    = btnY + 'px';
+  btn.style.left = (vx + vw * DOOR_POS.cx - btnW / 2) + 'px';
+  btn.style.top  = (vy + vh * DOOR_POS.cy - btnH / 2) + 'px';
   btn.style.width  = btnW + 'px';
   btn.style.height = btnH + 'px';
 }
 
-// 초기 + 리사이즈 시 위치 재계산
-window.addEventListener('load', positionDoorBtn);
-window.addEventListener('resize', positionDoorBtn);
-// 영상 메타데이터 로드 후에도 재계산 (혹시나)
+// notice 화면 393×852 캔버스 스케일링 (프레임과 동일 비율이므로 단순 스케일)
+function scaleNoticeStage(){
+  const frame = document.querySelector('.app-frame');
+  const stage = document.getElementById('notice-stage');
+  if(!frame || !stage) return;
+  const fw = frame.offsetWidth;
+  const scale = fw / 393;
+  stage.style.transform = `scale(${scale})`;
+}
+
+window.addEventListener('load', () => {
+  positionDoorBtn();
+  scaleNoticeStage();
+});
+window.addEventListener('resize', () => {
+  positionDoorBtn();
+  scaleNoticeStage();
+});
 document.getElementById('start-video').addEventListener('loadedmetadata', positionDoorBtn);
 positionDoorBtn();
+scaleNoticeStage();
 
-// 인트로 영상 종료 → 주의사항 화면
 document.getElementById('intro-video').addEventListener('ended', () => {
   showScreen('notice');
+  scaleNoticeStage();
 });
 
-// SKIP 버튼 → 주의사항 화면
 document.getElementById('skip-btn').addEventListener('click', () => {
   document.getElementById('intro-video').pause();
   showScreen('notice');
+  scaleNoticeStage();
 });
 
-// DRAW 버튼 → 카드 선택 화면
+// DRAW → 카드 선택 화면
 document.getElementById('draw-btn').addEventListener('click', () => {
   playBtnSound();
   showScreen('pick');
   initDeck();
 });
 
-// 리딩 시작 버튼
 document.getElementById('confirm-btn').addEventListener('click', () => {
   playBtnSound();
   handleConfirm();
 });
 
-// 다시 뽑기 버튼 → 카드 선택 화면으로
 document.getElementById('reset-btn').addEventListener('click', () => {
   playBtnSound();
   selected = [];
@@ -802,7 +816,6 @@ document.getElementById('reset-btn').addEventListener('click', () => {
   initDeck();
 });
 
-// 리사이즈 시 덱 재배치 (카드 선택 화면일 때만)
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
