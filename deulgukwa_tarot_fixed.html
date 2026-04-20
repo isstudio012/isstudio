@@ -139,12 +139,28 @@
     user-select: none;
     pointer-events: none;
   }
-  /* 입력창 - 피그마 좌표: left 15, top 107, 292×141 */
-  #notice-textarea {
+  /* 위 안내 박스 - 피그마 좌표: left 15, top 107, 292×141 */
+  #notice-info-box {
     position: absolute;
     left: 15px;
     top: 107px;
     width: 292px;
+    height: 141px;
+    padding: 13px;
+    background: #EBDFD1;
+    border: 1px solid #ffffff;
+    border-radius: 10px;
+    font-family: 'Times New Roman', serif;
+    font-size: 12px;
+    color: #000;
+    z-index: 2;
+  }
+  /* 입력창 - 피그마 좌표: left 15, top 339, 360×141 */
+  #notice-textarea {
+    position: absolute;
+    left: 15px;
+    top: 339px;
+    width: 360px;
     height: 141px;
     padding: 13px;
     background: #EBDFD1;
@@ -395,11 +411,12 @@
         </div>
       </div>
 
-      <!-- 3. 주의사항 (배경이미지 + 입력창 + DRAW) -->
+      <!-- 3. 주의사항 (배경이미지 + 위 안내박스 + 입력창 + DRAW) -->
       <div id="screen-notice" class="screen">
         <img class="notice-bg"
              src="https://res.cloudinary.com/dla7g4hwb/image/upload/v1776683957/iPhone_16_-_3_zteppj.png"
              alt="">
+        <div id="notice-info-box">"당신의 고민을 들려주세요"</div>
         <textarea id="notice-textarea" placeholder='"당신의 고민을 들려주세요"'></textarea>
         <button id="draw-btn" type="button">DRAW</button>
       </div>
