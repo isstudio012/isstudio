@@ -1,1 +1,456 @@
 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>타일 물량 산출기</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #0a0b0f;
+      color: #e8e8e8;
+      font-family: 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+      padding: 20px 14px 40px;
+    }
+    #root { max-width: 580px; margin: 0 auto; }
+    select option { background: #1a1b20; color: #fff; }
+    input::placeholder { color: #444; }
+    input:focus { border-color: #f0c040 !important; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect, useCallback } = React;
+
+    const TILE_SIZES = [
+      { label: "200×200", w: 200, h: 200 },
+      { label: "300×300", w: 300, h: 300 },
+      { label: "300×600", w: 300, h: 600 },
+      { label: "400×400", w: 400, h: 400 },
+      { label: "400×800", w: 400, h: 800 },
+      { label: "600×600", w: 600, h: 600 },
+      { label: "600×1200", w: 600, h: 1200 },
+      { label: "800×800", w: 800, h: 800 },
+    ];
+
+    const GROUT_WIDTHS = [
+      { label: "1.5mm", value: 1.5 },
+      { label: "2mm", value: 2 },
+      { label: "3mm", value: 3 },
+      { label: "5mm", value: 5 },
+    ];
+
+    function calcDirectional(areaW, areaH, tileW, tileH, direction, grout) {
+      let tw, th;
+      if (direction === "horizontal") {
+        tw = Math.max(tileW, tileH); th = Math.min(tileW, tileH);
+      } else {
+        tw = Math.min(tileW, tileH); th = Math.max(tileW, tileH);
+      }
+      const cols = Math.ceil(areaW / (tw + grout));
+      const rows = Math.ceil(areaH / (th + grout));
+      const total = cols * rows;
+      const cutCols = areaW % (tw + grout) !== 0 ? rows : 0;
+      const cutRows = areaH % (th + grout) !== 0 ? cols : 0;
+      const cutTiles = Math.min(cutCols + cutRows, total);
+      return { cols, rows, total, cutTiles, tw, th };
+    }
+
+    function fmt(n) {
+      return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function NumField({ value, onChange, width = 120, placeholder = "0" }) {
+      const ref = useRef(null);
+      const [local, setLocal] = useState(String(value || ""));
+
+      useEffect(() => {
+        if (ref.current !== document.activeElement) {
+          setLocal(value ? String(value) : "");
+        }
+      }, [value]);
+
+      const handleChange = (e) => {
+        const raw = e.target.value.replace(/[^0-9]/g, "");
+        setLocal(raw);
+        onChange(raw === "" ? 0 : Number(raw));
+      };
+
+      const handleBlur = () => {
+        setLocal(value ? String(value) : "");
+      };
+
+      return (
+        <input
+          ref={ref}
+          type="text"
+          inputMode="numeric"
+          value={local}
+          placeholder={placeholder}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          style={{
+            width, maxWidth: width, background: "#1a1b20", border: "1px solid #2a2b30",
+            borderRadius: 6, padding: "8px 12px", color: "#fff", fontSize: 14,
+            outline: "none", fontFamily: "inherit",
+          }}
+          onFocus={e => { e.target.style.borderColor = "#f0c040"; }}
+        />
+      );
+    }
+
+    function Opening({ idx, data, onChange, onRemove }) {
+      const ist = { width: 62, background: "#1a1b20", border: "1px solid #2a2b30", borderRadius: 4, color: "#fff", padding: "6px 8px", fontSize: 12, textAlign: "center", outline: "none", fontFamily: "inherit" };
+      
+      const NumSmall = ({ val, field, placeholder: ph }) => {
+        const ref = useRef(null);
+        const [loc, setLoc] = useState(String(val || ""));
+        useEffect(() => {
+          if (ref.current !== document.activeElement) setLoc(val ? String(val) : "");
+        }, [val]);
+        return (
+          <input ref={ref} type="text" inputMode="numeric" value={loc} placeholder={ph || "0"}
+            onChange={e => { const r = e.target.value.replace(/[^0-9]/g, ""); setLoc(r); onChange(idx, field, r === "" ? 0 : Number(r)); }}
+            onBlur={() => setLoc(val ? String(val) : "")}
+            onFocus={e => { e.target.style.borderColor = "#f0c040"; }}
+            style={field === "qty" ? { ...ist, width: 36 } : ist} />
+        );
+      };
+
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
+          <select value={data.type} onChange={e => onChange(idx, "type", e.target.value)}
+            style={{ background: "#1a1b20", border: "1px solid #2a2b30", borderRadius: 4, color: "#fff", padding: "6px 4px", fontSize: 12, outline: "none" }}>
+            <option value="door">문</option>
+            <option value="window">창문</option>
+          </select>
+          <NumSmall val={data.w} field="w" placeholder="가로" />
+          <span style={{ color: "#444", fontSize: 10 }}>×</span>
+          <NumSmall val={data.h} field="h" placeholder="세로" />
+          <span style={{ color: "#555", fontSize: 10 }}>mm</span>
+          <NumSmall val={data.qty} field="qty" placeholder="1" />
+          <span style={{ color: "#555", fontSize: 10 }}>개</span>
+          <button onClick={() => onRemove(idx)} style={{ background: "none", border: "none", color: "#f44", cursor: "pointer", fontSize: 15, padding: "0 2px" }}>×</button>
+        </div>
+      );
+    }
+
+    const sel = {
+      flex: 1, maxWidth: 150, background: "#1a1b20", border: "1px solid #2a2b30",
+      borderRadius: 6, padding: "8px 12px", color: "#fff", fontSize: 14, outline: "none",
+      appearance: "none", WebkitAppearance: "none",
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E")`,
+      backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center",
+    };
+
+    const dirBtn = (a) => ({
+      flex: 1, padding: "8px 0", borderRadius: 6,
+      border: a ? "1.5px solid #f0c040" : "1px solid #2a2b30",
+      background: a ? "rgba(240,192,64,0.12)" : "#1a1b20",
+      color: a ? "#f0c040" : "#555", fontSize: 13, fontWeight: a ? 700 : 400,
+      cursor: "pointer", textAlign: "center",
+    });
+
+    const Row = ({ label, children }) => (
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <span style={{ width: 110, fontSize: 13, color: "#999", flexShrink: 0 }}>{label}</span>
+        {children}
+      </div>
+    );
+
+    const SH = ({ icon, title }) => (
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "rgba(255,255,255,0.03)", borderBottom: "1px solid #1e1f24", fontSize: 13, fontWeight: 700, color: "#f0c040" }}>{icon} {title}</div>
+    );
+
+    function TileCalculator() {
+      const [roomName, setRoomName] = useState("화장실(남)");
+      const [W, setW] = useState(1910);
+      const [D, setD] = useState(4950);
+      const [H, setH] = useState(2400);
+      const [floorTile, setFloorTile] = useState("300×300");
+      const [wallTile, setWallTile] = useState("300×600");
+      const [floorDir, setFloorDir] = useState("horizontal");
+      const [wallDir, setWallDir] = useState("horizontal");
+      const [grout, setGrout] = useState("2");
+      const [floorLoss, setFloorLoss] = useState(5);
+      const [wallLoss, setWallLoss] = useState(8);
+      const [wallTileH, setWallTileH] = useState(2400);
+      const [openings, setOpenings] = useState([{ type: "door", w: 800, h: 2100, qty: 1 }]);
+      const [floorBoxPrice, setFloorBoxPrice] = useState(0);
+      const [floorBoxQty, setFloorBoxQty] = useState(6);
+      const [wallBoxPrice, setWallBoxPrice] = useState(0);
+      const [wallBoxQty, setWallBoxQty] = useState(4);
+      const [mainWorkers, setMainWorkers] = useState(1);
+      const [mainDaily, setMainDaily] = useState(250000);
+      const [subWorkers, setSubWorkers] = useState(1);
+      const [subDaily, setSubDaily] = useState(150000);
+      const [workDays, setWorkDays] = useState(2);
+
+      const addO = useCallback(() => setOpenings(p => [...p, { type: "door", w: 800, h: 2000, qty: 1 }]), []);
+      const rmO = useCallback((i) => setOpenings(p => p.filter((_, idx) => idx !== i)), []);
+      const upO = useCallback((i, k, v) => setOpenings(p => { const n = [...p]; n[i] = { ...n[i], [k]: v }; return n; }), []);
+
+      const ft = TILE_SIZES.find(t => t.label === floorTile) || TILE_SIZES[1];
+      const wt = TILE_SIZES.find(t => t.label === wallTile) || TILE_SIZES[2];
+      const gw = Number(grout);
+
+      const floorM2 = (W * D) / 1e6;
+      const pyeong = (floorM2 / 3.3058).toFixed(1);
+      const floorCalc = calcDirectional(W, D, ft.w, ft.h, floorDir, gw);
+      const floorWithLoss = Math.ceil(floorCalc.total * (1 + floorLoss / 100));
+      const floorBoxes = floorBoxQty > 0 ? Math.ceil(floorWithLoss / floorBoxQty) : 0;
+      const floorCost = floorBoxes * floorBoxPrice;
+
+      const wh = Math.min(wallTileH, H);
+      const sides = [
+        { name: "벽A (가로벽)", w: W, h: wh },
+        { name: "벽B (세로벽)", w: D, h: wh },
+        { name: "벽C (가로벽)", w: W, h: wh },
+        { name: "벽D (세로벽)", w: D, h: wh },
+      ];
+      const wallCalcs = sides.map(s => ({ ...s, ...calcDirectional(s.w, s.h, wt.w, wt.h, wallDir, gw), area: (s.w * s.h) / 1e6 }));
+      const grossWallM2 = wallCalcs.reduce((s, w) => s + w.area, 0);
+      const grossWallTiles = wallCalcs.reduce((s, w) => s + w.total, 0);
+      const openArea = openings.reduce((s, o) => s + o.w * o.h * o.qty, 0);
+      const openM2 = openArea / 1e6;
+      const openTilesEst = openings.reduce((s, o) => { const c = calcDirectional(o.w, o.h, wt.w, wt.h, wallDir, gw); return s + c.total * o.qty; }, 0);
+      const netWallTiles = Math.max(0, grossWallTiles - openTilesEst);
+      const netWallM2 = Math.max(0, grossWallM2 - openM2);
+      const wallWithLoss = Math.ceil(netWallTiles * (1 + wallLoss / 100));
+      const wallBoxes = wallBoxQty > 0 ? Math.ceil(wallWithLoss / wallBoxQty) : 0;
+      const wallCost = wallBoxes * wallBoxPrice;
+
+      const totalM2 = floorM2 + netWallM2;
+      const bondKg = Math.ceil(totalM2 * 5);
+      const groutKg = Math.ceil(totalM2 * 1.5);
+      const siliconTubes = Math.ceil((2 * (W + D)) / 1000 / 3);
+      const waterproofL = Math.ceil(floorM2 * 0.5);
+
+      const laborMain = mainWorkers * mainDaily * workDays;
+      const laborSub = subWorkers * subDaily * workDays;
+      const laborTotal = laborMain + laborSub;
+      const tileCostTotal = floorCost + wallCost;
+      const grandTotal = tileCostTotal + laborTotal;
+
+      const sec = { marginBottom: 14, background: "#13141a", border: "1px solid #1e1f24", borderRadius: 10, overflow: "hidden" };
+      const th = { padding: "10px 14px", fontSize: 11, fontWeight: 600, color: "#555", textAlign: "left", background: "#111218", borderBottom: "1px solid #1e1f24" };
+      const thR = { ...th, textAlign: "right" };
+      const td = { padding: "10px 14px", fontSize: 13, color: "#bbb", borderBottom: "1px solid #1a1b20" };
+      const tdR = { ...td, color: "#fff", fontWeight: 600, textAlign: "right" };
+      const tdHL = { ...td, color: "#f0c040", fontWeight: 700, borderBottom: "none" };
+      const tdHLR = { ...tdR, color: "#f0c040", fontWeight: 800, fontSize: 15, borderBottom: "none" };
+
+      const nameRef = useRef(null);
+      const [localName, setLocalName] = useState(roomName);
+      useEffect(() => {
+        if (nameRef.current !== document.activeElement) setLocalName(roomName);
+      }, [roomName]);
+
+      return (
+        <div>
+          <div style={{ textAlign: "center", marginBottom: 28, paddingBottom: 20, borderBottom: "1px solid #1e1f24" }}>
+            <div style={{ display: "inline-block", fontSize: 10, fontWeight: 700, color: "#0a0b0f", background: "#f0c040", borderRadius: 3, padding: "2px 8px", letterSpacing: 1.5, marginBottom: 8 }}>TILE CALCULATOR</div>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: "#fff", margin: 0 }}>타일 물량 산출기</h1>
+            <div style={{ fontSize: 12, color: "#444", marginTop: 6 }}>치수 입력 → 물량 · 금액 자동 산출</div>
+          </div>
+
+          <div style={sec}>
+            <SH icon="📐" title="공간 정보" />
+            <div style={{ padding: "14px 16px" }}>
+              <Row label="공간명">
+                <input ref={nameRef} value={localName}
+                  onChange={e => { setLocalName(e.target.value); setRoomName(e.target.value); }}
+                  onBlur={() => setLocalName(roomName)}
+                  onFocus={e => { e.target.style.borderColor = "#f0c040"; }}
+                  style={{ flex: 1, maxWidth: 150, background: "#1a1b20", border: "1px solid #2a2b30", borderRadius: 6, padding: "8px 12px", color: "#fff", fontSize: 14, outline: "none" }} />
+              </Row>
+              <Row label="가로 (W)"><NumField value={W} onChange={setW} /><span style={{ fontSize: 12, color: "#555" }}>mm</span></Row>
+              <Row label="세로 (D)"><NumField value={D} onChange={setD} /><span style={{ fontSize: 12, color: "#555" }}>mm</span></Row>
+              <Row label="천장높이 (H)"><NumField value={H} onChange={setH} /><span style={{ fontSize: 12, color: "#555" }}>mm</span></Row>
+              <div style={{ textAlign: "right", fontSize: 12, color: "#555", paddingTop: 4 }}>
+                바닥면적: <span style={{ color: "#f0c040", fontWeight: 700 }}>{floorM2.toFixed(2)}㎡</span> · <span style={{ color: "#aaa" }}>{pyeong}평</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={sec}>
+            <SH icon="🔲" title="바닥 타일" />
+            <div style={{ padding: "14px 16px" }}>
+              <Row label="타일 사이즈"><select value={floorTile} onChange={e => setFloorTile(e.target.value)} style={sel}>{TILE_SIZES.map(t => <option key={t.label} value={t.label}>{t.label}</option>)}</select></Row>
+              <Row label="시공 방향">
+                <div style={{ display: "flex", gap: 6, flex: 1, maxWidth: 200 }}>
+                  <button style={dirBtn(floorDir === "horizontal")} onClick={() => setFloorDir("horizontal")}>━ 가로</button>
+                  <button style={dirBtn(floorDir === "vertical")} onClick={() => setFloorDir("vertical")}>┃ 세로</button>
+                </div>
+              </Row>
+              <Row label="로스율"><NumField value={floorLoss} onChange={setFloorLoss} width={70} /><span style={{ fontSize: 12, color: "#555" }}>%</span></Row>
+              <div style={{ height: 1, background: "#1e1f24", margin: "10px 0" }} />
+              <Row label="박스당 매수"><NumField value={floorBoxQty} onChange={setFloorBoxQty} width={70} /><span style={{ fontSize: 12, color: "#555" }}>매/box</span></Row>
+              <Row label="박스 단가"><NumField value={floorBoxPrice} onChange={setFloorBoxPrice} width={120} /><span style={{ fontSize: 12, color: "#555" }}>원</span></Row>
+            </div>
+          </div>
+
+          <div style={sec}>
+            <SH icon="🧱" title="벽 타일" />
+            <div style={{ padding: "14px 16px" }}>
+              <Row label="타일 사이즈"><select value={wallTile} onChange={e => setWallTile(e.target.value)} style={sel}>{TILE_SIZES.map(t => <option key={t.label} value={t.label}>{t.label}</option>)}</select></Row>
+              <Row label="시공 방향">
+                <div style={{ display: "flex", gap: 6, flex: 1, maxWidth: 200 }}>
+                  <button style={dirBtn(wallDir === "horizontal")} onClick={() => setWallDir("horizontal")}>━ 가로</button>
+                  <button style={dirBtn(wallDir === "vertical")} onClick={() => setWallDir("vertical")}>┃ 세로</button>
+                </div>
+              </Row>
+              <Row label="타일 높이"><NumField value={wallTileH} onChange={setWallTileH} /><span style={{ fontSize: 12, color: "#555" }}>mm</span></Row>
+              <Row label="로스율"><NumField value={wallLoss} onChange={setWallLoss} width={70} /><span style={{ fontSize: 12, color: "#555" }}>%</span></Row>
+              <Row label="줄눈 폭"><select value={grout} onChange={e => setGrout(e.target.value)} style={{ ...sel, maxWidth: 100 }}>{GROUT_WIDTHS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}</select></Row>
+              <div style={{ height: 1, background: "#1e1f24", margin: "10px 0" }} />
+              <Row label="박스당 매수"><NumField value={wallBoxQty} onChange={setWallBoxQty} width={70} /><span style={{ fontSize: 12, color: "#555" }}>매/box</span></Row>
+              <Row label="박스 단가"><NumField value={wallBoxPrice} onChange={setWallBoxPrice} width={120} /><span style={{ fontSize: 12, color: "#555" }}>원</span></Row>
+            </div>
+          </div>
+
+          <div style={sec}>
+            <SH icon="🚪" title="개구부 공제" />
+            <div style={{ padding: "14px 16px" }}>
+              {openings.map((o, i) => <Opening key={i} idx={i} data={o} onChange={upO} onRemove={rmO} />)}
+              <button onClick={addO} style={{ width: "100%", padding: "7px 0", marginTop: 4, background: "#1a1b20", border: "1px dashed #2a2b30", borderRadius: 6, color: "#555", fontSize: 11, cursor: "pointer" }}>+ 추가</button>
+            </div>
+          </div>
+
+          <div style={sec}>
+            <SH icon="👷" title="인건비" />
+            <div style={{ padding: "14px 16px" }}>
+              <Row label="메인 인원"><NumField value={mainWorkers} onChange={setMainWorkers} width={60} /><span style={{ fontSize: 12, color: "#555" }}>명</span></Row>
+              <Row label="메인 일당"><NumField value={mainDaily} onChange={setMainDaily} width={120} /><span style={{ fontSize: 12, color: "#555" }}>원</span></Row>
+              <Row label="보조 인원"><NumField value={subWorkers} onChange={setSubWorkers} width={60} /><span style={{ fontSize: 12, color: "#555" }}>명</span></Row>
+              <Row label="보조 일당"><NumField value={subDaily} onChange={setSubDaily} width={120} /><span style={{ fontSize: 12, color: "#555" }}>원</span></Row>
+              <Row label="작업 일수"><NumField value={workDays} onChange={setWorkDays} width={60} /><span style={{ fontSize: 12, color: "#555" }}>일</span></Row>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 28, marginBottom: 14 }}>
+            <div style={{ fontSize: 10, color: "#f0c040", letterSpacing: 2, fontWeight: 700 }}>RESULT</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginTop: 2 }}>{roomName} 물량 산출서</div>
+          </div>
+
+          <div style={{ border: "1px solid rgba(240,192,64,0.2)", borderRadius: 10, overflow: "hidden", marginBottom: 14, background: "#111218" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "rgba(240,192,64,0.06)" }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "#f0c040" }}>바닥 타일</span>
+              <span style={{ fontSize: 11, color: "#888" }}>{floorTile} · {floorDir === "horizontal" ? "가로" : "세로"}시공</span>
+            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr><th style={th}>항목</th><th style={thR}>수량</th></tr></thead>
+              <tbody>
+                <tr><td style={td}>바닥 면적</td><td style={tdR}>{floorM2.toFixed(2)} ㎡ ({pyeong}평)</td></tr>
+                <tr><td style={td}>배치 ({floorDir === "horizontal" ? "가로" : "세로"})</td><td style={tdR}>{floorCalc.cols}열 × {floorCalc.rows}행</td></tr>
+                <tr><td style={td}>필요 매수</td><td style={tdR}>{floorCalc.total} 매</td></tr>
+                <tr><td style={td}>절단 발생</td><td style={tdR}>{floorCalc.cutTiles} 매</td></tr>
+                <tr><td style={{ ...td, fontWeight: 600, color: "#ddd" }}>로스 {floorLoss}% 포함</td><td style={{ ...tdR, color: "#f0c040", fontWeight: 700, fontSize: 15 }}>{floorWithLoss} 매</td></tr>
+                <tr><td style={td}>필요 박스</td><td style={tdR}>{floorBoxes} box ({floorBoxQty}매/box)</td></tr>
+                {floorBoxPrice > 0 && <tr><td style={tdHL}>타일 금액</td><td style={tdHLR}>{fmt(floorCost)} 원</td></tr>}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ border: "1px solid rgba(240,192,64,0.2)", borderRadius: 10, overflow: "hidden", marginBottom: 14, background: "#111218" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "rgba(240,192,64,0.06)" }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "#f0c040" }}>벽체 타일</span>
+              <span style={{ fontSize: 11, color: "#888" }}>{wallTile} · {wallDir === "horizontal" ? "가로" : "세로"}시공</span>
+            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr><th style={th}>항목</th><th style={thR}>수량</th></tr></thead>
+              <tbody>
+                {wallCalcs.map((wc, i) => (
+                  <tr key={i}><td style={td}>{wc.name}</td><td style={tdR}>{wc.area.toFixed(2)}㎡ · {wc.total}매</td></tr>
+                ))}
+                <tr style={{ background: "rgba(255,255,255,0.01)" }}><td style={td}>벽 전체 (소계)</td><td style={tdR}>{grossWallM2.toFixed(2)}㎡ · {grossWallTiles}매</td></tr>
+                <tr><td style={{ ...td, color: "#f55" }}>개구부 공제</td><td style={{ ...tdR, color: "#f55" }}>-{openM2.toFixed(2)}㎡ · -{openTilesEst}매</td></tr>
+                <tr><td style={td}>순 벽체</td><td style={tdR}>{netWallM2.toFixed(2)}㎡ · {netWallTiles}매</td></tr>
+                <tr><td style={{ ...td, fontWeight: 600, color: "#ddd" }}>로스 {wallLoss}% 포함</td><td style={{ ...tdR, color: "#f0c040", fontWeight: 700, fontSize: 15 }}>{wallWithLoss} 매</td></tr>
+                <tr><td style={td}>필요 박스</td><td style={tdR}>{wallBoxes} box ({wallBoxQty}매/box)</td></tr>
+                {wallBoxPrice > 0 && <tr><td style={tdHL}>타일 금액</td><td style={tdHLR}>{fmt(wallCost)} 원</td></tr>}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ border: "1px solid rgba(240,192,64,0.2)", borderRadius: 10, overflow: "hidden", marginBottom: 14, background: "#111218" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "rgba(240,192,64,0.06)" }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "#f0c040" }}>부자재</span>
+              <span style={{ fontSize: 11, color: "#888" }}>총 시공면적 {totalM2.toFixed(1)}㎡</span>
+            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr><th style={th}>자재</th><th style={thR}>수량</th></tr></thead>
+              <tbody>
+                <tr><td style={td}>타일본드</td><td style={tdR}>{bondKg} kg</td></tr>
+                <tr><td style={td}>줄눈재</td><td style={tdR}>{groutKg} kg</td></tr>
+                <tr><td style={td}>실리콘</td><td style={tdR}>{siliconTubes} 튜브</td></tr>
+                <tr><td style={{ ...td, borderBottom: "none" }}>바닥 방수액</td><td style={{ ...tdR, borderBottom: "none" }}>{waterproofL} L</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ border: "1px solid rgba(240,192,64,0.2)", borderRadius: 10, overflow: "hidden", marginBottom: 14, background: "#111218" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "rgba(240,192,64,0.06)" }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "#f0c040" }}>인건비</span>
+              <span style={{ fontSize: 11, color: "#888" }}>{workDays}일 기준</span>
+            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr><th style={th}>구분</th><th style={thR}>금액</th></tr></thead>
+              <tbody>
+                <tr><td style={td}>메인 {mainWorkers}명 × {fmt(mainDaily)}원 × {workDays}일</td><td style={tdR}>{fmt(laborMain)} 원</td></tr>
+                <tr><td style={td}>보조 {subWorkers}명 × {fmt(subDaily)}원 × {workDays}일</td><td style={tdR}>{fmt(laborSub)} 원</td></tr>
+                <tr><td style={tdHL}>인건비 소계</td><td style={tdHLR}>{fmt(laborTotal)} 원</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{
+            padding: "20px 18px", background: "linear-gradient(135deg, rgba(240,192,64,0.1), rgba(240,192,64,0.03))",
+            border: "1.5px solid rgba(240,192,64,0.3)", borderRadius: 10, marginTop: 6,
+          }}>
+            <div style={{ fontSize: 11, color: "#777", fontWeight: 600, marginBottom: 12, textAlign: "center" }}>총합 요약</div>
+            <div style={{ display: "flex", justifyContent: "space-around", marginBottom: 16 }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: "#f0c040", lineHeight: 1 }}>{floorWithLoss + wallWithLoss}</div>
+                <div style={{ fontSize: 10, color: "#777", marginTop: 4 }}>총 타일 (매)</div>
+              </div>
+              <div style={{ width: 1, background: "rgba(240,192,64,0.15)" }} />
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{totalM2.toFixed(1)}</div>
+                <div style={{ fontSize: 10, color: "#777", marginTop: 4 }}>총 면적 (㎡)</div>
+              </div>
+            </div>
+            {(tileCostTotal > 0 || laborTotal > 0) && (
+              <div style={{ borderTop: "1px solid rgba(240,192,64,0.15)", paddingTop: 14 }}>
+                {tileCostTotal > 0 && <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13, color: "#aaa" }}>
+                  <span>타일 자재비</span><span style={{ color: "#fff", fontWeight: 600 }}>{fmt(tileCostTotal)} 원</span>
+                </div>}
+                {laborTotal > 0 && <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, fontSize: 13, color: "#aaa" }}>
+                  <span>인건비</span><span style={{ color: "#fff", fontWeight: 600 }}>{fmt(laborTotal)} 원</span>
+                </div>}
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 16, fontWeight: 800, paddingTop: 10, borderTop: "1px solid rgba(240,192,64,0.2)" }}>
+                  <span style={{ color: "#f0c040" }}>합계</span><span style={{ color: "#f0c040" }}>{fmt(grandTotal)} 원</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 14, fontSize: 10, color: "#333" }}>
+            ※ 부자재는 일반 기준 · 타일본드 5kg/㎡ · 줄눈재 1.5kg/㎡ · 제품별 상이
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<TileCalculator />);
+  </script>
+</body>
+</html>
