@@ -5,25 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>360° VR Gallery</title>
 
-<!-- ===== Pannellum ===== -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
-<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<!-- ===== Photo Sphere Viewer v5 (최신) ===== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5/index.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5/index.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/virtual-tour-plugin@5/index.min.css" />
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: #000; min-height: 100vh; }
+  html, body { background: #000; height: 100vh; overflow: hidden; }
   body {
     color: #fff;
     font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif;
-    padding-bottom: 120px;
   }
 
-  /* ===== 갤러리 그리드: 5열 × 2행 = 화면 꽉 채움 ===== */
+  /* ===== 갤러리: 5열 × 2행 = 화면 꽉 채움 ===== */
   .gallery {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-auto-rows: calc((100vh - 4px) / 2);  /* 2행이 화면 세로 꽉 채움 */
+    grid-template-rows: repeat(2, 1fr);
     gap: 4px;
+    width: 100vw;
+    height: 100vh;
   }
   .card {
     position: relative;
@@ -34,7 +36,6 @@
   }
   .card:hover { transform: scale(1.015); z-index: 2; }
 
-  /* 카드 이미지 — 16:10에 강제로 cover, 기본 흑백 */
   .card img {
     display: block;
     width: 100%;
@@ -44,9 +45,7 @@
     filter: grayscale(100%) brightness(0.95);
     transition: filter 0.35s ease;
   }
-  .card:hover img {
-    filter: grayscale(0%) brightness(1.05);
-  }
+  .card:hover img { filter: grayscale(0%) brightness(1.05); }
 
   .card .label {
     position: absolute;
@@ -75,98 +74,69 @@
   .card:hover .delete-btn { opacity: 1; }
   .card .delete-btn:hover { background: rgba(220,50,50,0.9); }
 
-  /* 헤더 셀 (그리드 안 마지막 빈 칸) */
-  .header-cell {
-    position: relative;
-    padding: 18px 22px;
-    text-align: right;
-  }
-  .header-cell h1 {
-    font-size: 13px;
-    font-weight: 300;
-    letter-spacing: 0.4em;
-    color: #aaa;
-  }
-  .header-cell .count {
-    font-size: 10px;
-    color: #666;
-    letter-spacing: 0.25em;
-    margin-top: 4px;
-  }
-
-  /* 플레이스홀더 (이미지 로드 실패 시) */
   .placeholder {
     width: 100%; height: 100%;
     background: linear-gradient(135deg, #2a2a3a, #1c1c28);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255,255,255,0.45);
+    color: rgba(255,255,255,0.3);
     font-size: 11px;
-    text-align: center;
-    padding: 10px;
-    line-height: 1.6;
   }
 
   /* ===== VR 뷰어 모달 ===== */
   .viewer {
     display: none;
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    inset: 0;
     background: #000;
     z-index: 1000;
   }
   .viewer.active { display: block; }
-  #panorama { width: 100%; height: 100%; }
+  #psv-container { width: 100%; height: 100%; }
 
-  .viewer-top {
+  /* 좌상단 제목 */
+  .viewer-title-bar {
     position: absolute;
-    top: 0; left: 0; right: 0;
+    top: 0; left: 0;
     padding: 20px 30px;
     background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-    z-index: 10;
+    z-index: 100;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 14px;
     color: #fff;
+    font-size: 14px;
+    pointer-events: none;
   }
-  .viewer-title { display: flex; align-items: center; gap: 14px; font-size: 14px; }
-  .viewer-title .dot { width: 8px; height: 8px; background: #ff3b3b; border-radius: 50%; }
-  .viewer-title .sep { color: #555; }
-  .close-btn {
-    background: none; border: none;
-    color: #fff; font-size: 22px;
-    cursor: pointer;
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
+  .viewer-title-bar .dot {
+    width: 8px; height: 8px;
+    background: #ff3b3b;
     border-radius: 50%;
-    transition: background 0.2s;
   }
-  .close-btn:hover { background: rgba(255,255,255,0.1); }
-  .viewer-bottom {
-    position: absolute;
-    bottom: 20px; left: 30px;
-    color: rgba(255,255,255,0.5);
-    font-size: 12px;
-    z-index: 10;
-  }
+  .viewer-title-bar .sep { color: #555; }
 
-  /* 우측 하단 컨트롤 버튼들 */
-  .viewer-controls {
+  /* 상단 컨트롤 바 (가운데) */
+  .top-controls {
     position: absolute;
-    bottom: 20px;
-    right: 20px;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     gap: 8px;
-    z-index: 10;
+    z-index: 100;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    padding: 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.1);
   }
   .ctrl-btn {
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.15);
+    background: transparent;
+    border: none;
     color: #fff;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 16px;
@@ -176,8 +146,41 @@
     transition: background 0.2s;
     font-family: inherit;
   }
-  .ctrl-btn:hover { background: rgba(255,255,255,0.22); }
-  .ctrl-btn.active { background: rgba(74, 222, 128, 0.3); border-color: rgba(74, 222, 128, 0.5); }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.15); }
+  .ctrl-btn.active {
+    background: rgba(74, 222, 128, 0.3);
+    color: #4ade80;
+  }
+
+  /* 우상단 닫기 */
+  .close-btn {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: background 0.2s;
+  }
+  .close-btn:hover { background: rgba(220,50,50,0.7); }
+
+  /* 좌하단 안내 */
+  .viewer-hint {
+    position: absolute;
+    bottom: 20px; left: 30px;
+    color: rgba(255,255,255,0.45);
+    font-size: 12px;
+    z-index: 100;
+    pointer-events: none;
+  }
 
   /* 업로드 버튼 */
   .upload-btn {
@@ -194,9 +197,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    z-index: 100;
-    transition: background 0.2s;
+    z-index: 500;
     font-family: inherit;
+    transition: background 0.2s;
   }
   .upload-btn:hover { background: rgba(255,255,255,0.18); }
   .upload-btn .dot-indicator {
@@ -216,37 +219,47 @@
     padding: 12px 18px;
     border-radius: 8px;
     font-size: 12px;
-    z-index: 200;
+    z-index: 600;
     opacity: 0;
     transform: translateY(10px);
     transition: all 0.3s;
     pointer-events: none;
   }
   .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* PSV 기본 네비게이션 바 숨김 (우리 커스텀 컨트롤만 보이게) */
+  .psv-navbar { display: none !important; }
 </style>
 </head>
 <body>
 
 <div class="gallery" id="gallery"></div>
 
-<!-- VR 뷰어 -->
+<!-- VR 뷰어 모달 -->
 <div class="viewer" id="viewer">
-  <div class="viewer-top">
-    <div class="viewer-title">
-      <span class="dot"></span>
-      <span>360° VR</span>
-      <span class="sep">|</span>
-      <span id="viewerTitle">-</span>
-    </div>
-    <button class="close-btn" onclick="closeViewer()">✕</button>
-  </div>
-  <div id="panorama"></div>
-  <div class="viewer-bottom">⊕ 드래그하여 둘러보기 · 휠로 줌 인/아웃</div>
+  <div id="psv-container"></div>
 
-  <div class="viewer-controls">
-    <button class="ctrl-btn" id="autoRotateBtn" onclick="toggleAutoRotate()" title="자동 회전">↻</button>
+  <!-- 좌상단 제목 -->
+  <div class="viewer-title-bar">
+    <span class="dot"></span>
+    <span>360° VR</span>
+    <span class="sep">|</span>
+    <span id="viewerTitle">-</span>
+  </div>
+
+  <!-- 상단 가운데 컨트롤 -->
+  <div class="top-controls">
+    <button class="ctrl-btn" onclick="zoomIn()" title="줌 인">+</button>
+    <button class="ctrl-btn" onclick="zoomOut()" title="줌 아웃">−</button>
+    <button class="ctrl-btn active" id="autoRotateBtn" onclick="toggleAutoRotate()" title="자동 회전">↻</button>
     <button class="ctrl-btn" onclick="resetView()" title="정렬 (초기 위치)">⌂</button>
   </div>
+
+  <!-- 우상단 닫기 -->
+  <button class="close-btn" onclick="closeViewer()">✕</button>
+
+  <!-- 좌하단 안내 -->
+  <div class="viewer-hint">⊕ 드래그하여 둘러보기 · 휠로 줌 · 점 클릭해 이동</div>
 </div>
 
 <!-- 업로드 -->
@@ -258,19 +271,42 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
+<!-- ===== Photo Sphere Viewer 라이브러리 (ES Module) ===== -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "@photo-sphere-viewer/core": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5/index.module.js",
+    "@photo-sphere-viewer/markers-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5/index.module.js",
+    "@photo-sphere-viewer/virtual-tour-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/virtual-tour-plugin@5/index.module.js",
+    "@photo-sphere-viewer/autorotate-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/autorotate-plugin@5/index.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import { Viewer } from '@photo-sphere-viewer/core';
+import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
+import { VirtualTourPlugin } from '@photo-sphere-viewer/virtual-tour-plugin';
+import { AutorotatePlugin } from '@photo-sphere-viewer/autorotate-plugin';
+
 /* ============================================================
    ★ 기본 장면 (영구) ★
-   비어있음. 폴더(images/)에 이미지 넣고 아래 배열에 등록하면
-   새로고침해도 유지됨. 핫스팟(다른 장면으로 점프)도 가능.
+   폴더(images/)에 이미지 넣고 아래 배열에 등록하면
+   새로고침해도 유지됨.
 
    예시:
-   { id: "room1", title: "거실", image: "images/pano1.jpg",
-     thumb: "images/thumb1.jpg" }
+   {
+     id: "room1",
+     title: "거실",
+     panorama: "images/pano1.jpg",
+     thumb: "images/thumb1.jpg",
+     links: [{ nodeId: "room2" }]  // room2로 이동하는 핫스팟
+   }
 ============================================================ */
 const baseScenes = [];
 
-/* 업로드 장면 */
+/* 업로드 장면 (메모리, 새로고침 시 사라짐) */
 let uploadedScenes = [];
 
 function getAllScenes() {
@@ -293,113 +329,161 @@ function renderGallery() {
       openViewer(scene.id);
     };
 
-    const thumbSrc = scene.thumb || scene.image;
+    const thumbSrc = scene.thumb || scene.panorama;
     const isUploaded = scene.id.startsWith("upload_");
 
     card.innerHTML = `
       <img src="${thumbSrc}" alt="${scene.title}"
-           onerror="this.outerHTML='<div class=\\'placeholder\\'>이미지를 추가하세요<br>${thumbSrc}</div>'" />
-      ${isUploaded ? `<button class="delete-btn" onclick="deleteUploaded('${scene.id}', event)">✕</button>` : ""}
+           onerror="this.outerHTML='<div class=\\'placeholder\\'>이미지 없음</div>'" />
+      ${isUploaded ? `<button class="delete-btn" data-id="${scene.id}">✕</button>` : ""}
       <div class="label">${scene.title}</div>
     `;
     gallery.appendChild(card);
   });
+
+  // 삭제 버튼 이벤트
+  gallery.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      uploadedScenes = uploadedScenes.filter(s => s.id !== id);
+      renderGallery();
+    };
+  });
 }
 
 /* ============================================================
-   VR 뷰어
+   VR 뷰어 (Photo Sphere Viewer + Virtual Tour)
 ============================================================ */
-let viewer = null;
-let isAutoRotating = false;
+let psv = null;
+let isAutoRotating = true;
 
 function openViewer(sceneId) {
   const all = getAllScenes();
-  const scene = all.find(s => s.id === sceneId);
-  if (!scene) return;
+  const startScene = all.find(s => s.id === sceneId);
+  if (!startScene) return;
 
   document.getElementById("viewer").classList.add("active");
-  document.getElementById("viewerTitle").textContent = scene.title;
+  document.getElementById("viewerTitle").textContent = startScene.title;
 
-  const pannellumScenes = {};
-  all.forEach(s => {
-    pannellumScenes[s.id] = {
-      type: "equirectangular",
-      panorama: s.image,
-      autoLoad: true,
-      hotSpots: (s.hotSpots || []).map(h => ({
-        pitch: h.pitch,
-        yaw: h.yaw,
-        type: "scene",
-        text: h.text,
-        sceneId: h.sceneId
-      }))
+  // 가상 투어 노드 만들기 (모든 장면 = 노드)
+  const nodes = all.map((s, idx) => {
+    // 자동 핫스팟 생성: 같은 갤러리의 다른 장면들로 연결
+    const otherScenes = all.filter(other => other.id !== s.id);
+    const links = otherScenes.slice(0, 3).map((target, i) => ({
+      nodeId: target.id,
+      // 핫스팟 위치를 360도 균등 분배
+      position: {
+        yaw: (i + 1) * (360 / (otherScenes.length + 1)) + "deg",
+        pitch: "0deg"
+      }
+    }));
+
+    return {
+      id: s.id,
+      panorama: s.panorama,
+      thumbnail: s.thumb || s.panorama,
+      name: s.title,
+      caption: s.title,
+      links: s.links || links  // 직접 정의한 links가 있으면 그거 우선
     };
   });
 
-  if (viewer) viewer.destroy();
+  // 기존 뷰어 제거
+  if (psv) {
+    psv.destroy();
+    psv = null;
+  }
 
-  viewer = pannellum.viewer("panorama", {
-    default: {
-      firstScene: sceneId,
-      sceneFadeDuration: 800,
-      autoLoad: true,
-      // ★ 자동 회전 (양수=오른쪽, 천천히)
-      autoRotate: -2,
-      // ★ 줌 범위 (작을수록 줌인, 클수록 줌아웃)
-      hfov: 100,        // 시작 시야각
-      minHfov: 30,      // 최대 줌인
-      maxHfov: 120,     // 최대 줌아웃
-      // 마우스 휠 = 줌
-      mouseZoom: true,
-      // 줌 컨트롤 버튼 (Pannellum 기본 UI)
-      showZoomCtrl: false,
-      showFullscreenCtrl: false,
-      compass: false
-    },
-    scenes: pannellumScenes
+  // 새 뷰어 생성
+  psv = new Viewer({
+    container: document.getElementById("psv-container"),
+    plugins: [
+      MarkersPlugin,
+      [AutorotatePlugin, {
+        autorotateSpeed: "1rpm",
+        autostartDelay: 1500,
+        autostartOnIdle: false
+      }],
+      [VirtualTourPlugin, {
+        positionMode: 'manual',
+        renderMode: 'markers',
+      }],
+    ],
+    defaultZoomLvl: 30,
+    minFov: 20,
+    maxFov: 100,
+    navbar: false,
+    loadingTxt: "로딩 중...",
   });
 
-  // 자동 회전 상태 표시
-  isAutoRotating = true;
-  document.getElementById("autoRotateBtn").classList.add("active");
+  const tour = psv.getPlugin(VirtualTourPlugin);
+  tour.setNodes(nodes, sceneId);
+
+  // 자동 회전 시작
+  const autorotate = psv.getPlugin(AutorotatePlugin);
+  setTimeout(() => {
+    autorotate.start();
+    isAutoRotating = true;
+    document.getElementById("autoRotateBtn").classList.add("active");
+  }, 800);
+
+  // 장면 전환 시 제목 업데이트
+  tour.addEventListener('node-changed', ({ node }) => {
+    document.getElementById("viewerTitle").textContent = node.name || node.id;
+  });
 }
 
 function closeViewer() {
   document.getElementById("viewer").classList.remove("active");
-  if (viewer) { viewer.destroy(); viewer = null; }
-  isAutoRotating = false;
-  document.getElementById("autoRotateBtn").classList.remove("active");
-}
-
-/* 자동 회전 토글 */
-function toggleAutoRotate() {
-  if (!viewer) return;
-  if (isAutoRotating) {
-    viewer.stopAutoRotate();
-    isAutoRotating = false;
-    document.getElementById("autoRotateBtn").classList.remove("active");
-  } else {
-    viewer.startAutoRotate(-2);
-    isAutoRotating = true;
-    document.getElementById("autoRotateBtn").classList.add("active");
+  if (psv) {
+    psv.destroy();
+    psv = null;
   }
 }
 
-/* 정렬 (초기 카메라 위치로 부드럽게 복귀) */
-function resetView() {
-  if (!viewer) return;
-  // 부드럽게 이동
-  viewer.lookAt(0, 0, 100, 1000);  // pitch, yaw, hfov, animation duration(ms)
-}
+/* 컨트롤 함수들 (window에 노출) */
+window.zoomIn = () => {
+  if (!psv) return;
+  psv.zoom(psv.getZoomLevel() + 10);
+};
+window.zoomOut = () => {
+  if (!psv) return;
+  psv.zoom(psv.getZoomLevel() - 10);
+};
+window.toggleAutoRotate = () => {
+  if (!psv) return;
+  const ar = psv.getPlugin(AutorotatePlugin);
+  if (isAutoRotating) {
+    ar.stop();
+    isAutoRotating = false;
+    document.getElementById("autoRotateBtn").classList.remove("active");
+  } else {
+    ar.start();
+    isAutoRotating = true;
+    document.getElementById("autoRotateBtn").classList.add("active");
+  }
+};
+window.resetView = () => {
+  if (!psv) return;
+  psv.animate({
+    yaw: 0,
+    pitch: 0,
+    zoom: 30,
+    speed: '2rpm'
+  });
+};
+window.closeViewer = closeViewer;
+window.openViewer = openViewer;
 
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeViewer();
 });
 
 /* ============================================================
-   업로드 처리
+   업로드
 ============================================================ */
-function handleUpload(event) {
+window.handleUpload = function(event) {
   const files = Array.from(event.target.files);
   if (files.length === 0) return;
 
@@ -412,22 +496,16 @@ function handleUpload(event) {
     uploadedScenes.push({
       id: id,
       title: name,
-      image: url,
+      panorama: url,
       thumb: url
     });
     addedCount++;
   });
 
   renderGallery();
-  showToast(`${addedCount}개 추가됨 (새로고침 시 사라짐)`);
+  showToast(`${addedCount}개 추가됨${addedCount >= 2 ? " · 점 클릭으로 이동 가능" : ""}`);
   event.target.value = "";
-}
-
-function deleteUploaded(id, event) {
-  event.stopPropagation();
-  uploadedScenes = uploadedScenes.filter(s => s.id !== id);
-  renderGallery();
-}
+};
 
 /* 토스트 */
 let toastTimer = null;
@@ -436,7 +514,7 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
 }
 
 renderGallery();
