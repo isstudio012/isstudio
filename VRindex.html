@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>360° VR Gallery</title>
 
-<!-- ===== PSV v5 CSS ===== -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin/index.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/virtual-tour-plugin/index.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/gallery-plugin/index.min.css" />
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -98,11 +98,11 @@
   .viewer-title-bar .dot { width: 8px; height: 8px; background: #ff3b3b; border-radius: 50%; }
   .viewer-title-bar .sep { color: #555; }
 
-  .top-controls {
+  /* 우상단 컨트롤 (닫기 + 줌/회전/정렬) */
+  .top-right-controls {
     position: absolute;
     top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 16px;
     display: flex;
     gap: 4px;
     z-index: 100;
@@ -126,33 +126,18 @@
   }
   .ctrl-btn:hover { background: rgba(255,255,255,0.15); }
   .ctrl-btn.active { background: rgba(74, 222, 128, 0.3); color: #4ade80; }
-
-  .close-btn {
-    position: absolute;
-    top: 20px; right: 20px;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: #fff;
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 18px;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100;
-  }
-  .close-btn:hover { background: rgba(220,50,50,0.7); }
+  .ctrl-btn.close-btn-x { color: #fff; }
+  .ctrl-btn.close-btn-x:hover { background: rgba(220,50,50,0.7); }
 
   .viewer-hint {
     position: absolute;
-    bottom: 20px; left: 30px;
+    bottom: 100px; left: 30px;
     color: rgba(255,255,255,0.45);
     font-size: 12px;
     z-index: 100;
     pointer-events: none;
   }
 
-  /* 에러 표시 */
   .viewer-error {
     position: absolute;
     inset: 0;
@@ -164,6 +149,7 @@
     z-index: 50;
     padding: 40px;
     text-align: center;
+    white-space: pre-wrap;
   }
   .viewer-error.show { display: flex; }
 
@@ -225,17 +211,6 @@
   }
   .toast.show { opacity: 1; transform: translateY(0); }
 
-  /* 로딩 인디케이터 */
-  .lib-loading {
-    position: fixed;
-    bottom: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255,255,255,0.5);
-    font-size: 11px;
-    z-index: 600;
-  }
-
   .psv-navbar { display: none !important; }
 </style>
 </head>
@@ -245,7 +220,6 @@
 
 <div class="viewer" id="viewer">
   <div id="psv-container"></div>
-
   <div class="viewer-error" id="viewerError"></div>
 
   <div class="viewer-title-bar">
@@ -255,16 +229,16 @@
     <span id="viewerTitle">-</span>
   </div>
 
-  <div class="top-controls">
+  <!-- 우상단 통합 컨트롤 -->
+  <div class="top-right-controls">
     <button class="ctrl-btn" onclick="window.zoomIn()" title="줌 인">+</button>
     <button class="ctrl-btn" onclick="window.zoomOut()" title="줌 아웃">−</button>
     <button class="ctrl-btn active" id="autoRotateBtn" onclick="window.toggleAutoRotate()" title="자동 회전">↻</button>
     <button class="ctrl-btn" onclick="window.resetView()" title="정렬">⌂</button>
+    <button class="ctrl-btn close-btn-x" onclick="window.closeViewer()" title="닫기">✕</button>
   </div>
 
-  <button class="close-btn" onclick="window.closeViewer()">✕</button>
-
-  <div class="viewer-hint">⊕ 드래그하여 둘러보기 · 휠로 줌 · 점 클릭해 이동</div>
+  <div class="viewer-hint">⊕ 드래그하여 둘러보기 · 휠로 줌 · 하단 갤러리에서 장면 이동</div>
 </div>
 
 <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
@@ -277,7 +251,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ===== PSV v5 ES Module (공식 권장 방식, 버전 자동 최신) ===== -->
 <script type="importmap">
 {
   "imports": {
@@ -285,67 +258,80 @@
     "@photo-sphere-viewer/core": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.module.js",
     "@photo-sphere-viewer/markers-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin/index.module.js",
     "@photo-sphere-viewer/virtual-tour-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/virtual-tour-plugin/index.module.js",
-    "@photo-sphere-viewer/autorotate-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/autorotate-plugin/index.module.js"
+    "@photo-sphere-viewer/autorotate-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/autorotate-plugin/index.module.js",
+    "@photo-sphere-viewer/gallery-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/gallery-plugin/index.module.js"
   }
 }
 </script>
 
 <script type="module">
-let Viewer, MarkersPlugin, VirtualTourPlugin, AutorotatePlugin;
+let Viewer, MarkersPlugin, VirtualTourPlugin, AutorotatePlugin, GalleryPlugin;
 let libsReady = false;
 let libLoadError = null;
 
-// 라이브러리 로딩 (에러 핸들링 포함)
 try {
   const core = await import('@photo-sphere-viewer/core');
   const markers = await import('@photo-sphere-viewer/markers-plugin');
   const tour = await import('@photo-sphere-viewer/virtual-tour-plugin');
   const autorot = await import('@photo-sphere-viewer/autorotate-plugin');
+  const gal = await import('@photo-sphere-viewer/gallery-plugin');
 
   Viewer = core.Viewer;
   MarkersPlugin = markers.MarkersPlugin;
   VirtualTourPlugin = tour.VirtualTourPlugin;
   AutorotatePlugin = autorot.AutorotatePlugin;
+  GalleryPlugin = gal.GalleryPlugin;
 
   libsReady = true;
-  console.log("PSV libraries loaded successfully");
 } catch (e) {
   libLoadError = e.message || String(e);
   console.error("PSV library load failed:", e);
 }
 
 /* ============================================================
-   ★ 기본 장면 (영구 코드) ★
+   localStorage 저장
 ============================================================ */
-const baseScenes = [];
-
-/* localStorage 저장 */
 const STORAGE_KEY = "vr_gallery_uploads_v1";
-let uploadedScenes = loadFromStorage();
 
 function loadFromStorage() {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) return [];
-    return JSON.parse(data);
+    if (!data) {
+      console.log("[storage] empty - no saved data");
+      return [];
+    }
+    const parsed = JSON.parse(data);
+    console.log("[storage] loaded", parsed.length, "items");
+    return parsed;
   } catch (e) {
+    console.error("[storage] load fail", e);
     return [];
   }
 }
 
 function saveToStorage() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(uploadedScenes));
+    const json = JSON.stringify(uploadedScenes);
+    localStorage.setItem(STORAGE_KEY, json);
+    console.log("[storage] saved", uploadedScenes.length, "items, size:", (json.length/1024/1024).toFixed(2), "MB");
   } catch (e) {
-    showToast("저장 용량 초과 - 일부 이미지가 저장 안됨");
+    console.error("[storage] save fail", e);
+    showToast("저장 용량 초과! 큰 이미지는 줄여서 올리세요. (제한 5~10MB)");
   }
 }
+
+let uploadedScenes = loadFromStorage();
+
+/* 기본 장면 (영구 코드) */
+const baseScenes = [];
 
 function getAllScenes() {
   return [...baseScenes, ...uploadedScenes];
 }
 
-/* 갤러리 렌더링 */
+/* ============================================================
+   갤러리 렌더링
+============================================================ */
 function renderGallery() {
   const gallery = document.getElementById("gallery");
   gallery.innerHTML = "";
@@ -401,22 +387,20 @@ function openViewer(sceneId) {
   document.getElementById("viewerTitle").textContent = startScene.title;
   document.getElementById("viewerError").classList.remove("show");
 
-  // 라이브러리 로딩 실패 시
   if (!libsReady) {
     const errEl = document.getElementById("viewerError");
-    errEl.textContent = "VR 라이브러리 로드 실패: " + (libLoadError || "알 수 없는 오류") +
-                        "\n인터넷 연결 또는 CDN 차단 여부를 확인하세요.";
+    errEl.textContent = "VR 라이브러리 로드 실패\n" + (libLoadError || "");
     errEl.classList.add("show");
     return;
   }
 
-  // 가상 투어 노드
+  // 가상 투어 노드 (각 노드는 다른 모든 노드로 링크)
   const nodes = all.map(s => {
     const others = all.filter(o => o.id !== s.id);
-    const links = (s.links && s.links.length > 0) ? s.links : others.slice(0, 4).map((target, i) => ({
+    const links = others.map((target, i) => ({
       nodeId: target.id,
       position: {
-        yaw: ((i + 1) * (360 / (Math.min(others.length, 4) + 1))) + "deg",
+        yaw: ((i + 1) * (360 / (others.length + 1))) + "deg",
         pitch: "-5deg"
       }
     }));
@@ -427,12 +411,21 @@ function openViewer(sceneId) {
       thumbnail: s.thumb || s.panorama,
       name: s.title,
       caption: s.title,
-      links: links
+      links: links,
+      gallery: true
     };
   });
 
+  // 갤러리용 아이템 (썸네일 띠에 표시)
+  const galleryItems = all.map(s => ({
+    id: s.id,
+    name: s.title,
+    panorama: s.panorama,
+    thumbnail: s.thumb || s.panorama
+  }));
+
   if (psv) {
-    psv.destroy();
+    try { psv.destroy(); } catch (e) {}
     psv = null;
   }
 
@@ -448,6 +441,12 @@ function openViewer(sceneId) {
         }),
         VirtualTourPlugin.withConfig({
           positionMode: 'manual',
+        }),
+        GalleryPlugin.withConfig({
+          items: galleryItems,
+          visibleOnLoad: true,
+          hideOnClick: false,
+          thumbnailSize: { width: 160, height: 100 }
         }),
       ],
       defaultZoomLvl: 30,
@@ -508,12 +507,7 @@ window.toggleAutoRotate = () => {
 };
 window.resetView = () => {
   if (!psv) return;
-  psv.animate({
-    yaw: 0,
-    pitch: 0,
-    zoom: 30,
-    speed: '2rpm'
-  });
+  psv.animate({ yaw: 0, pitch: 0, zoom: 30, speed: '2rpm' });
 };
 window.closeViewer = closeViewer;
 
@@ -555,8 +549,7 @@ function handleUpload(event) {
       if (processed === files.length) {
         saveToStorage();
         renderGallery();
-        const note = addedCount >= 2 ? " · 점 클릭으로 이동 가능" : "";
-        showToast(`${addedCount}개 추가됨 · 새로고침해도 유지${note}`);
+        showToast(`${addedCount}개 추가 · 새로고침해도 유지됨`);
       }
     };
     reader.onerror = () => {
@@ -589,16 +582,13 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
 }
 
-// 이벤트 바인딩
 document.getElementById("fileInput").addEventListener("change", handleUpload);
 document.getElementById("clearBtn").addEventListener("click", clearAll);
 
-// 시작
 renderGallery();
 
-// 라이브러리 로드 실패 시 사용자에게 알림
 if (!libsReady) {
-  showToast("VR 라이브러리 로딩 실패 - 새로고침 또는 인터넷 확인");
+  showToast("VR 라이브러리 로딩 실패");
 }
 </script>
 
