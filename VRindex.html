@@ -12,19 +12,22 @@
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: #000; height: 100vh; overflow: hidden; }
+  html, body { background: #000; }
   body {
     color: #fff;
     font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 100px;
   }
 
   .gallery {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(2, 1fr);
+    grid-auto-rows: calc((100vh - 4px) / 2);  /* 1행 = 화면 절반, 2행이면 꽉 참, 더 올리면 스크롤 */
     gap: 4px;
     width: 100vw;
-    height: 100vh;
   }
   .card {
     position: relative;
@@ -292,38 +295,113 @@ try {
 }
 
 /* ============================================================
-   localStorage 저장
+   IndexedDB 저장 (대용량 이미지 영구 저장)
 ============================================================ */
-const STORAGE_KEY = "vr_gallery_uploads_v1";
+const DB_NAME = "vr_gallery_db";
+const DB_VERSION = 1;
+const STORE_NAME = "scenes";
 
-function loadFromStorage() {
+let dbInstance = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (dbInstance) return resolve(dbInstance);
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = (e) => {
+      dbInstance = e.target.result;
+      resolve(dbInstance);
+    };
+    req.onerror = (e) => {
+      console.error("[db] open fail", e);
+      reject(e);
+    };
+  });
+}
+
+async function loadFromStorage() {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) {
-      console.log("[storage] empty - no saved data");
-      return [];
-    }
-    const parsed = JSON.parse(data);
-    console.log("[storage] loaded", parsed.length, "items");
-    return parsed;
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.getAll();
+      req.onsuccess = () => {
+        const items = req.result || [];
+        console.log("[db] loaded", items.length, "items");
+        resolve(items);
+      };
+      req.onerror = () => {
+        console.error("[db] load fail");
+        resolve([]);
+      };
+    });
   } catch (e) {
-    console.error("[storage] load fail", e);
+    console.error("[db] load fail", e);
     return [];
   }
 }
 
-function saveToStorage() {
+async function saveOne(scene) {
   try {
-    const json = JSON.stringify(uploadedScenes);
-    localStorage.setItem(STORAGE_KEY, json);
-    console.log("[storage] saved", uploadedScenes.length, "items, size:", (json.length/1024/1024).toFixed(2), "MB");
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const store = tx.objectStore(STORE_NAME);
+      store.put(scene);
+      tx.oncomplete = () => {
+        console.log("[db] saved 1 item:", scene.id);
+        resolve();
+      };
+      tx.onerror = (e) => {
+        console.error("[db] save fail", e);
+        reject(e);
+      };
+    });
   } catch (e) {
-    console.error("[storage] save fail", e);
-    showToast("저장 용량 초과! 큰 이미지는 줄여서 올리세요. (제한 5~10MB)");
+    console.error("[db] save fail", e);
+    showToast("저장 실패: " + e.message);
   }
 }
 
-let uploadedScenes = loadFromStorage();
+async function deleteOne(id) {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      tx.objectStore(STORE_NAME).delete(id);
+      tx.oncomplete = () => {
+        console.log("[db] deleted:", id);
+        resolve();
+      };
+    });
+  } catch (e) {
+    console.error("[db] delete fail", e);
+  }
+}
+
+async function clearStorage() {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      tx.objectStore(STORE_NAME).clear();
+      tx.oncomplete = () => {
+        console.log("[db] cleared all");
+        resolve();
+      };
+    });
+  } catch (e) {
+    console.error("[db] clear fail", e);
+  }
+}
+
+let uploadedScenes = await loadFromStorage();
 
 /* 기본 장면 (영구 코드) */
 const baseScenes = [];
@@ -360,11 +438,11 @@ function renderGallery() {
   });
 
   gallery.querySelectorAll(".delete-btn").forEach(btn => {
-    btn.onclick = (e) => {
+    btn.onclick = async (e) => {
       e.stopPropagation();
       const id = btn.dataset.id;
       uploadedScenes = uploadedScenes.filter(s => s.id !== id);
-      saveToStorage();
+      await deleteOne(id);
       renderGallery();
     };
   });
@@ -435,12 +513,6 @@ function openViewer(sceneId) {
         }),
         VirtualTourPlugin.withConfig({
           positionMode: 'manual',
-          arrowStyle: {
-            color: 0xffffff,
-            hoverColor: 0xff8800,
-            opacity: 0.75,
-            scale: [0.7, 1.5],
-          },
         }),
       ],
       defaultZoomLvl: 30,
@@ -525,23 +597,25 @@ function handleUpload(event) {
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const base64 = e.target.result;
       const id = "upload_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
       const name = file.name.replace(/\.[^.]+$/, "");
 
-      uploadedScenes.push({
+      const scene = {
         id: id,
         title: name,
         panorama: base64,
         thumb: base64
-      });
+      };
+
+      uploadedScenes.push(scene);
+      await saveOne(scene);
 
       addedCount++;
       processed++;
 
       if (processed === files.length) {
-        saveToStorage();
         renderGallery();
         showToast(`${addedCount}개 추가 · 새로고침해도 유지됨`);
       }
@@ -549,7 +623,6 @@ function handleUpload(event) {
     reader.onerror = () => {
       processed++;
       if (processed === files.length) {
-        saveToStorage();
         renderGallery();
       }
     };
@@ -559,10 +632,10 @@ function handleUpload(event) {
   event.target.value = "";
 }
 
-function clearAll() {
+async function clearAll() {
   if (!confirm("업로드한 모든 이미지를 삭제할까요?")) return;
   uploadedScenes = [];
-  localStorage.removeItem(STORAGE_KEY);
+  await clearStorage();
   renderGallery();
   showToast("모두 삭제됨");
 }
