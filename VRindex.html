@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>360° VR Gallery</title>
 
-<!-- ===== Photo Sphere Viewer v5 (최신) ===== -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5/index.min.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5/index.min.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/virtual-tour-plugin@5/index.min.css" />
+<!-- ===== PSV v5 CSS ===== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin/index.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/virtual-tour-plugin/index.min.css" />
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -18,7 +18,6 @@
     font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif;
   }
 
-  /* ===== 갤러리: 5열 × 2행 = 화면 꽉 채움 ===== */
   .gallery {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -54,7 +53,6 @@
     font-size: 14px;
     color: #fff;
     text-shadow: 0 1px 4px rgba(0,0,0,0.9);
-    letter-spacing: 0.02em;
     z-index: 2;
   }
   .card .delete-btn {
@@ -74,17 +72,6 @@
   .card:hover .delete-btn { opacity: 1; }
   .card .delete-btn:hover { background: rgba(220,50,50,0.9); }
 
-  .placeholder {
-    width: 100%; height: 100%;
-    background: linear-gradient(135deg, #2a2a3a, #1c1c28);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.3);
-    font-size: 11px;
-  }
-
-  /* ===== VR 뷰어 모달 ===== */
   .viewer {
     display: none;
     position: fixed;
@@ -95,7 +82,6 @@
   .viewer.active { display: block; }
   #psv-container { width: 100%; height: 100%; }
 
-  /* 좌상단 제목 */
   .viewer-title-bar {
     position: absolute;
     top: 0; left: 0;
@@ -109,23 +95,18 @@
     font-size: 14px;
     pointer-events: none;
   }
-  .viewer-title-bar .dot {
-    width: 8px; height: 8px;
-    background: #ff3b3b;
-    border-radius: 50%;
-  }
+  .viewer-title-bar .dot { width: 8px; height: 8px; background: #ff3b3b; border-radius: 50%; }
   .viewer-title-bar .sep { color: #555; }
 
-  /* 상단 컨트롤 바 (가운데) */
   .top-controls {
     position: absolute;
     top: 16px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 8px;
+    gap: 4px;
     z-index: 100;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.5);
     backdrop-filter: blur(10px);
     padding: 6px;
     border-radius: 999px;
@@ -135,28 +116,21 @@
     background: transparent;
     border: none;
     color: #fff;
-    width: 36px;
-    height: 36px;
+    width: 36px; height: 36px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     transition: background 0.2s;
     font-family: inherit;
   }
   .ctrl-btn:hover { background: rgba(255,255,255,0.15); }
-  .ctrl-btn.active {
-    background: rgba(74, 222, 128, 0.3);
-    color: #4ade80;
-  }
+  .ctrl-btn.active { background: rgba(74, 222, 128, 0.3); color: #4ade80; }
 
-  /* 우상단 닫기 */
   .close-btn {
     position: absolute;
     top: 20px; right: 20px;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.5);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.15);
     color: #fff;
@@ -164,15 +138,11 @@
     border-radius: 50%;
     cursor: pointer;
     font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     z-index: 100;
-    transition: background 0.2s;
   }
   .close-btn:hover { background: rgba(220,50,50,0.7); }
 
-  /* 좌하단 안내 */
   .viewer-hint {
     position: absolute;
     bottom: 20px; left: 30px;
@@ -182,7 +152,21 @@
     pointer-events: none;
   }
 
-  /* 업로드 버튼 */
+  /* 에러 표시 */
+  .viewer-error {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: #ff6b6b;
+    font-size: 14px;
+    z-index: 50;
+    padding: 40px;
+    text-align: center;
+  }
+  .viewer-error.show { display: flex; }
+
   .upload-btn {
     position: fixed;
     bottom: 30px; left: 30px;
@@ -199,17 +183,30 @@
     gap: 8px;
     z-index: 500;
     font-family: inherit;
-    transition: background 0.2s;
   }
   .upload-btn:hover { background: rgba(255,255,255,0.18); }
-  .upload-btn .dot-indicator {
-    width: 6px; height: 6px;
-    background: #4ade80;
-    border-radius: 50%;
-  }
+  .upload-btn .dot-indicator { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; }
   #fileInput { display: none; }
 
-  /* 토스트 */
+  .clear-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 220px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    padding: 12px 18px;
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 500;
+    font-family: inherit;
+    display: none;
+  }
+  .clear-btn.show { display: block; }
+  .clear-btn:hover { color: #fff; background: rgba(220,50,50,0.3); }
+
   .toast {
     position: fixed;
     bottom: 100px; left: 30px;
@@ -224,10 +221,21 @@
     transform: translateY(10px);
     transition: all 0.3s;
     pointer-events: none;
+    max-width: 360px;
   }
   .toast.show { opacity: 1; transform: translateY(0); }
 
-  /* PSV 기본 네비게이션 바 숨김 (우리 커스텀 컨트롤만 보이게) */
+  /* 로딩 인디케이터 */
+  .lib-loading {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.5);
+    font-size: 11px;
+    z-index: 600;
+  }
+
   .psv-navbar { display: none !important; }
 </style>
 </head>
@@ -235,11 +243,11 @@
 
 <div class="gallery" id="gallery"></div>
 
-<!-- VR 뷰어 모달 -->
 <div class="viewer" id="viewer">
   <div id="psv-container"></div>
 
-  <!-- 좌상단 제목 -->
+  <div class="viewer-error" id="viewerError"></div>
+
   <div class="viewer-title-bar">
     <span class="dot"></span>
     <span>360° VR</span>
@@ -247,75 +255,97 @@
     <span id="viewerTitle">-</span>
   </div>
 
-  <!-- 상단 가운데 컨트롤 -->
   <div class="top-controls">
-    <button class="ctrl-btn" onclick="zoomIn()" title="줌 인">+</button>
-    <button class="ctrl-btn" onclick="zoomOut()" title="줌 아웃">−</button>
-    <button class="ctrl-btn active" id="autoRotateBtn" onclick="toggleAutoRotate()" title="자동 회전">↻</button>
-    <button class="ctrl-btn" onclick="resetView()" title="정렬 (초기 위치)">⌂</button>
+    <button class="ctrl-btn" onclick="window.zoomIn()" title="줌 인">+</button>
+    <button class="ctrl-btn" onclick="window.zoomOut()" title="줌 아웃">−</button>
+    <button class="ctrl-btn active" id="autoRotateBtn" onclick="window.toggleAutoRotate()" title="자동 회전">↻</button>
+    <button class="ctrl-btn" onclick="window.resetView()" title="정렬">⌂</button>
   </div>
 
-  <!-- 우상단 닫기 -->
-  <button class="close-btn" onclick="closeViewer()">✕</button>
+  <button class="close-btn" onclick="window.closeViewer()">✕</button>
 
-  <!-- 좌하단 안내 -->
   <div class="viewer-hint">⊕ 드래그하여 둘러보기 · 휠로 줌 · 점 클릭해 이동</div>
 </div>
 
-<!-- 업로드 -->
 <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
   <span class="dot-indicator"></span>
   ⬆ 360° VR 업로드
 </button>
-<input type="file" id="fileInput" accept="image/*" multiple onchange="handleUpload(event)" />
+<input type="file" id="fileInput" accept="image/*" multiple />
+
+<button class="clear-btn" id="clearBtn">모두 지우기</button>
 
 <div class="toast" id="toast"></div>
 
-<!-- ===== Photo Sphere Viewer 라이브러리 (ES Module) ===== -->
+<!-- ===== PSV v5 ES Module (공식 권장 방식, 버전 자동 최신) ===== -->
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-    "@photo-sphere-viewer/core": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5/index.module.js",
-    "@photo-sphere-viewer/markers-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin@5/index.module.js",
-    "@photo-sphere-viewer/virtual-tour-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/virtual-tour-plugin@5/index.module.js",
-    "@photo-sphere-viewer/autorotate-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/autorotate-plugin@5/index.module.js"
+    "three": "https://cdn.jsdelivr.net/npm/three/build/three.module.js",
+    "@photo-sphere-viewer/core": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.module.js",
+    "@photo-sphere-viewer/markers-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin/index.module.js",
+    "@photo-sphere-viewer/virtual-tour-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/virtual-tour-plugin/index.module.js",
+    "@photo-sphere-viewer/autorotate-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/autorotate-plugin/index.module.js"
   }
 }
 </script>
 
 <script type="module">
-import { Viewer } from '@photo-sphere-viewer/core';
-import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
-import { VirtualTourPlugin } from '@photo-sphere-viewer/virtual-tour-plugin';
-import { AutorotatePlugin } from '@photo-sphere-viewer/autorotate-plugin';
+let Viewer, MarkersPlugin, VirtualTourPlugin, AutorotatePlugin;
+let libsReady = false;
+let libLoadError = null;
+
+// 라이브러리 로딩 (에러 핸들링 포함)
+try {
+  const core = await import('@photo-sphere-viewer/core');
+  const markers = await import('@photo-sphere-viewer/markers-plugin');
+  const tour = await import('@photo-sphere-viewer/virtual-tour-plugin');
+  const autorot = await import('@photo-sphere-viewer/autorotate-plugin');
+
+  Viewer = core.Viewer;
+  MarkersPlugin = markers.MarkersPlugin;
+  VirtualTourPlugin = tour.VirtualTourPlugin;
+  AutorotatePlugin = autorot.AutorotatePlugin;
+
+  libsReady = true;
+  console.log("PSV libraries loaded successfully");
+} catch (e) {
+  libLoadError = e.message || String(e);
+  console.error("PSV library load failed:", e);
+}
 
 /* ============================================================
-   ★ 기본 장면 (영구) ★
-   폴더(images/)에 이미지 넣고 아래 배열에 등록하면
-   새로고침해도 유지됨.
-
-   예시:
-   {
-     id: "room1",
-     title: "거실",
-     panorama: "images/pano1.jpg",
-     thumb: "images/thumb1.jpg",
-     links: [{ nodeId: "room2" }]  // room2로 이동하는 핫스팟
-   }
+   ★ 기본 장면 (영구 코드) ★
 ============================================================ */
 const baseScenes = [];
 
-/* 업로드 장면 (메모리, 새로고침 시 사라짐) */
-let uploadedScenes = [];
+/* localStorage 저장 */
+const STORAGE_KEY = "vr_gallery_uploads_v1";
+let uploadedScenes = loadFromStorage();
+
+function loadFromStorage() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (!data) return [];
+    return JSON.parse(data);
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(uploadedScenes));
+  } catch (e) {
+    showToast("저장 용량 초과 - 일부 이미지가 저장 안됨");
+  }
+}
 
 function getAllScenes() {
   return [...baseScenes, ...uploadedScenes];
 }
 
-/* ============================================================
-   갤러리 렌더링
-============================================================ */
+/* 갤러리 렌더링 */
 function renderGallery() {
   const gallery = document.getElementById("gallery");
   gallery.innerHTML = "";
@@ -333,28 +363,32 @@ function renderGallery() {
     const isUploaded = scene.id.startsWith("upload_");
 
     card.innerHTML = `
-      <img src="${thumbSrc}" alt="${scene.title}"
-           onerror="this.outerHTML='<div class=\\'placeholder\\'>이미지 없음</div>'" />
+      <img src="${thumbSrc}" alt="${scene.title}" />
       ${isUploaded ? `<button class="delete-btn" data-id="${scene.id}">✕</button>` : ""}
       <div class="label">${scene.title}</div>
     `;
     gallery.appendChild(card);
   });
 
-  // 삭제 버튼 이벤트
   gallery.querySelectorAll(".delete-btn").forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
       const id = btn.dataset.id;
       uploadedScenes = uploadedScenes.filter(s => s.id !== id);
+      saveToStorage();
       renderGallery();
     };
   });
+
+  const clearBtn = document.getElementById("clearBtn");
+  if (uploadedScenes.length > 0) {
+    clearBtn.classList.add("show");
+  } else {
+    clearBtn.classList.remove("show");
+  }
 }
 
-/* ============================================================
-   VR 뷰어 (Photo Sphere Viewer + Virtual Tour)
-============================================================ */
+/* VR 뷰어 */
 let psv = null;
 let isAutoRotating = true;
 
@@ -365,17 +399,25 @@ function openViewer(sceneId) {
 
   document.getElementById("viewer").classList.add("active");
   document.getElementById("viewerTitle").textContent = startScene.title;
+  document.getElementById("viewerError").classList.remove("show");
 
-  // 가상 투어 노드 만들기 (모든 장면 = 노드)
-  const nodes = all.map((s, idx) => {
-    // 자동 핫스팟 생성: 같은 갤러리의 다른 장면들로 연결
-    const otherScenes = all.filter(other => other.id !== s.id);
-    const links = otherScenes.slice(0, 3).map((target, i) => ({
+  // 라이브러리 로딩 실패 시
+  if (!libsReady) {
+    const errEl = document.getElementById("viewerError");
+    errEl.textContent = "VR 라이브러리 로드 실패: " + (libLoadError || "알 수 없는 오류") +
+                        "\n인터넷 연결 또는 CDN 차단 여부를 확인하세요.";
+    errEl.classList.add("show");
+    return;
+  }
+
+  // 가상 투어 노드
+  const nodes = all.map(s => {
+    const others = all.filter(o => o.id !== s.id);
+    const links = (s.links && s.links.length > 0) ? s.links : others.slice(0, 4).map((target, i) => ({
       nodeId: target.id,
-      // 핫스팟 위치를 360도 균등 분배
       position: {
-        yaw: (i + 1) * (360 / (otherScenes.length + 1)) + "deg",
-        pitch: "0deg"
+        yaw: ((i + 1) * (360 / (Math.min(others.length, 4) + 1))) + "deg",
+        pitch: "-5deg"
       }
     }));
 
@@ -385,64 +427,65 @@ function openViewer(sceneId) {
       thumbnail: s.thumb || s.panorama,
       name: s.title,
       caption: s.title,
-      links: s.links || links  // 직접 정의한 links가 있으면 그거 우선
+      links: links
     };
   });
 
-  // 기존 뷰어 제거
   if (psv) {
     psv.destroy();
     psv = null;
   }
 
-  // 새 뷰어 생성
-  psv = new Viewer({
-    container: document.getElementById("psv-container"),
-    plugins: [
-      MarkersPlugin,
-      [AutorotatePlugin, {
-        autorotateSpeed: "1rpm",
-        autostartDelay: 1500,
-        autostartOnIdle: false
-      }],
-      [VirtualTourPlugin, {
-        positionMode: 'manual',
-        renderMode: 'markers',
-      }],
-    ],
-    defaultZoomLvl: 30,
-    minFov: 20,
-    maxFov: 100,
-    navbar: false,
-    loadingTxt: "로딩 중...",
-  });
+  try {
+    psv = new Viewer({
+      container: document.getElementById("psv-container"),
+      plugins: [
+        MarkersPlugin,
+        AutorotatePlugin.withConfig({
+          autorotateSpeed: "0.8rpm",
+          autostartDelay: 1000,
+          autostartOnIdle: false
+        }),
+        VirtualTourPlugin.withConfig({
+          positionMode: 'manual',
+          renderMode: 'markers',
+        }),
+      ],
+      defaultZoomLvl: 30,
+      minFov: 20,
+      maxFov: 100,
+      navbar: false,
+    });
 
-  const tour = psv.getPlugin(VirtualTourPlugin);
-  tour.setNodes(nodes, sceneId);
+    const tourPlugin = psv.getPlugin(VirtualTourPlugin);
+    tourPlugin.setNodes(nodes, sceneId);
 
-  // 자동 회전 시작
-  const autorotate = psv.getPlugin(AutorotatePlugin);
-  setTimeout(() => {
-    autorotate.start();
-    isAutoRotating = true;
-    document.getElementById("autoRotateBtn").classList.add("active");
-  }, 800);
+    const ar = psv.getPlugin(AutorotatePlugin);
+    setTimeout(() => {
+      ar.start();
+      isAutoRotating = true;
+      document.getElementById("autoRotateBtn").classList.add("active");
+    }, 1000);
 
-  // 장면 전환 시 제목 업데이트
-  tour.addEventListener('node-changed', ({ node }) => {
-    document.getElementById("viewerTitle").textContent = node.name || node.id;
-  });
+    tourPlugin.addEventListener('node-changed', ({ node }) => {
+      document.getElementById("viewerTitle").textContent = node.name || node.id;
+    });
+  } catch (e) {
+    console.error("뷰어 생성 실패:", e);
+    const errEl = document.getElementById("viewerError");
+    errEl.textContent = "뷰어 생성 실패: " + e.message;
+    errEl.classList.add("show");
+  }
 }
 
 function closeViewer() {
   document.getElementById("viewer").classList.remove("active");
   if (psv) {
-    psv.destroy();
+    try { psv.destroy(); } catch (e) {}
     psv = null;
   }
 }
 
-/* 컨트롤 함수들 (window에 노출) */
 window.zoomIn = () => {
   if (!psv) return;
   psv.zoom(psv.getZoomLevel() + 10);
@@ -452,7 +495,7 @@ window.zoomOut = () => {
   psv.zoom(psv.getZoomLevel() - 10);
 };
 window.toggleAutoRotate = () => {
-  if (!psv) return;
+  if (!psv || !libsReady) return;
   const ar = psv.getPlugin(AutorotatePlugin);
   if (isAutoRotating) {
     ar.stop();
@@ -474,50 +517,90 @@ window.resetView = () => {
   });
 };
 window.closeViewer = closeViewer;
-window.openViewer = openViewer;
 
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeViewer();
 });
 
-/* ============================================================
-   업로드
-============================================================ */
-window.handleUpload = function(event) {
+/* 업로드 */
+function handleUpload(event) {
   const files = Array.from(event.target.files);
   if (files.length === 0) return;
 
+  showToast(`${files.length}개 변환 중...`);
+  let processed = 0;
   let addedCount = 0;
+
   files.forEach(file => {
-    if (!file.type.startsWith("image/")) return;
-    const url = URL.createObjectURL(file);
-    const id = "upload_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-    const name = file.name.replace(/\.[^.]+$/, "");
-    uploadedScenes.push({
-      id: id,
-      title: name,
-      panorama: url,
-      thumb: url
-    });
-    addedCount++;
+    if (!file.type.startsWith("image/")) {
+      processed++;
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result;
+      const id = "upload_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+      const name = file.name.replace(/\.[^.]+$/, "");
+
+      uploadedScenes.push({
+        id: id,
+        title: name,
+        panorama: base64,
+        thumb: base64
+      });
+
+      addedCount++;
+      processed++;
+
+      if (processed === files.length) {
+        saveToStorage();
+        renderGallery();
+        const note = addedCount >= 2 ? " · 점 클릭으로 이동 가능" : "";
+        showToast(`${addedCount}개 추가됨 · 새로고침해도 유지${note}`);
+      }
+    };
+    reader.onerror = () => {
+      processed++;
+      if (processed === files.length) {
+        saveToStorage();
+        renderGallery();
+      }
+    };
+    reader.readAsDataURL(file);
   });
 
-  renderGallery();
-  showToast(`${addedCount}개 추가됨${addedCount >= 2 ? " · 점 클릭으로 이동 가능" : ""}`);
   event.target.value = "";
-};
+}
 
-/* 토스트 */
+function clearAll() {
+  if (!confirm("업로드한 모든 이미지를 삭제할까요?")) return;
+  uploadedScenes = [];
+  localStorage.removeItem(STORAGE_KEY);
+  renderGallery();
+  showToast("모두 삭제됨");
+}
+
 let toastTimer = null;
 function showToast(msg) {
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
 }
 
+// 이벤트 바인딩
+document.getElementById("fileInput").addEventListener("change", handleUpload);
+document.getElementById("clearBtn").addEventListener("click", clearAll);
+
+// 시작
 renderGallery();
+
+// 라이브러리 로드 실패 시 사용자에게 알림
+if (!libsReady) {
+  showToast("VR 라이브러리 로딩 실패 - 새로고침 또는 인터넷 확인");
+}
 </script>
 
 </body>
