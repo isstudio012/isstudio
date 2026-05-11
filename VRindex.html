@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>360° VR Gallery</title>
+
+<!-- ===== Pannellum 라이브러리 (CDN) ===== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #000;
+    min-height: 100vh;
+  }
+  body {
+    color: #fff;
+    font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif;
+    padding-bottom: 120px;
+  }
+
+  /* ===== 갤러리 그리드 ===== */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+  }
+  .card {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    cursor: pointer;
+    background: #0a0a0a;
+    transition: transform 0.25s ease;
+  }
+  .card:hover { transform: scale(1.015); z-index: 2; }
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.95);
+    transition: filter 0.25s ease;
+  }
+  .card:hover img { filter: brightness(1.08); }
+  .card .label {
+    position: absolute;
+    bottom: 14px;
+    left: 16px;
+    font-size: 14px;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+    letter-spacing: 0.02em;
+  }
+  .card .delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+    z-index: 3;
+  }
+  .card:hover .delete-btn { opacity: 1; }
+  .card .delete-btn:hover { background: rgba(220,50,50,0.9); }
+
+  /* 헤더 (마지막 빈 칸 자리) */
+  .header-cell {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    padding: 18px 22px;
+    text-align: right;
+  }
+  .header-cell h1 {
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.4em;
+    color: #aaa;
+  }
+  .header-cell .count {
+    font-size: 10px;
+    color: #666;
+    letter-spacing: 0.25em;
+    margin-top: 4px;
+  }
+
+  /* 이미지 없을 때 플레이스홀더 */
+  .placeholder {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #2a2a3a, #1c1c28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.45);
+    font-size: 11px;
+    text-align: center;
+    padding: 10px;
+    line-height: 1.6;
+  }
+
+  /* ===== VR 뷰어 모달 ===== */
+  .viewer {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #000;
+    z-index: 1000;
+  }
+  .viewer.active { display: block; }
+  #panorama { width: 100%; height: 100%; }
+  .viewer-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 20px 30px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+  }
+  .viewer-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+  }
+  .viewer-title .dot {
+    width: 8px; height: 8px;
+    background: #ff3b3b;
+    border-radius: 50%;
+  }
+  .viewer-title .sep { color: #555; }
+  .close-btn {
+    background: none; border: none;
+    color: #fff; font-size: 22px;
+    cursor: pointer;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+  }
+  .close-btn:hover { background: rgba(255,255,255,0.1); }
+  .viewer-bottom {
+    position: absolute;
+    bottom: 20px; left: 30px;
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    z-index: 10;
+  }
+
+  /* ===== 업로드 버튼 ===== */
+  .upload-btn {
+    position: fixed;
+    bottom: 30px; left: 30px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    transition: background 0.2s;
+    font-family: inherit;
+  }
+  .upload-btn:hover { background: rgba(255,255,255,0.18); }
+  .upload-btn .dot-indicator {
+    width: 6px; height: 6px;
+    background: #4ade80;
+    border-radius: 50%;
+  }
+  #fileInput { display: none; }
+
+  /* 토스트 메시지 */
+  .toast {
+    position: fixed;
+    bottom: 100px; left: 30px;
+    background: rgba(20,20,20,0.95);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="gallery" id="gallery"></div>
+
+<div class="viewer" id="viewer">
+  <div class="viewer-top">
+    <div class="viewer-title">
+      <span class="dot"></span>
+      <span>360° VR</span>
+      <span class="sep">|</span>
+      <span id="viewerTitle">-</span>
+    </div>
+    <button class="close-btn" onclick="closeViewer()">✕</button>
+  </div>
+  <div id="panorama"></div>
+  <div class="viewer-bottom">⊕ 드래그하여 둘러보기 · 스크롤로 줌</div>
+</div>
+
+<button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+  <span class="dot-indicator"></span>
+  ⬆ 360° VR 업로드
+</button>
+<input type="file" id="fileInput" accept="image/*" multiple onchange="handleUpload(event)" />
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   ★ 기본 장면 (영구) ★
+   폴더에 이미지 넣고 여기 등록하면 새로고침해도 유지됨.
+   핫스팟(다른 장면으로 점프)도 가능.
+============================================================ */
+const baseScenes = [
+  {
+    id: "main",
+    title: "011111파노라마-0001",
+    image: "images/pano_main.jpg",
+    thumb: "images/thumb_main.jpg",
+    hotSpots: [
+      { pitch: -5, yaw: 90, text: "입구로 이동", sceneId: "entrance" }
+    ]
+  },
+  {
+    id: "entrance",
+    title: "입구 VR",
+    image: "images/pano_entrance.jpg",
+    thumb: "images/thumb_entrance.jpg",
+    hotSpots: [
+      { pitch: 0, yaw: 180, text: "거실로", sceneId: "main" }
+    ]
+  }
+];
+
+/* 업로드 장면 (브라우저 메모리, 새로고침 시 사라짐) */
+let uploadedScenes = [];
+
+function getAllScenes() {
+  return [...baseScenes, ...uploadedScenes];
+}
+
+/* 갤러리 렌더링 */
+function renderGallery() {
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+  const all = getAllScenes();
+
+  all.forEach(scene => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.onclick = (e) => {
+      if (e.target.classList.contains("delete-btn")) return;
+      openViewer(scene.id);
+    };
+
+    const thumbSrc = scene.thumb || scene.image;
+    const isUploaded = scene.id.startsWith("upload_");
+
+    card.innerHTML = `
+      <img src="${thumbSrc}" alt="${scene.title}"
+           onerror="this.outerHTML='<div class=\\'placeholder\\'>이미지를 추가하세요<br>${thumbSrc}</div>'" />
+      ${isUploaded ? `<button class="delete-btn" onclick="deleteUploaded('${scene.id}', event)">✕</button>` : ""}
+      <div class="label">${scene.title}</div>
+    `;
+    gallery.appendChild(card);
+  });
+
+  const headerCell = document.createElement("div");
+  headerCell.className = "header-cell";
+  headerCell.innerHTML = `
+    <h1>360° VR GALLERY</h1>
+    <div class="count">${all.length} SCENES</div>
+  `;
+  gallery.appendChild(headerCell);
+}
+
+/* VR 뷰어 */
+let viewer = null;
+function openViewer(sceneId) {
+  const all = getAllScenes();
+  const scene = all.find(s => s.id === sceneId);
+  if (!scene) return;
+
+  document.getElementById("viewer").classList.add("active");
+  document.getElementById("viewerTitle").textContent = scene.title;
+
+  const pannellumScenes = {};
+  all.forEach(s => {
+    pannellumScenes[s.id] = {
+      type: "equirectangular",
+      panorama: s.image,
+      autoLoad: true,
+      hotSpots: (s.hotSpots || []).map(h => ({
+        pitch: h.pitch,
+        yaw: h.yaw,
+        type: "scene",
+        text: h.text,
+        sceneId: h.sceneId
+      }))
+    };
+  });
+
+  if (viewer) viewer.destroy();
+  viewer = pannellum.viewer("panorama", {
+    default: {
+      firstScene: sceneId,
+      sceneFadeDuration: 800,
+      autoLoad: true
+    },
+    scenes: pannellumScenes
+  });
+}
+
+function closeViewer() {
+  document.getElementById("viewer").classList.remove("active");
+  if (viewer) { viewer.destroy(); viewer = null; }
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeViewer();
+});
+
+/* 업로드 처리 */
+function handleUpload(event) {
+  const files = Array.from(event.target.files);
+  if (files.length === 0) return;
+
+  let addedCount = 0;
+  files.forEach(file => {
+    if (!file.type.startsWith("image/")) return;
+    const url = URL.createObjectURL(file);
+    const id = "upload_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+    const name = file.name.replace(/\.[^.]+$/, "");
+    uploadedScenes.push({
+      id: id,
+      title: name,
+      image: url,
+      thumb: url
+    });
+    addedCount++;
+  });
+
+  renderGallery();
+  showToast(`${addedCount}개 추가됨 (새로고침 시 사라짐)`);
+  event.target.value = "";
+}
+
+function deleteUploaded(id, event) {
+  event.stopPropagation();
+  uploadedScenes = uploadedScenes.filter(s => s.id !== id);
+  renderGallery();
+}
+
+/* 토스트 */
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+renderGallery();
+</script>
+
+</body>
+</html>
