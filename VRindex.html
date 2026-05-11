@@ -212,6 +212,16 @@
   .toast.show { opacity: 1; transform: translateY(0); }
 
   .psv-navbar { display: none !important; }
+
+  /* 바닥 핫스팟(3D 화살표) 투명하게 - 호버 시 진하게 */
+  .psv-virtual-tour-arrow {
+    opacity: 0.35 !important;
+    transition: opacity 0.25s ease;
+  }
+  .psv-virtual-tour-arrow:hover {
+    opacity: 1 !important;
+  }
+  /* Three.js 렌더된 3D 메시 화살표용 (canvas 내부) - 색상 조정 */
 </style>
 </head>
 <body>
@@ -394,24 +404,15 @@ function openViewer(sceneId) {
     return;
   }
 
-  // 가상 투어 노드 (각 노드는 다른 모든 노드로 링크)
+  // 가상 투어 노드 (핫스팟 없이 - 갤러리 띠로만 이동)
   const nodes = all.map(s => {
-    const others = all.filter(o => o.id !== s.id);
-    const links = others.map((target, i) => ({
-      nodeId: target.id,
-      position: {
-        yaw: ((i + 1) * (360 / (others.length + 1))) + "deg",
-        pitch: "-5deg"
-      }
-    }));
-
     return {
       id: s.id,
       panorama: s.panorama,
       thumbnail: s.thumb || s.panorama,
       name: s.title,
       caption: s.title,
-      links: links,
+      links: [],
       gallery: true
     };
   });
@@ -441,6 +442,12 @@ function openViewer(sceneId) {
         }),
         VirtualTourPlugin.withConfig({
           positionMode: 'manual',
+          arrowStyle: {
+            color: 0xffffff,
+            hoverColor: 0xaa5500,
+            opacity: 0.35,
+            scale: [0.5, 1.5],
+          },
         }),
         GalleryPlugin.withConfig({
           items: galleryItems,
