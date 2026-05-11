@@ -18,15 +18,15 @@
     padding-bottom: 120px;
   }
 
-  /* ===== 갤러리 그리드 ===== */
+  /* ===== 갤러리 그리드: 5열 × 2행 = 화면 꽉 채움 ===== */
   .gallery {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: calc((100vh - 4px) / 2);  /* 2행이 화면 세로 꽉 채움 */
     gap: 4px;
   }
   .card {
     position: relative;
-    aspect-ratio: 16 / 10;
     overflow: hidden;
     cursor: pointer;
     background: #0a0a0a;
@@ -78,7 +78,6 @@
   /* 헤더 셀 (그리드 안 마지막 빈 칸) */
   .header-cell {
     position: relative;
-    aspect-ratio: 16 / 10;
     padding: 18px 22px;
     text-align: right;
   }
@@ -262,29 +261,14 @@
 <script>
 /* ============================================================
    ★ 기본 장면 (영구) ★
-   폴더(images/)에 이미지 넣고 여기 등록하면 새로고침해도 유지됨.
-   핫스팟(다른 장면으로 점프)도 가능.
+   비어있음. 폴더(images/)에 이미지 넣고 아래 배열에 등록하면
+   새로고침해도 유지됨. 핫스팟(다른 장면으로 점프)도 가능.
+
+   예시:
+   { id: "room1", title: "거실", image: "images/pano1.jpg",
+     thumb: "images/thumb1.jpg" }
 ============================================================ */
-const baseScenes = [
-  {
-    id: "main",
-    title: "011111파노라마-0001",
-    image: "images/pano_main.jpg",
-    thumb: "images/thumb_main.jpg",
-    hotSpots: [
-      { pitch: -5, yaw: 90, text: "입구로 이동", sceneId: "entrance" }
-    ]
-  },
-  {
-    id: "entrance",
-    title: "입구 VR",
-    image: "images/pano_entrance.jpg",
-    thumb: "images/thumb_entrance.jpg",
-    hotSpots: [
-      { pitch: 0, yaw: 180, text: "거실로", sceneId: "main" }
-    ]
-  }
-];
+const baseScenes = [];
 
 /* 업로드 장면 */
 let uploadedScenes = [];
@@ -320,15 +304,6 @@ function renderGallery() {
     `;
     gallery.appendChild(card);
   });
-
-  // 헤더 셀
-  const headerCell = document.createElement("div");
-  headerCell.className = "header-cell";
-  headerCell.innerHTML = `
-    <h1>360° VR GALLERY</h1>
-    <div class="count">${all.length} SCENES</div>
-  `;
-  gallery.appendChild(headerCell);
 }
 
 /* ============================================================
