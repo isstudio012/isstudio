@@ -5,16 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>360° VR Gallery</title>
 
-<!-- ===== Pannellum 라이브러리 (CDN) ===== -->
+<!-- ===== Pannellum ===== -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
 <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    background: #000;
-    min-height: 100vh;
-  }
+  html, body { background: #000; min-height: 100vh; }
   body {
     color: #fff;
     font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif;
@@ -36,14 +33,21 @@
     transition: transform 0.25s ease;
   }
   .card:hover { transform: scale(1.015); z-index: 2; }
+
+  /* 카드 이미지 — 16:10에 강제로 cover, 기본 흑백 */
   .card img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: brightness(0.95);
-    transition: filter 0.25s ease;
+    object-position: center;
+    filter: grayscale(100%) brightness(0.95);
+    transition: filter 0.35s ease;
   }
-  .card:hover img { filter: brightness(1.08); }
+  .card:hover img {
+    filter: grayscale(0%) brightness(1.05);
+  }
+
   .card .label {
     position: absolute;
     bottom: 14px;
@@ -52,16 +56,15 @@
     color: #fff;
     text-shadow: 0 1px 4px rgba(0,0,0,0.9);
     letter-spacing: 0.02em;
+    z-index: 2;
   }
   .card .delete-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 10px; right: 10px;
     background: rgba(0,0,0,0.5);
     color: #fff;
     border: none;
-    width: 26px;
-    height: 26px;
+    width: 26px; height: 26px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 13px;
@@ -72,7 +75,7 @@
   .card:hover .delete-btn { opacity: 1; }
   .card .delete-btn:hover { background: rgba(220,50,50,0.9); }
 
-  /* 헤더 (마지막 빈 칸 자리) */
+  /* 헤더 셀 (그리드 안 마지막 빈 칸) */
   .header-cell {
     position: relative;
     aspect-ratio: 16 / 10;
@@ -92,7 +95,7 @@
     margin-top: 4px;
   }
 
-  /* 이미지 없을 때 플레이스홀더 */
+  /* 플레이스홀더 (이미지 로드 실패 시) */
   .placeholder {
     width: 100%; height: 100%;
     background: linear-gradient(135deg, #2a2a3a, #1c1c28);
@@ -116,6 +119,7 @@
   }
   .viewer.active { display: block; }
   #panorama { width: 100%; height: 100%; }
+
   .viewer-top {
     position: absolute;
     top: 0; left: 0; right: 0;
@@ -127,17 +131,8 @@
     align-items: center;
     color: #fff;
   }
-  .viewer-title {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-size: 14px;
-  }
-  .viewer-title .dot {
-    width: 8px; height: 8px;
-    background: #ff3b3b;
-    border-radius: 50%;
-  }
+  .viewer-title { display: flex; align-items: center; gap: 14px; font-size: 14px; }
+  .viewer-title .dot { width: 8px; height: 8px; background: #ff3b3b; border-radius: 50%; }
   .viewer-title .sep { color: #555; }
   .close-btn {
     background: none; border: none;
@@ -157,7 +152,35 @@
     z-index: 10;
   }
 
-  /* ===== 업로드 버튼 ===== */
+  /* 우측 하단 컨트롤 버튼들 */
+  .viewer-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+  .ctrl-btn {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    font-family: inherit;
+  }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.22); }
+  .ctrl-btn.active { background: rgba(74, 222, 128, 0.3); border-color: rgba(74, 222, 128, 0.5); }
+
+  /* 업로드 버튼 */
   .upload-btn {
     position: fixed;
     bottom: 30px; left: 30px;
@@ -184,7 +207,7 @@
   }
   #fileInput { display: none; }
 
-  /* 토스트 메시지 */
+  /* 토스트 */
   .toast {
     position: fixed;
     bottom: 100px; left: 30px;
@@ -207,6 +230,7 @@
 
 <div class="gallery" id="gallery"></div>
 
+<!-- VR 뷰어 -->
 <div class="viewer" id="viewer">
   <div class="viewer-top">
     <div class="viewer-title">
@@ -218,9 +242,15 @@
     <button class="close-btn" onclick="closeViewer()">✕</button>
   </div>
   <div id="panorama"></div>
-  <div class="viewer-bottom">⊕ 드래그하여 둘러보기 · 스크롤로 줌</div>
+  <div class="viewer-bottom">⊕ 드래그하여 둘러보기 · 휠로 줌 인/아웃</div>
+
+  <div class="viewer-controls">
+    <button class="ctrl-btn" id="autoRotateBtn" onclick="toggleAutoRotate()" title="자동 회전">↻</button>
+    <button class="ctrl-btn" onclick="resetView()" title="정렬 (초기 위치)">⌂</button>
+  </div>
 </div>
 
+<!-- 업로드 -->
 <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
   <span class="dot-indicator"></span>
   ⬆ 360° VR 업로드
@@ -232,7 +262,7 @@
 <script>
 /* ============================================================
    ★ 기본 장면 (영구) ★
-   폴더에 이미지 넣고 여기 등록하면 새로고침해도 유지됨.
+   폴더(images/)에 이미지 넣고 여기 등록하면 새로고침해도 유지됨.
    핫스팟(다른 장면으로 점프)도 가능.
 ============================================================ */
 const baseScenes = [
@@ -256,14 +286,16 @@ const baseScenes = [
   }
 ];
 
-/* 업로드 장면 (브라우저 메모리, 새로고침 시 사라짐) */
+/* 업로드 장면 */
 let uploadedScenes = [];
 
 function getAllScenes() {
   return [...baseScenes, ...uploadedScenes];
 }
 
-/* 갤러리 렌더링 */
+/* ============================================================
+   갤러리 렌더링
+============================================================ */
 function renderGallery() {
   const gallery = document.getElementById("gallery");
   gallery.innerHTML = "";
@@ -289,6 +321,7 @@ function renderGallery() {
     gallery.appendChild(card);
   });
 
+  // 헤더 셀
   const headerCell = document.createElement("div");
   headerCell.className = "header-cell";
   headerCell.innerHTML = `
@@ -298,8 +331,12 @@ function renderGallery() {
   gallery.appendChild(headerCell);
 }
 
-/* VR 뷰어 */
+/* ============================================================
+   VR 뷰어
+============================================================ */
 let viewer = null;
+let isAutoRotating = false;
+
 function openViewer(sceneId) {
   const all = getAllScenes();
   const scene = all.find(s => s.id === sceneId);
@@ -325,26 +362,68 @@ function openViewer(sceneId) {
   });
 
   if (viewer) viewer.destroy();
+
   viewer = pannellum.viewer("panorama", {
     default: {
       firstScene: sceneId,
       sceneFadeDuration: 800,
-      autoLoad: true
+      autoLoad: true,
+      // ★ 자동 회전 (양수=오른쪽, 천천히)
+      autoRotate: -2,
+      // ★ 줌 범위 (작을수록 줌인, 클수록 줌아웃)
+      hfov: 100,        // 시작 시야각
+      minHfov: 30,      // 최대 줌인
+      maxHfov: 120,     // 최대 줌아웃
+      // 마우스 휠 = 줌
+      mouseZoom: true,
+      // 줌 컨트롤 버튼 (Pannellum 기본 UI)
+      showZoomCtrl: false,
+      showFullscreenCtrl: false,
+      compass: false
     },
     scenes: pannellumScenes
   });
+
+  // 자동 회전 상태 표시
+  isAutoRotating = true;
+  document.getElementById("autoRotateBtn").classList.add("active");
 }
 
 function closeViewer() {
   document.getElementById("viewer").classList.remove("active");
   if (viewer) { viewer.destroy(); viewer = null; }
+  isAutoRotating = false;
+  document.getElementById("autoRotateBtn").classList.remove("active");
+}
+
+/* 자동 회전 토글 */
+function toggleAutoRotate() {
+  if (!viewer) return;
+  if (isAutoRotating) {
+    viewer.stopAutoRotate();
+    isAutoRotating = false;
+    document.getElementById("autoRotateBtn").classList.remove("active");
+  } else {
+    viewer.startAutoRotate(-2);
+    isAutoRotating = true;
+    document.getElementById("autoRotateBtn").classList.add("active");
+  }
+}
+
+/* 정렬 (초기 카메라 위치로 부드럽게 복귀) */
+function resetView() {
+  if (!viewer) return;
+  // 부드럽게 이동
+  viewer.lookAt(0, 0, 100, 1000);  // pitch, yaw, hfov, animation duration(ms)
 }
 
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeViewer();
 });
 
-/* 업로드 처리 */
+/* ============================================================
+   업로드 처리
+============================================================ */
 function handleUpload(event) {
   const files = Array.from(event.target.files);
   if (files.length === 0) return;
