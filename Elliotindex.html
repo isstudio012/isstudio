@@ -25,17 +25,31 @@
     padding-top: max(20px, env(safe-area-inset-top));
     padding-bottom: max(40px, env(safe-area-inset-bottom));
     color: #3D2817;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
   
-  .container { max-width: 480px; margin: 0 auto; }
+  .container { max-width: 480px; margin: 0 auto; width: 100%; }
   
-  .header { text-align: center; margin-bottom: 16px; }
+  .header { text-align: center; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
   
   .header h1 {
     font-family: 'Gaegu', cursive;
     font-size: 32px;
     font-weight: 700;
     letter-spacing: -1px;
+  }
+  
+  .settings-btn {
+    background: white;
+    border: 2px solid #3D2817;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 #3D2817;
   }
   
   .top-bar { display: flex; gap: 10px; margin-bottom: 18px; }
@@ -72,7 +86,6 @@
     color: white;
     cursor: pointer;
     box-shadow: 4px 4px 0 #3D2817;
-    transition: transform 0.1s;
   }
   
   .shop-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #3D2817; }
@@ -81,9 +94,10 @@
     background: white;
     border: 3px solid #3D2817;
     border-radius: 16px;
-    padding: 16px;
+    padding: 12px;
     margin-bottom: 20px;
     box-shadow: 4px 4px 0 #3D2817;
+    overflow: hidden;
   }
   
   .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -102,7 +116,7 @@
   
   .cal-title { font-family: 'Gaegu', cursive; font-size: 24px; font-weight: 700; }
   
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; width: 100%; }
   
   .cal-day-name {
     text-align: center;
@@ -131,8 +145,11 @@
     border: 2px solid transparent;
     position: relative;
     transition: all 0.15s;
-    padding-top: 2px;
-    padding-bottom: 14px;
+    padding-top: 4px;
+    padding-bottom: 8px;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
   }
   
   .cal-cell:active { transform: scale(0.95); }
@@ -141,35 +158,54 @@
   .cal-cell.today { border-color: #E07B39; background: #FFD93D; }
   .cal-cell.selected { background: #3D2817; color: #FFF8E7; border-color: #3D2817; }
   
-  .cal-cell.has-tasks::after {
+  /* 물 차오르는 게이지 (셀 전체) */
+  .cell-gauge {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #C44536;
+    border-radius: 0 0 8px 8px;
+    transition: height 0.4s ease;
+    pointer-events: none;
+  }
+  
+  .cell-gauge.h25 { height: 25%; }
+  .cell-gauge.h50 { height: 50%; }
+  .cell-gauge.h75 { height: 75%; }
+  .cell-gauge.h100 { height: 100%; border-radius: 8px; }
+  
+  /* 25/50/75% 가로 구분선 (흰색, 두꺼움) */
+  .cal-cell.gauge-lines::before {
     content: '';
     position: absolute;
-    bottom: 4px;
-    width: 5px;
-    height: 5px;
-    background: #E07B39;
-    border-radius: 50%;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+    background-image: 
+      linear-gradient(to bottom, transparent calc(25% - 2px), rgba(255,255,255,0.9) 25%, transparent calc(25% + 2px)),
+      linear-gradient(to bottom, transparent calc(50% - 2px), rgba(255,255,255,0.9) 50%, transparent calc(50% + 2px)),
+      linear-gradient(to bottom, transparent calc(75% - 2px), rgba(255,255,255,0.9) 75%, transparent calc(75% + 2px));
+    z-index: 1;
+    border-radius: 8px;
   }
   
-  .cal-cell.all-done {
-    background: #A8E6A1;
-  }
+  .cal-cell .day-num { position: relative; z-index: 2; }
   
-  .cal-cell.all-done::after {
+  /* 완료 + 엄마 확인 */
+  .cal-cell.all-confirmed { background: #A8E6A1; }
+  .cal-cell.all-confirmed::after {
     content: '🐶';
-    width: auto;
-    height: auto;
-    background: none;
-    font-size: 14px;
+    position: absolute;
     bottom: 2px;
+    font-size: 14px;
     line-height: 1;
   }
+  .cal-cell.all-confirmed .cell-gauge { display: none; }
   
-  .cal-cell.selected.has-tasks::after { background: #FFD93D; }
-  .cal-cell.selected.all-done {
-    background: #3D2817;
-  }
-  .cal-cell.selected.all-done::after { background: none; }
+  .cal-cell.selected.all-confirmed { background: #3D2817; }
   
   .cal-cell.sun { color: #C44536; }
   .cal-cell.sat { color: #4A89C4; }
@@ -270,34 +306,93 @@
   
   .add-btn:active { background: #FFE8B6; color: #3D2817; }
   
+  /* 엄마 확인 카드 */
+  .mom-card {
+    background: white;
+    border: 3px solid #3D2817;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 4px 4px 0 #3D2817;
+    text-align: center;
+  }
+  
+  .mom-card.confirmed {
+    background: linear-gradient(135deg, #FFE8B6, #A8E6A1);
+  }
+  
+  .mom-title {
+    font-family: 'Gaegu', cursive;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  
+  .mom-btn {
+    background: #E07B39;
+    color: white;
+    border: 3px solid #3D2817;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-family: 'Gaegu', cursive;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 #3D2817;
+  }
+  
+  .mom-btn:disabled {
+    background: #B8B8B8;
+    cursor: not-allowed;
+  }
+  
+  .mom-confirmed-text {
+    font-family: 'Gaegu', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: #3D2817;
+    line-height: 1.4;
+  }
+  
+  .mom-confirmed-text .heart {
+    color: #C44536;
+    font-size: 26px;
+  }
+  
   .dog-reward {
     position: fixed;
-    bottom: 30px;
+    top: 20px;
     left: 50%;
-    transform: translateX(-50%) translateY(200px);
+    transform: translateX(-50%);
     background: white;
     border: 4px solid #3D2817;
     border-radius: 20px;
-    padding: 16px 24px;
+    padding: 12px 18px;
     box-shadow: 6px 6px 0 #3D2817;
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: opacity 0.3s;
     z-index: 200;
     max-width: 320px;
+    opacity: 0;
+    pointer-events: none;
+    cursor: pointer;
   }
   
-  .dog-reward.show { transform: translateX(-50%) translateY(0); }
+  .dog-reward.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
   
-  .dog-face { font-size: 40px; animation: wiggle 0.5s ease infinite; }
+  .dog-face { font-size: 36px; animation: wiggle 0.5s ease infinite; }
   
   @keyframes wiggle {
     0%, 100% { transform: rotate(-8deg); }
     50% { transform: rotate(8deg); }
   }
   
-  .dog-msg { font-family: 'Gaegu', cursive; font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .dog-msg { font-family: 'Gaegu', cursive; font-size: 16px; font-weight: 700; line-height: 1.3; }
   
   .flying-coin {
     position: fixed;
@@ -392,6 +487,47 @@
   .owned-list { font-family: 'Gaegu', cursive; font-size: 15px; }
   .owned-empty { color: #A8916D; font-style: italic; }
   
+  .pwd-input {
+    width: 100%;
+    padding: 12px;
+    border: 3px solid #3D2817;
+    border-radius: 12px;
+    font-family: 'Gaegu', cursive;
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 12px;
+    letter-spacing: 8px;
+    outline: none;
+  }
+  
+  .pwd-input:focus { border-color: #E07B39; }
+  
+  .modal-btns { display: flex; gap: 8px; }
+  
+  .modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: 3px solid #3D2817;
+    border-radius: 12px;
+    font-family: 'Gaegu', cursive;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 #3D2817;
+  }
+  
+  .modal-btn.primary { background: #6BAA75; color: white; }
+  .modal-btn.cancel { background: white; color: #3D2817; }
+  
+  .pwd-error {
+    color: #C44536;
+    text-align: center;
+    font-family: 'Gaegu', cursive;
+    font-size: 16px;
+    margin-bottom: 10px;
+    min-height: 22px;
+  }
+  
   .toast {
     position: fixed;
     top: 30px;
@@ -435,14 +571,15 @@
 <div class="container">
   <div class="header">
     <h1>📚 숙제 체크리스트</h1>
+    <button class="settings-btn" onclick="openSettings()">⚙️</button>
   </div>
   
   <div class="top-bar">
     <div class="coin-display">
       <span class="coin-icon">🪙</span>
-      <div>
+      <div style="flex:1;">
         <div class="coin-amount" id="coinAmount">0</div>
-        <div class="coin-label">내 코인</div>
+        <div class="coin-label">내 코인 <span id="pendingLabel" style="color:#C44536;"></span></div>
       </div>
     </div>
     <button class="shop-btn" onclick="openShop()">🎁<br>상점</button>
@@ -460,13 +597,16 @@
   <div class="selected-date" id="selectedDate"></div>
   
   <div id="subjects"></div>
+  
+  <div id="momSection"></div>
 </div>
 
-<div class="dog-reward" id="dogReward">
+<div class="dog-reward" id="dogReward" onclick="hideDogMsg()">
   <div class="dog-face">🐶</div>
   <div class="dog-msg" id="dogMsg"></div>
 </div>
 
+<!-- 상점 -->
 <div class="modal-bg" id="shopModal" onclick="if(event.target===this)closeShop()">
   <div class="modal">
     <div class="modal-title">🎁 코인 상점</div>
@@ -499,18 +639,70 @@
   </div>
 </div>
 
+<!-- 엄마 확인 비밀번호 입력 -->
+<div class="modal-bg" id="momPwdModal" onclick="if(event.target===this)closeMomPwd()">
+  <div class="modal">
+    <div class="modal-title">👩 엄마 확인</div>
+    <div class="modal-sub">비밀번호를 입력하세요</div>
+    <input type="password" class="pwd-input" id="momPwdInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
+    <div class="pwd-error" id="momPwdError"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeMomPwd()">취소</button>
+      <button class="modal-btn primary" onclick="checkMomPwd()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 설정 (비밀번호 변경) -->
+<div class="modal-bg" id="settingsModal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-title">⚙️ 설정</div>
+    <div class="modal-sub">엄마 확인 비밀번호 변경</div>
+    
+    <div style="font-family:'Gaegu',cursive;font-size:16px;margin-bottom:4px;">현재 비밀번호</div>
+    <input type="password" class="pwd-input" id="curPwdInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
+    
+    <div style="font-family:'Gaegu',cursive;font-size:16px;margin-bottom:4px;">새 비밀번호 (4자리)</div>
+    <input type="password" class="pwd-input" id="newPwdInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
+    
+    <div class="pwd-error" id="settingsError"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeSettings()">취소</button>
+      <button class="modal-btn primary" onclick="changePwd()">변경</button>
+    </div>
+    
+    <div style="margin-top:16px;text-align:center;">
+      <button onclick="openResetPwd()" style="background:none;border:none;color:#8B6F47;font-family:'Gaegu',cursive;font-size:15px;text-decoration:underline;cursor:pointer;">
+        비밀번호를 잊어버렸어요
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 비밀번호 초기화 (마스터 코드) -->
+<div class="modal-bg" id="resetPwdModal" onclick="if(event.target===this)closeResetPwd()">
+  <div class="modal">
+    <div class="modal-title">🔑 비밀번호 초기화</div>
+    <div class="modal-sub">마스터 코드를 입력하세요</div>
+    <input type="password" class="pwd-input" id="masterCodeInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
+    <div class="pwd-error" id="resetPwdError"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeResetPwd()">취소</button>
+      <button class="modal-btn primary" onclick="resetPwd()">초기화</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-/* ====== 사운드 (Web Audio API - 파일 불필요) ====== */
+/* ====== 사운드 ====== */
 let audioCtx = null;
 let soundOn = true;
 
 function initAudio() {
   if (!audioCtx) {
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    } catch(e) {}
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
   }
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
 }
@@ -519,7 +711,6 @@ function playTone(freq, duration, type = 'sine', volume = 0.15) {
   if (!soundOn) return;
   initAudio();
   if (!audioCtx) return;
-  
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.type = type;
@@ -533,37 +724,22 @@ function playTone(freq, duration, type = 'sine', volume = 0.15) {
 }
 
 function soundCheck() {
-  // 띵! - 높은 음 한 번
   playTone(1200, 0.15, 'sine', 0.2);
   setTimeout(() => playTone(1600, 0.2, 'sine', 0.15), 80);
 }
-
 function soundCoin() {
-  // 짤랑 - 동전 소리
   playTone(800, 0.08, 'square', 0.1);
   setTimeout(() => playTone(1200, 0.1, 'square', 0.1), 60);
   setTimeout(() => playTone(1600, 0.15, 'square', 0.08), 120);
 }
-
 function soundFanfare() {
-  // 팡파레 - 구매 완료
-  const notes = [523, 659, 784, 1047]; // C E G C
-  notes.forEach((f, i) => {
-    setTimeout(() => playTone(f, 0.2, 'triangle', 0.18), i * 100);
-  });
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'triangle', 0.18), i * 100));
 }
-
 function soundBonus() {
-  // 보너스 - 상승 멜로디
-  const notes = [523, 659, 784, 880, 1047];
-  notes.forEach((f, i) => {
-    setTimeout(() => playTone(f, 0.15, 'sine', 0.15), i * 80);
-  });
+  [523, 659, 784, 880, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'sine', 0.15), i * 80));
 }
-
-function soundClick() {
-  playTone(600, 0.05, 'sine', 0.08);
-}
+function soundClick() { playTone(600, 0.05, 'sine', 0.08); }
+function soundError() { playTone(300, 0.2, 'sawtooth', 0.1); }
 
 function toggleSound() {
   soundOn = !soundOn;
@@ -580,16 +756,20 @@ const SUBJECTS = [
   { id: 'social', name: '사회', icon: '🌏' }
 ];
 
-const STORAGE_KEY = 'hw-app-v1';
+const STORAGE_KEY = 'hw-app-v2';
 
 let state = {
   tasks: {},
   coins: 0,
+  pendingCoins: {},  // {dateKey: amount} - 미완료 일자별 예비 코인
   tickets: {},
-  bonusGiven: {}
+  bonusGiven: {},
+  momConfirmed: {},
+  momPassword: '0000'
 };
 
 let viewYear, viewMonth, selectedDate;
+let dogTimer = null;
 
 function dateKey(y, m, d) {
   return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -603,12 +783,15 @@ function todayKey() {
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) state = JSON.parse(raw);
+    if (raw) state = Object.assign(state, JSON.parse(raw));
   } catch (e) {}
   
   if (!state.tasks) state.tasks = {};
   if (!state.tickets) state.tickets = {};
   if (!state.bonusGiven) state.bonusGiven = {};
+  if (!state.momConfirmed) state.momConfirmed = {};
+  if (!state.pendingCoins) state.pendingCoins = {};
+  if (!state.momPassword) state.momPassword = '0000';
   if (typeof state.coins !== 'number') state.coins = 0;
   
   const savedSound = localStorage.getItem('soundOn');
@@ -627,9 +810,7 @@ function load() {
 }
 
 function save() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
 }
 
 function ensureDay(key) {
@@ -657,12 +838,28 @@ function getDayStats(key) {
 function renderAll() {
   renderCalendar();
   renderTasks();
+  renderMomSection();
   renderCoins();
 }
 
 function renderCoins() {
   document.getElementById('coinAmount').textContent = state.coins;
   document.getElementById('modalCoin').textContent = state.coins;
+  
+  // 예비 코인 총합 계산
+  let pendingTotal = 0;
+  Object.keys(state.pendingCoins).forEach(k => {
+    if (!state.momConfirmed[k]) {
+      pendingTotal += state.pendingCoins[k] || 0;
+    }
+  });
+  
+  const label = document.getElementById('pendingLabel');
+  if (pendingTotal > 0) {
+    label.textContent = ` (예비 ${pendingTotal})`;
+  } else {
+    label.textContent = '';
+  }
 }
 
 function renderCalendar() {
@@ -705,17 +902,44 @@ function renderCalendar() {
     if (key === selectedDate) cell.classList.add('selected');
     
     const stats = getDayStats(key);
+    let hasReal = false;
     if (stats.total > 0 && state.tasks[key]) {
-      const hasReal = SUBJECTS.some(s => 
+      hasReal = SUBJECTS.some(s => 
         (state.tasks[key][s.id] || []).some(t => t.text !== '숙제 내용 입력...' || t.done)
       );
-      if (hasReal) {
-        cell.classList.add('has-tasks');
-        if (stats.done === stats.total) cell.classList.add('all-done');
+    }
+    
+    let html = `<span class="day-num">${d}</span>`;
+    
+    if (hasReal) {
+      const allDone = stats.done === stats.total;
+      const momOk = state.momConfirmed[key];
+      
+      if (allDone && momOk) {
+        // 다 완료 + 엄마 확인 → 녹색 + 🐶
+        cell.classList.add('all-confirmed');
+      } else {
+        // 물 차오르는 게이지 (25/50/75/100 단계)
+        let level;
+        if (allDone && !momOk) {
+          level = 100;
+        } else {
+          const pct = stats.done / stats.total;
+          if (pct >= 0.75) level = 75;
+          else if (pct >= 0.5) level = 50;
+          else if (pct >= 0.25) level = 25;
+          else if (stats.done > 0) level = 25;
+          else level = 0;
+        }
+        
+        if (level > 0) {
+          html += `<div class="cell-gauge h${level}"></div>`;
+          cell.classList.add('gauge-lines');
+        }
       }
     }
     
-    cell.innerHTML = `<span class="day-num">${d}</span>`;
+    cell.innerHTML = html;
     cell.onclick = () => { soundClick(); selectDate(key); };
     grid.appendChild(cell);
   }
@@ -778,6 +1002,36 @@ function renderTasks() {
   });
 }
 
+function renderMomSection() {
+  const container = document.getElementById('momSection');
+  const stats = getDayStats(selectedDate);
+  const hasReal = SUBJECTS.some(s => 
+    (state.tasks[selectedDate][s.id] || []).some(t => t.text !== '숙제 내용 입력...' || t.done)
+  );
+  const allDone = hasReal && stats.done === stats.total;
+  const confirmed = state.momConfirmed[selectedDate];
+  
+  if (confirmed) {
+    container.innerHTML = `
+      <div class="mom-card confirmed">
+        <div class="mom-confirmed-text">
+          참 잘했어요 아들 <span class="heart">💕</span><br>
+          <span style="font-size:18px;">엄마가 확인했어요 👩</span>
+        </div>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="mom-card">
+        <div class="mom-title">👩 엄마 확인</div>
+        <button class="mom-btn" id="momBtn" onclick="openMomPwd()" ${allDone ? '' : 'disabled'}>
+          ${allDone ? '엄마 확인 받기' : '숙제 먼저 완료하기'}
+        </button>
+      </div>
+    `;
+  }
+}
+
 function esc(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -788,22 +1042,25 @@ function toggleTask(subjectId, idx, checkboxEl) {
   task.done = !task.done;
   
   if (!wasDone && task.done) {
-    // 체크: 코인 +1
     soundCheck();
     setTimeout(() => soundCoin(), 200);
-    giveCoin(checkboxEl, 1, '잘했어! +1 🪙');
+    // 예비 코인으로 적립
+    addPendingCoin(selectedDate, 1, checkboxEl);
+    showDogMsg('잘했어! +1 🪙 (예비)', 2200);
     
     setTimeout(() => {
       const stats = getDayStats(selectedDate);
       if (stats.done === stats.total && stats.total > 0 && !state.bonusGiven[selectedDate]) {
         state.bonusGiven[selectedDate] = true;
         soundBonus();
-        giveCoin(null, 5, '🎉 하루 끝! 보너스 +5 🪙');
+        addPendingCoin(selectedDate, 5, null);
+        showDogMsg('🎉 하루 끝! 보너스 +5 🪙<br>엄마 확인 받자!', 2500);
         save();
+        renderMomSection();
+        renderCoins();
       }
     }, 700);
   } else if (wasDone && !task.done) {
-    // 체크 해제: 코인 -1 (보너스 받았으면 -5도 추가)
     soundClick();
     let takeBack = 1;
     let msg = '아쉽다... -1 🪙';
@@ -813,27 +1070,30 @@ function toggleTask(subjectId, idx, checkboxEl) {
       delete state.bonusGiven[selectedDate];
       msg = '보너스도 회수! -6 🪙';
     }
+    // 엄마 확인도 취소 → 코인을 다시 예비로
+    if (state.momConfirmed[selectedDate]) {
+      delete state.momConfirmed[selectedDate];
+      // 합산됐던 코인을 다시 예비로 되돌리기
+      const prevPending = state.pendingCoins[selectedDate] || 0;
+      state.coins -= prevPending;
+      if (state.coins < 0) state.coins = 0;
+      state.pendingCoins[selectedDate] = prevPending; // 예비로 복귀
+      msg = '엄마 확인 취소됨. 코인 회수!';
+    }
     
-    state.coins -= takeBack;
-    if (state.coins < 0) state.coins = 0;
+    // 예비에서 차감
+    const cur = state.pendingCoins[selectedDate] || 0;
+    state.pendingCoins[selectedDate] = Math.max(0, cur - takeBack);
     
-    const dogReward = document.getElementById('dogReward');
-    document.getElementById('dogMsg').innerHTML = msg;
-    dogReward.classList.add('show');
-    setTimeout(() => dogReward.classList.remove('show'), 1800);
+    showDogMsg(msg, 1800);
   }
   
   save();
   renderAll();
 }
 
-function giveCoin(fromEl, amount, msg) {
-  state.coins += amount;
-  
-  const dogReward = document.getElementById('dogReward');
-  document.getElementById('dogMsg').innerHTML = msg;
-  dogReward.classList.add('show');
-  setTimeout(() => dogReward.classList.remove('show'), 2200);
+function addPendingCoin(dateKey, amount, fromEl) {
+  state.pendingCoins[dateKey] = (state.pendingCoins[dateKey] || 0) + amount;
   
   if (fromEl) {
     const rect = fromEl.getBoundingClientRect();
@@ -859,7 +1119,57 @@ function giveCoin(fromEl, amount, msg) {
       }, i * 100);
     }
   }
+  renderCoins();
+}
+
+function showDogMsg(msg, duration = 2200) {
+  if (dogTimer) {
+    clearTimeout(dogTimer);
+    dogTimer = null;
+  }
+  const dogReward = document.getElementById('dogReward');
+  document.getElementById('dogMsg').innerHTML = msg;
+  dogReward.classList.add('show');
+  dogTimer = setTimeout(() => {
+    dogReward.classList.remove('show');
+    dogTimer = null;
+  }, duration);
+}
+
+function hideDogMsg() {
+  const dogReward = document.getElementById('dogReward');
+  dogReward.classList.remove('show');
+  if (dogTimer) { clearTimeout(dogTimer); dogTimer = null; }
+}
+
+function giveCoin(fromEl, amount, msg) {
+  state.coins += amount;
+  showDogMsg(msg, 2200);
   
+  if (fromEl) {
+    const rect = fromEl.getBoundingClientRect();
+    const coinDisplay = document.querySelector('.coin-display').getBoundingClientRect();
+    
+    for (let i = 0; i < Math.min(amount, 3); i++) {
+      setTimeout(() => {
+        const coin = document.createElement('div');
+        coin.className = 'flying-coin';
+        coin.textContent = '🪙';
+        coin.style.left = rect.left + 'px';
+        coin.style.top = rect.top + 'px';
+        document.body.appendChild(coin);
+        
+        requestAnimationFrame(() => {
+          coin.style.left = coinDisplay.left + 'px';
+          coin.style.top = coinDisplay.top + 'px';
+          coin.style.transform = 'scale(0.5) rotate(720deg)';
+          coin.style.opacity = '0';
+        });
+        
+        setTimeout(() => coin.remove(), 900);
+      }, i * 100);
+    }
+  }
   renderCoins();
 }
 
@@ -872,8 +1182,9 @@ function addTask(subjectId) {
   soundClick();
   state.tasks[selectedDate][subjectId].push({ text: '새 숙제', done: false });
   delete state.bonusGiven[selectedDate];
+  delete state.momConfirmed[selectedDate];
   save();
-  renderTasks();
+  renderAll();
   setTimeout(() => {
     const list = document.getElementById(`list-${subjectId}`);
     const inputs = list.querySelectorAll('.task-input');
@@ -892,6 +1203,121 @@ function deleteTask(subjectId, idx) {
   renderAll();
 }
 
+/* ====== 엄마 확인 ====== */
+function openMomPwd() {
+  soundClick();
+  document.getElementById('momPwdInput').value = '';
+  document.getElementById('momPwdError').textContent = '';
+  document.getElementById('momPwdModal').classList.add('show');
+  setTimeout(() => document.getElementById('momPwdInput').focus(), 100);
+}
+
+function closeMomPwd() {
+  document.getElementById('momPwdModal').classList.remove('show');
+}
+
+function checkMomPwd() {
+  const input = document.getElementById('momPwdInput').value;
+  const err = document.getElementById('momPwdError');
+  
+  if (input === state.momPassword) {
+    state.momConfirmed[selectedDate] = true;
+    // 예비 코인을 진짜 코인으로 합산
+    const pending = state.pendingCoins[selectedDate] || 0;
+    state.coins += pending;
+    // 예비는 유지 (취소 시 되돌리기 위해)
+    save();
+    soundFanfare();
+    closeMomPwd();
+    if (pending > 0) {
+      showDogMsg(`참 잘했어요 아들 💕<br>예비 코인 +${pending} 합산!`, 2800);
+    } else {
+      showDogMsg('참 잘했어요 아들 💕', 2500);
+    }
+    renderAll();
+  } else {
+    err.textContent = '비밀번호가 틀려요 ❌';
+    soundError();
+    document.getElementById('momPwdInput').value = '';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('momPwdInput').addEventListener('keypress', e => {
+    if (e.key === 'Enter') checkMomPwd();
+  });
+});
+
+/* ====== 설정 ====== */
+function openSettings() {
+  soundClick();
+  document.getElementById('curPwdInput').value = '';
+  document.getElementById('newPwdInput').value = '';
+  document.getElementById('settingsError').textContent = '';
+  document.getElementById('settingsModal').classList.add('show');
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('show');
+}
+
+function changePwd() {
+  const cur = document.getElementById('curPwdInput').value;
+  const newP = document.getElementById('newPwdInput').value;
+  const err = document.getElementById('settingsError');
+  
+  if (cur !== state.momPassword) {
+    err.textContent = '현재 비밀번호가 틀려요 ❌';
+    soundError();
+    return;
+  }
+  if (!/^\d{4}$/.test(newP)) {
+    err.textContent = '새 비밀번호는 4자리 숫자여야 해요';
+    soundError();
+    return;
+  }
+  
+  state.momPassword = newP;
+  save();
+  soundFanfare();
+  closeSettings();
+  showToast('🔐 비밀번호가 변경됐어요!');
+}
+
+/* ====== 비밀번호 초기화 ====== */
+const MASTER_CODE = '1225';
+
+function openResetPwd() {
+  soundClick();
+  closeSettings();
+  document.getElementById('masterCodeInput').value = '';
+  document.getElementById('resetPwdError').textContent = '';
+  document.getElementById('resetPwdModal').classList.add('show');
+  setTimeout(() => document.getElementById('masterCodeInput').focus(), 100);
+}
+
+function closeResetPwd() {
+  document.getElementById('resetPwdModal').classList.remove('show');
+}
+
+function resetPwd() {
+  const input = document.getElementById('masterCodeInput').value;
+  const err = document.getElementById('resetPwdError');
+  
+  if (input === MASTER_CODE) {
+    state.momPassword = '0000';
+    save();
+    soundFanfare();
+    closeResetPwd();
+    showToast('🔐 비밀번호가 0000으로 초기화됐어요!');
+  } else {
+    err.textContent = '마스터 코드가 틀려요 ❌';
+    soundError();
+    document.getElementById('masterCodeInput').value = '';
+  }
+}
+
+/* ====== 상점 ====== */
 function openShop() {
   soundClick();
   renderOwned();
@@ -941,14 +1367,12 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2000);
 }
 
-// PWA 서비스 워커 등록
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js').catch(()=>{});
   });
 }
 
-// 첫 터치에 오디오 활성화 (모바일)
 document.addEventListener('touchstart', initAudio, { once: true });
 document.addEventListener('click', initAudio, { once: true });
 
