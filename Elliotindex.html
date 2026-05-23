@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#FFF8E7">
+<meta name="theme-color" content="#EFF6FF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="숙제">
@@ -16,15 +16,12 @@
   
   body {
     font-family: 'Gowun Dodum', sans-serif;
-    background: #FFF8E7;
-    background-image: 
-      radial-gradient(circle at 20% 30%, rgba(255, 200, 100, 0.15) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(100, 200, 255, 0.15) 0%, transparent 50%);
+    background: #0F172A;
     min-height: 100vh;
     padding: 20px 14px 40px;
     padding-top: max(20px, env(safe-area-inset-top));
     padding-bottom: max(40px, env(safe-area-inset-bottom));
-    color: #3D2817;
+    color: #FFFFFF;
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;
@@ -32,38 +29,100 @@
   
   .container { max-width: 480px; margin: 0 auto; width: 100%; }
   
-  .header { text-align: center; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .header { 
+    text-align: left; 
+    margin-bottom: 16px;
+    padding-right: 36px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    overflow: visible;
+  }
   
   .header h1 {
     font-family: 'Gaegu', cursive;
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 700;
-    letter-spacing: -1px;
+    letter-spacing: -1.5px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    color: #FFFFFF;
+    white-space: nowrap;
+    overflow: visible;
+    flex-shrink: 0;
   }
   
-  .settings-btn {
+  .header h1:hover { background: rgba(255,255,255,0.1); }
+  
+  .header-title-input {
+    font-family: 'Gaegu', cursive;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    border: 2px solid #2563EB;
+    border-radius: 8px;
+    padding: 4px 6px;
     background: white;
-    border: 2px solid #3D2817;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    font-size: 16px;
+    outline: none;
+    min-width: 100px;
+    max-width: 100%;
+    color: #1E3A8A;
+  }
+  
+  .top-buttons {
+    position: fixed;
+    top: 14px;
+    right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    z-index: 100;
+    background: white;
+    border: 1.5px solid #1E3A8A;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 1.5px 1.5px 0 #1E3A8A;
+  }
+  
+  .top-buttons button {
+    background: white;
+    border: none;
+    width: 22px;
+    height: 22px;
+    font-size: 9px;
     cursor: pointer;
-    box-shadow: 2px 2px 0 #3D2817;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1E293B;
+    font-family: 'Gaegu', cursive;
+    font-weight: 700;
+  }
+  
+  .top-buttons button + button {
+    border-left: none;
+    border-top: 1.5px solid #1E3A8A;
+  }
+  
+  .top-buttons button:active {
+    background: #DBEAFE;
   }
   
   .top-bar { display: flex; gap: 10px; margin-bottom: 18px; }
   
   .coin-display {
     flex: 1;
-    background: linear-gradient(135deg, #FFD93D, #FFB84D);
-    border: 3px solid #3D2817;
+    background: linear-gradient(135deg, #60A5FA, #3B82F6);
+    border: 3px solid #1E3A8A;
     border-radius: 16px;
     padding: 12px 16px;
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 4px 4px 0 #3D2817;
+    box-shadow: 4px 4px 0 #1E3A8A;
   }
   
   .coin-icon { font-size: 28px; animation: spin 4s linear infinite; }
@@ -73,38 +132,38 @@
     95% { transform: rotateY(360deg); }
   }
   
-  .coin-amount { font-family: 'Gaegu', cursive; font-size: 26px; font-weight: 700; }
-  .coin-label { font-family: 'Gaegu', cursive; font-size: 14px; color: #6B4423; margin-top: -4px; }
+  .coin-amount { font-family: 'Gaegu', cursive; font-size: 26px; font-weight: 700; color: white; }
+  .coin-label { font-family: 'Gaegu', cursive; font-size: 14px; color: #DBEAFE; margin-top: -4px; }
   
   .shop-btn {
-    background: #C44536;
-    border: 3px solid #3D2817;
+    background: #1E3A8A;
+    border: 3px solid #1E3A8A;
     border-radius: 16px;
     padding: 10px 16px;
     font-family: 'Gaegu', cursive;
     font-size: 18px;
     color: white;
     cursor: pointer;
-    box-shadow: 4px 4px 0 #3D2817;
+    box-shadow: 4px 4px 0 #1E3A8A;
   }
   
-  .shop-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #3D2817; }
+  .shop-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #1E3A8A; }
   
   .calendar-card {
     background: white;
-    border: 3px solid #3D2817;
+    border: 3px solid #1E3A8A;
     border-radius: 16px;
     padding: 12px;
     margin-bottom: 20px;
-    box-shadow: 4px 4px 0 #3D2817;
+    box-shadow: 4px 4px 0 #1E3A8A;
     overflow: hidden;
   }
   
   .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   
   .cal-nav {
-    background: #FFE8B6;
-    border: 2px solid #3D2817;
+    background: #BFDBFE;
+    border: 2px solid #1E3A8A;
     border-radius: 10px;
     width: 36px;
     height: 36px;
@@ -123,12 +182,12 @@
     font-family: 'Gaegu', cursive;
     font-size: 14px;
     font-weight: 700;
-    color: #8B6F47;
+    color: #475569;
     padding: 4px 0;
   }
   
-  .cal-day-name.sun { color: #C44536; }
-  .cal-day-name.sat { color: #4A89C4; }
+  .cal-day-name.sun { color: #DC2626; }
+  .cal-day-name.sat { color: #1D4ED8; }
   
   .cal-cell {
     aspect-ratio: 1;
@@ -141,7 +200,7 @@
     font-family: 'Gaegu', cursive;
     font-size: 16px;
     font-weight: 700;
-    background: #FFF4D6;
+    background: #DBEAFE;
     border: 2px solid transparent;
     position: relative;
     transition: all 0.15s;
@@ -155,16 +214,15 @@
   .cal-cell:active { transform: scale(0.95); }
   .cal-cell.empty { background: transparent; cursor: default; }
   
-  .cal-cell.today { border-color: #E07B39; background: #FFD93D; }
-  .cal-cell.selected { background: #3D2817; color: #FFF8E7; border-color: #3D2817; }
+  .cal-cell.today { border-color: #2563EB; background: #60A5FA; }
+  .cal-cell.selected { background: #1E3A8A; color: #EFF6FF; border-color: #1E3A8A; }
   
-  /* 물 차오르는 게이지 (셀 전체) */
   .cell-gauge {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
-    background: #C44536;
+    background: #3B82F6;
     border-radius: 0 0 8px 8px;
     transition: height 0.4s ease;
     pointer-events: none;
@@ -175,7 +233,6 @@
   .cell-gauge.h75 { height: 75%; }
   .cell-gauge.h100 { height: 100%; border-radius: 8px; }
   
-  /* 25/50/75% 가로 구분선 (흰색, 두꺼움) */
   .cal-cell.gauge-lines::before {
     content: '';
     position: absolute;
@@ -194,8 +251,7 @@
   
   .cal-cell .day-num { position: relative; z-index: 2; }
   
-  /* 완료 + 엄마 확인 */
-  .cal-cell.all-confirmed { background: #A8E6A1; }
+  .cal-cell.all-confirmed { background: #7DD3FC; }
   .cal-cell.all-confirmed::after {
     content: '🐶';
     position: absolute;
@@ -205,11 +261,11 @@
   }
   .cal-cell.all-confirmed .cell-gauge { display: none; }
   
-  .cal-cell.selected.all-confirmed { background: #3D2817; }
+  .cal-cell.selected.all-confirmed { background: #1E3A8A; }
   
-  .cal-cell.sun { color: #C44536; }
-  .cal-cell.sat { color: #4A89C4; }
-  .cal-cell.selected.sun, .cal-cell.selected.sat { color: #FFF8E7; }
+  .cal-cell.sun { color: #DC2626; }
+  .cal-cell.sat { color: #1D4ED8; }
+  .cal-cell.selected.sun, .cal-cell.selected.sat { color: #EFF6FF; }
   
   .selected-date {
     text-align: center;
@@ -217,47 +273,76 @@
     font-family: 'Gaegu', cursive;
     font-size: 22px;
     font-weight: 700;
+    color: #FFFFFF;
   }
   
   .subject {
     background: white;
-    border: 3px solid #3D2817;
-    border-radius: 16px;
-    margin-bottom: 12px;
+    border: 2px solid #1E3A8A;
+    border-radius: 12px;
+    margin-bottom: 8px;
     overflow: hidden;
-    box-shadow: 4px 4px 0 #3D2817;
+    box-shadow: 3px 3px 0 #1E3A8A;
   }
   
   .subject-header {
-    padding: 12px 16px;
+    padding: 5px 10px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    border-bottom: 2px dashed #D4B896;
+    gap: 6px;
+    border-bottom: 1px dashed #CBD5E1;
   }
   
-  .subject-icon { font-size: 24px; }
-  .subject-name { font-family: 'Gaegu', cursive; font-size: 22px; font-weight: 700; flex: 1; }
-  .subject-status { font-size: 13px; color: #8B6F47; }
+  .subject-name-input {
+    flex: 1;
+    font-family: 'Gaegu', cursive;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 2px 4px;
+    border-radius: 6px;
+    color: #1E3A8A;
+    min-width: 0;
+  }
   
-  .task-list { padding: 6px 0; }
+  .subject-name-input:focus { background: rgba(255,255,255,0.7); }
+  
+  .subject-status { font-size: 12px; color: #1E40AF; font-weight: 700; }
+  
+  .subject-delete-btn {
+    background: transparent;
+    border: none;
+    color: #1E3A8A;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 2px 8px;
+    opacity: 0.7;
+    font-weight: 700;
+    line-height: 1;
+  }
+  
+  .subject-delete-btn:active { opacity: 1; }
+  
+  .task-list { padding: 2px 0; }
   
   .task {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
+    gap: 8px;
+    padding: 4px 10px;
     cursor: pointer;
     user-select: none;
   }
   
-  .task:active { background: #FFF4D6; }
+  .task:active { background: rgba(255,244,214,0.5); }
   
   .checkbox {
-    width: 26px;
-    height: 26px;
-    border: 3px solid #3D2817;
-    border-radius: 8px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1E3A8A;
+    border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -266,59 +351,93 @@
     transition: all 0.2s;
   }
   
-  .task.done .checkbox { background: #6BAA75; }
-  .task.done .checkbox::after { content: '✓'; color: white; font-weight: bold; font-size: 18px; }
+  .task.done .checkbox { background: #0EA5E9; }
+  .task.done .checkbox::after { content: '✓'; color: white; font-weight: bold; font-size: 13px; }
   
   .task-input {
     flex: 1;
     border: none;
     background: transparent;
     font-family: 'Gowun Dodum', sans-serif;
-    font-size: 15px;
-    color: #3D2817;
+    font-size: 14px;
+    color: #1E3A8A;
     outline: none;
-    padding: 4px 0;
+    padding: 2px 0;
+    min-width: 0;
   }
   
-  .task.done .task-input { text-decoration: line-through; color: #A8916D; }
+  .task.done .task-input { text-decoration: line-through; color: #94A3B8; }
   
   .delete-btn {
-    background: none;
+    background: transparent;
     border: none;
-    color: #C44536;
-    font-size: 18px;
+    color: #1E3A8A;
+    font-size: 22px;
     cursor: pointer;
-    padding: 4px 8px;
-    opacity: 0.5;
+    padding: 2px 8px;
+    font-weight: 700;
+    flex-shrink: 0;
+    line-height: 1;
+    opacity: 0.7;
   }
+  
+  .delete-btn:active { opacity: 1; }
   
   .add-btn {
     width: 100%;
-    padding: 10px;
-    background: #FFF4D6;
+    padding: 5px;
+    background: rgba(255,244,214,0.6);
     border: none;
-    border-top: 2px dashed #D4B896;
+    border-top: 1px dashed #CBD5E1;
     font-family: 'Gaegu', cursive;
-    font-size: 16px;
-    color: #8B6F47;
+    font-size: 13px;
+    color: #475569;
     cursor: pointer;
   }
   
-  .add-btn:active { background: #FFE8B6; color: #3D2817; }
+  .add-btn:active { background: #BFDBFE; color: #1E3A8A; }
   
-  /* 엄마 확인 카드 */
+  /* 과목 추가 버튼 */
+  .add-subject-btn {
+    width: 100%;
+    padding: 12px;
+    background: white;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    font-family: 'Gaegu', cursive;
+    font-size: 17px;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+  
+  .add-subject-btn:active { background: #DBEAFE; }
+  
+  .empty-subjects {
+    text-align: center;
+    padding: 20px 16px;
+    color: #475569;
+    font-family: 'Gaegu', cursive;
+    font-size: 16px;
+    background: white;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  
   .mom-card {
     background: white;
-    border: 3px solid #3D2817;
+    border: 3px solid #1E3A8A;
     border-radius: 16px;
     padding: 16px;
     margin-bottom: 12px;
-    box-shadow: 4px 4px 0 #3D2817;
+    box-shadow: 4px 4px 0 #1E3A8A;
     text-align: center;
   }
   
   .mom-card.confirmed {
-    background: linear-gradient(135deg, #FFE8B6, #A8E6A1);
+    background: linear-gradient(135deg, #BFDBFE, #7DD3FC);
   }
   
   .mom-title {
@@ -329,20 +448,20 @@
   }
   
   .mom-btn {
-    background: #E07B39;
+    background: #2563EB;
     color: white;
-    border: 3px solid #3D2817;
+    border: 3px solid #1E3A8A;
     border-radius: 12px;
     padding: 10px 24px;
     font-family: 'Gaegu', cursive;
     font-size: 18px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 3px 3px 0 #3D2817;
+    box-shadow: 3px 3px 0 #1E3A8A;
   }
   
   .mom-btn:disabled {
-    background: #B8B8B8;
+    background: #94A3B8;
     cursor: not-allowed;
   }
   
@@ -350,12 +469,12 @@
     font-family: 'Gaegu', cursive;
     font-size: 22px;
     font-weight: 700;
-    color: #3D2817;
+    color: #1E3A8A;
     line-height: 1.4;
   }
   
   .mom-confirmed-text .heart {
-    color: #C44536;
+    color: #EC4899;
     font-size: 26px;
   }
   
@@ -365,10 +484,10 @@
     left: 50%;
     transform: translateX(-50%);
     background: white;
-    border: 4px solid #3D2817;
+    border: 4px solid #1E3A8A;
     border-radius: 20px;
     padding: 12px 18px;
-    box-shadow: 6px 6px 0 #3D2817;
+    box-shadow: 6px 6px 0 #1E3A8A;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -405,7 +524,7 @@
   .modal-bg {
     position: fixed;
     inset: 0;
-    background: rgba(61, 40, 23, 0.6);
+    background: rgba(15, 23, 42, 0.85);
     display: none;
     align-items: center;
     justify-content: center;
@@ -415,58 +534,161 @@
   
   .modal-bg.show { display: flex; }
   
+  .pwd-modal {
+    background: white !important;
+    border: 2px solid #1E3A8A !important;
+    border-radius: 14px !important;
+    padding: 18px !important;
+    max-width: 300px !important;
+    width: 100% !important;
+    box-shadow: 4px 4px 0 #1E3A8A !important;
+  }
+  
+  .pwd-modal-title {
+    font-family: 'Gaegu', cursive;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 6px;
+    color: #1E293B;
+  }
+  
+  .pwd-modal-sub {
+    text-align: center;
+    margin-bottom: 10px;
+    font-family: 'Gaegu', cursive;
+    font-size: 13px;
+    color: #475569;
+  }
+  
   .modal {
-    background: #FFF8E7;
-    border: 4px solid #3D2817;
+    background: #EFF6FF;
+    border: 4px solid #1E3A8A;
     border-radius: 20px;
     padding: 24px;
     max-width: 380px;
     width: 100%;
-    box-shadow: 8px 8px 0 #3D2817;
+    box-shadow: 8px 8px 0 #1E3A8A;
     max-height: 85vh;
     overflow-y: auto;
   }
   
   .modal-title { font-family: 'Gaegu', cursive; font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 8px; }
-  .modal-sub { text-align: center; margin-bottom: 20px; font-family: 'Gaegu', cursive; font-size: 18px; color: #E07B39; }
+  .modal-sub { text-align: center; margin-bottom: 20px; font-family: 'Gaegu', cursive; font-size: 18px; color: #2563EB; }
+  
+  .shop-modal {
+    max-width: 340px !important;
+    padding: 18px !important;
+  }
+  
+  .shop-modal-title {
+    font-family: 'Gaegu', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 4px;
+    color: #1E293B;
+  }
+  
+  .shop-modal-sub {
+    text-align: center;
+    margin-bottom: 12px;
+    font-family: 'Gaegu', cursive;
+    font-size: 15px;
+    color: #2563EB;
+    font-weight: 700;
+  }
+  
+  .shop-items-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
   
   .shop-item {
     background: white;
-    border: 3px solid #3D2817;
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 12px;
+    border: 2px solid #1E3A8A;
+    border-radius: 10px;
+    padding: 8px 6px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
-    box-shadow: 3px 3px 0 #3D2817;
+    gap: 3px;
+    box-shadow: 2px 2px 0 #1E3A8A;
   }
   
-  .shop-item-icon { font-size: 36px; }
-  .shop-item-info { flex: 1; }
-  .shop-item-name { font-family: 'Gaegu', cursive; font-size: 20px; font-weight: 700; }
-  .shop-item-price { font-family: 'Gaegu', cursive; font-size: 16px; color: #E07B39; }
+  .shop-item-icon { font-size: 22px; }
+  .shop-item-name { 
+    font-family: 'Gaegu', cursive; 
+    font-size: 13px; 
+    font-weight: 700;
+    text-align: center;
+    color: #1E293B;
+    line-height: 1.1;
+    word-break: keep-all;
+  }
+  .shop-item-price { 
+    font-family: 'Gaegu', cursive; 
+    font-size: 12px; 
+    color: #2563EB;
+    font-weight: 700;
+  }
+  
+  .shop-item-actions {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+    margin-top: 2px;
+  }
   
   .buy-btn {
-    background: #6BAA75;
-    border: 2px solid #3D2817;
+    flex: 1;
+    background: #2563EB;
+    border: 1.5px solid #1E3A8A;
     color: white;
     font-family: 'Gaegu', cursive;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 700;
-    padding: 8px 14px;
-    border-radius: 10px;
+    padding: 4px 0;
+    border-radius: 6px;
     cursor: pointer;
-    box-shadow: 2px 2px 0 #3D2817;
   }
   
-  .buy-btn:disabled { background: #B8B8B8; cursor: not-allowed; }
+  .buy-btn:disabled { background: #94A3B8; cursor: not-allowed; }
+  
+  .shop-item-delete {
+    background: white;
+    border: 1.5px solid #1E3A8A;
+    color: #1E3A8A;
+    font-family: 'Gaegu', cursive;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 0 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  
+  .add-shop-item-btn {
+    width: 100%;
+    padding: 7px;
+    background: white;
+    border: 2px dashed #1E3A8A;
+    border-radius: 8px;
+    font-family: 'Gaegu', cursive;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E3A8A;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
   
   .modal-close {
     width: 100%;
     margin-top: 8px;
     padding: 10px;
-    background: #3D2817;
+    background: #1E3A8A;
     color: white;
     border: none;
     border-radius: 10px;
@@ -476,102 +698,126 @@
   }
   
   .owned-tickets {
-    background: #FFE8B6;
-    border: 2px dashed #8B6F47;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 16px;
+    background: #DBEAFE;
+    border: 1.5px dashed #1E3A8A;
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin-bottom: 10px;
   }
   
-  .owned-title { font-family: 'Gaegu', cursive; font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #6B4423; }
-  .owned-list { font-family: 'Gaegu', cursive; font-size: 15px; }
-  .owned-empty { color: #A8916D; font-style: italic; }
+  .owned-title { font-family: 'Gaegu', cursive; font-size: 13px; font-weight: 700; margin-bottom: 3px; color: #1E40AF; }
+  .owned-list { font-family: 'Gaegu', cursive; font-size: 12px; color: #1E293B; }
+  .owned-empty { color: #94A3B8; font-style: italic; }
   
   .pwd-input {
     width: 100%;
-    padding: 12px;
-    border: 3px solid #3D2817;
-    border-radius: 12px;
+    padding: 9px;
+    border: 2px solid #1E3A8A;
+    border-radius: 10px;
     font-family: 'Gaegu', cursive;
-    font-size: 22px;
+    font-size: 18px;
     text-align: center;
-    margin-bottom: 12px;
-    letter-spacing: 8px;
+    margin-bottom: 8px;
+    letter-spacing: 6px;
     outline: none;
+    color: #1E293B;
   }
   
-  .pwd-input:focus { border-color: #E07B39; }
+  .pwd-input:focus { border-color: #2563EB; }
   
-  .modal-btns { display: flex; gap: 8px; }
+  .text-input {
+    width: 100%;
+    padding: 9px;
+    border: 2px solid #1E3A8A;
+    border-radius: 10px;
+    font-family: 'Gaegu', cursive;
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 8px;
+    outline: none;
+    background: white;
+    color: #1E293B;
+  }
+  
+  .text-input:focus { border-color: #2563EB; }
+  
+  .modal-btns { display: flex; gap: 8px; margin-top: 4px; }
   
   .modal-btn {
     flex: 1;
-    padding: 12px;
-    border: 3px solid #3D2817;
-    border-radius: 12px;
+    padding: 9px;
+    border: 2px solid #1E3A8A;
+    border-radius: 10px;
     font-family: 'Gaegu', cursive;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 3px 3px 0 #3D2817;
+    box-shadow: 2px 2px 0 #1E3A8A;
   }
   
-  .modal-btn.primary { background: #6BAA75; color: white; }
-  .modal-btn.cancel { background: white; color: #3D2817; }
+  .modal-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 #1E3A8A;
+  }
+  
+  .modal-btn.primary { background: #2563EB; color: white; }
+  .modal-btn.danger { background: #1E3A8A; color: white; }
+  .modal-btn.cancel { background: white; color: #1E3A8A; }
   
   .pwd-error {
-    color: #C44536;
+    color: #DC2626;
     text-align: center;
     font-family: 'Gaegu', cursive;
-    font-size: 16px;
-    margin-bottom: 10px;
-    min-height: 22px;
+    font-size: 13px;
+    margin-bottom: 6px;
+    min-height: 18px;
+  }
+  
+  .confirm-msg {
+    text-align: center;
+    font-family: 'Gaegu', cursive;
+    font-size: 18px;
+    margin-bottom: 16px;
+    line-height: 1.4;
   }
   
   .toast {
     position: fixed;
-    top: 30px;
+    top: 80px;
     left: 50%;
-    transform: translateX(-50%) translateY(-100px);
-    background: #6BAA75;
+    transform: translateX(-50%);
+    background: #0EA5E9;
     color: white;
-    padding: 14px 24px;
-    border: 3px solid #3D2817;
+    padding: 12px 20px;
+    border: 3px solid #1E3A8A;
     border-radius: 14px;
     font-family: 'Gaegu', cursive;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    box-shadow: 4px 4px 0 #3D2817;
-    transition: transform 0.4s;
+    box-shadow: 4px 4px 0 #1E3A8A;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
     z-index: 400;
+    max-width: 80%;
+    text-align: center;
   }
   
-  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.show { opacity: 1; }
   
-  .sound-toggle {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: white;
-    border: 2px solid #3D2817;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    font-size: 18px;
-    cursor: pointer;
-    z-index: 50;
-    box-shadow: 2px 2px 0 #3D2817;
-  }
+  /* old sound-toggle replaced by top-buttons */
 </style>
 </head>
 <body>
 
-<button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+<div class="top-buttons">
+  <button id="settingsBtn" onclick="openSettings()" title="설정">설정</button>
+  <button id="soundToggle" onclick="toggleSound()" title="소리">소리</button>
+</div>
 
 <div class="container">
   <div class="header">
-    <h1>📚 숙제 체크리스트</h1>
-    <button class="settings-btn" onclick="openSettings()">⚙️</button>
+    <h1 id="appTitle" onclick="editAppTitle()"></h1>
   </div>
   
   <div class="top-bar">
@@ -579,7 +825,7 @@
       <span class="coin-icon">🪙</span>
       <div style="flex:1;">
         <div class="coin-amount" id="coinAmount">0</div>
-        <div class="coin-label">내 코인 <span id="pendingLabel" style="color:#C44536;"></span></div>
+        <div class="coin-label">내 코인 <span id="pendingLabel" style="color:#FCD34D;"></span></div>
       </div>
     </div>
     <button class="shop-btn" onclick="openShop()">🎁<br>상점</button>
@@ -598,6 +844,8 @@
   
   <div id="subjects"></div>
   
+  <button class="add-subject-btn" onclick="openAddSubject()">+ 과목 추가</button>
+  
   <div id="momSection"></div>
 </div>
 
@@ -608,42 +856,46 @@
 
 <!-- 상점 -->
 <div class="modal-bg" id="shopModal" onclick="if(event.target===this)closeShop()">
-  <div class="modal">
-    <div class="modal-title">🎁 코인 상점</div>
-    <div class="modal-sub">내 코인: <span id="modalCoin">0</span> 🪙</div>
+  <div class="modal shop-modal">
+    <div class="shop-modal-title">🎁 코인 상점</div>
+    <div class="shop-modal-sub">내 코인: <span id="modalCoin">0</span> 🪙</div>
     
     <div class="owned-tickets">
       <div class="owned-title">🎟️ 보유 이용권</div>
       <div class="owned-list" id="ownedList"></div>
     </div>
     
-    <div class="shop-item">
-      <span class="shop-item-icon">🥓</span>
-      <div class="shop-item-info">
-        <div class="shop-item-name">삼겹살 먹기 이용권</div>
-        <div class="shop-item-price">30 🪙</div>
-      </div>
-      <button class="buy-btn" id="buy-samgyup" onclick="buyItem('samgyup', 30, '🥓 삼겹살 이용권')">구매</button>
-    </div>
+    <div class="shop-items-grid" id="shopItemsGrid"></div>
     
-    <div class="shop-item">
-      <span class="shop-item-icon">🎮</span>
-      <div class="shop-item-info">
-        <div class="shop-item-name">PC방 이용권</div>
-        <div class="shop-item-price">20 🪙</div>
-      </div>
-      <button class="buy-btn" id="buy-pcbang" onclick="buyItem('pcbang', 20, '🎮 PC방 이용권')">구매</button>
-    </div>
+    <button class="add-shop-item-btn" onclick="openAddShopItem()">+ 상품 추가</button>
     
     <button class="modal-close" onclick="closeShop()">닫기</button>
   </div>
 </div>
 
+<!-- 상품 추가 (비번 필요) -->
+<div class="modal-bg" id="addShopItemModal" onclick="if(event.target===this)closeAddShopItem()">
+  <div class="modal pwd-modal">
+    <div class="pwd-modal-title">상품 추가</div>
+    <div class="pwd-modal-sub">상품 이름</div>
+    <input type="text" class="text-input" id="newShopItemName" maxlength="20" placeholder="예: 치킨">
+    <div class="pwd-modal-sub" style="margin-top:6px;">가격 (코인)</div>
+    <input type="number" class="text-input" id="newShopItemPrice" min="1" max="999" placeholder="20">
+    <div class="pwd-modal-sub" style="margin-top:6px;">비밀번호</div>
+    <input type="password" class="pwd-input" id="newShopItemPwd" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
+    <div class="pwd-error" id="addShopItemError"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeAddShopItem()">취소</button>
+      <button class="modal-btn primary" onclick="addShopItem()">추가</button>
+    </div>
+  </div>
+</div>
+
 <!-- 엄마 확인 비밀번호 입력 -->
 <div class="modal-bg" id="momPwdModal" onclick="if(event.target===this)closeMomPwd()">
-  <div class="modal">
-    <div class="modal-title">👩 엄마 확인</div>
-    <div class="modal-sub">비밀번호를 입력하세요</div>
+  <div class="modal pwd-modal">
+    <div class="pwd-modal-title">엄마 확인</div>
+    <div class="pwd-modal-sub">비밀번호를 입력하세요</div>
     <input type="password" class="pwd-input" id="momPwdInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
     <div class="pwd-error" id="momPwdError"></div>
     <div class="modal-btns">
@@ -655,40 +907,63 @@
 
 <!-- 설정 (비밀번호 변경) -->
 <div class="modal-bg" id="settingsModal" onclick="if(event.target===this)closeSettings()">
-  <div class="modal">
-    <div class="modal-title">⚙️ 설정</div>
-    <div class="modal-sub">엄마 확인 비밀번호 변경</div>
-    
-    <div style="font-family:'Gaegu',cursive;font-size:16px;margin-bottom:4px;">현재 비밀번호</div>
+  <div class="modal pwd-modal">
+    <div class="pwd-modal-title">비밀번호 변경</div>
+    <div class="pwd-modal-sub">현재 비밀번호</div>
     <input type="password" class="pwd-input" id="curPwdInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
-    
-    <div style="font-family:'Gaegu',cursive;font-size:16px;margin-bottom:4px;">새 비밀번호 (4자리)</div>
+    <div class="pwd-modal-sub" style="margin-top:8px;">새 비밀번호 (4자리)</div>
     <input type="password" class="pwd-input" id="newPwdInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
-    
     <div class="pwd-error" id="settingsError"></div>
     <div class="modal-btns">
       <button class="modal-btn cancel" onclick="closeSettings()">취소</button>
       <button class="modal-btn primary" onclick="changePwd()">변경</button>
     </div>
-    
-    <div style="margin-top:16px;text-align:center;">
-      <button onclick="openResetPwd()" style="background:none;border:none;color:#8B6F47;font-family:'Gaegu',cursive;font-size:15px;text-decoration:underline;cursor:pointer;">
+    <div style="margin-top:14px;text-align:center;">
+      <button onclick="openResetPwd()" style="background:none;border:none;color:#475569;font-family:'Gaegu',cursive;font-size:14px;text-decoration:underline;cursor:pointer;">
         비밀번호를 잊어버렸어요
       </button>
     </div>
   </div>
 </div>
 
-<!-- 비밀번호 초기화 (마스터 코드) -->
+<!-- 비밀번호 초기화 -->
 <div class="modal-bg" id="resetPwdModal" onclick="if(event.target===this)closeResetPwd()">
-  <div class="modal">
-    <div class="modal-title">🔑 비밀번호 초기화</div>
-    <div class="modal-sub">마스터 코드를 입력하세요</div>
+  <div class="modal pwd-modal">
+    <div class="pwd-modal-title">비밀번호 초기화</div>
+    <div class="pwd-modal-sub">마스터 코드를 입력하세요</div>
     <input type="password" class="pwd-input" id="masterCodeInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
     <div class="pwd-error" id="resetPwdError"></div>
     <div class="modal-btns">
       <button class="modal-btn cancel" onclick="closeResetPwd()">취소</button>
       <button class="modal-btn primary" onclick="resetPwd()">초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- 과목 추가 -->
+<div class="modal-bg" id="addSubjectModal" onclick="if(event.target===this)closeAddSubject()">
+  <div class="modal pwd-modal">
+    <div class="pwd-modal-title">과목 추가</div>
+    <div class="pwd-modal-sub">과목 이름을 입력하세요</div>
+    <input type="text" class="text-input" id="newSubjectInput" maxlength="20" placeholder="예: 수학">
+    <div class="pwd-error" id="addSubjectError"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeAddSubject()">취소</button>
+      <button class="modal-btn primary" onclick="addSubject()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 과목 삭제 확인 (비밀번호) -->
+<div class="modal-bg" id="deleteSubjectModal" onclick="if(event.target===this)closeDeleteSubject()">
+  <div class="modal pwd-modal">
+    <div class="pwd-modal-title" id="deleteSubjectMsg"></div>
+    <div class="pwd-modal-sub">삭제하려면 비밀번호를 입력하세요</div>
+    <input type="password" class="pwd-input" id="deleteSubjectPwd" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="● ● ● ●">
+    <div class="pwd-error" id="deleteSubjectError"></div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeDeleteSubject()">취소</button>
+      <button class="modal-btn danger" onclick="confirmDeleteSubject()">삭제</button>
     </div>
   </div>
 </div>
@@ -743,26 +1018,25 @@ function soundError() { playTone(300, 0.2, 'sawtooth', 0.1); }
 
 function toggleSound() {
   soundOn = !soundOn;
-  document.getElementById('soundToggle').textContent = soundOn ? '🔊' : '🔇';
+  document.getElementById('soundToggle').textContent = soundOn ? '소리' : '무음';
   localStorage.setItem('soundOn', soundOn);
   if (soundOn) soundClick();
 }
 
 /* ====== 데이터 ====== */
-const SUBJECTS = [
-  { id: 'math', name: '수학', icon: '🔢' },
-  { id: 'science', name: '과학', icon: '🔬' },
-  { id: 'calc', name: '연산', icon: '➕' },
-  { id: 'social', name: '사회', icon: '🌏' }
-];
-
 const STORAGE_KEY = 'hw-app-v2';
 
 let state = {
+  appTitle: '숙제 체크리스트',
+  subjects: [],
   tasks: {},
   coins: 0,
-  pendingCoins: {},  // {dateKey: amount} - 미완료 일자별 예비 코인
+  pendingCoins: {},
   tickets: {},
+  shopItems: [
+    { id: 'samgyup', name: '삼겹살', icon: '🥓', price: 30 },
+    { id: 'pcbang', name: 'PC방', icon: '🎮', price: 20 }
+  ],
   bonusGiven: {},
   momConfirmed: {},
   momPassword: '0000'
@@ -770,6 +1044,7 @@ let state = {
 
 let viewYear, viewMonth, selectedDate;
 let dogTimer = null;
+let pendingDeleteSubjectId = null;
 
 function dateKey(y, m, d) {
   return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -780,25 +1055,60 @@ function todayKey() {
   return dateKey(t.getFullYear(), t.getMonth(), t.getDate());
 }
 
+const SUBJECT_COLORS = [
+  '#FFE8E8', // 연분홍
+  '#E8F4FF', // 연하늘
+  '#DBEAFE', // 연노랑
+  '#E8FFE8', // 연초록
+  '#F4E8FF', // 연보라
+  '#FFE8D6', // 연주황
+  '#D6F4FF', // 연파랑
+  '#FFEFE8', // 연살구
+  '#E8FFF4', // 연민트
+  '#FFF8E8'  // 연크림
+];
+
+function randomSubjectColor() {
+  return SUBJECT_COLORS[Math.floor(Math.random() * SUBJECT_COLORS.length)];
+}
+
+function genId() {
+  return 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) state = Object.assign(state, JSON.parse(raw));
   } catch (e) {}
   
+  if (!state.subjects) state.subjects = [];
+  if (!state.shopItems || !Array.isArray(state.shopItems) || state.shopItems.length === 0) {
+    state.shopItems = [
+      { id: 'samgyup', name: '삼겹살', icon: '🥓', price: 30 },
+      { id: 'pcbang', name: 'PC방', icon: '🎮', price: 20 }
+    ];
+  }
+  // 기존 과목에 색이 없으면 부여
+  state.subjects.forEach(s => {
+    if (!s.color) s.color = randomSubjectColor();
+  });
   if (!state.tasks) state.tasks = {};
   if (!state.tickets) state.tickets = {};
   if (!state.bonusGiven) state.bonusGiven = {};
   if (!state.momConfirmed) state.momConfirmed = {};
   if (!state.pendingCoins) state.pendingCoins = {};
   if (!state.momPassword) state.momPassword = '0000';
+  if (!state.appTitle) state.appTitle = '숙제 체크리스트';
   if (typeof state.coins !== 'number') state.coins = 0;
   
   const savedSound = localStorage.getItem('soundOn');
   if (savedSound !== null) {
     soundOn = savedSound === 'true';
-    document.getElementById('soundToggle').textContent = soundOn ? '🔊' : '🔇';
+    document.getElementById('soundToggle').textContent = soundOn ? '소리' : '무음';
   }
+  
+  document.getElementById('appTitle').textContent = state.appTitle;
   
   const t = new Date();
   viewYear = t.getFullYear();
@@ -815,7 +1125,7 @@ function save() {
 
 function ensureDay(key) {
   if (!state.tasks[key]) state.tasks[key] = {};
-  SUBJECTS.forEach(s => {
+  state.subjects.forEach(s => {
     if (!state.tasks[key][s.id]) state.tasks[key][s.id] = [];
     if (state.tasks[key][s.id].length === 0) {
       state.tasks[key][s.id].push({ text: '숙제 내용 입력...', done: false });
@@ -827,12 +1137,19 @@ function getDayStats(key) {
   const day = state.tasks[key];
   if (!day) return { done: 0, total: 0 };
   let done = 0, total = 0;
-  SUBJECTS.forEach(s => {
+  state.subjects.forEach(s => {
     const list = day[s.id] || [];
     total += list.length;
     done += list.filter(t => t.done).length;
   });
   return { done, total };
+}
+
+function hasRealTaskOnDay(key) {
+  if (!state.tasks[key]) return false;
+  return state.subjects.some(s => 
+    (state.tasks[key][s.id] || []).some(t => t.text !== '숙제 내용 입력...' || t.done)
+  );
 }
 
 function renderAll() {
@@ -846,7 +1163,6 @@ function renderCoins() {
   document.getElementById('coinAmount').textContent = state.coins;
   document.getElementById('modalCoin').textContent = state.coins;
   
-  // 예비 코인 총합 계산
   let pendingTotal = 0;
   Object.keys(state.pendingCoins).forEach(k => {
     if (!state.momConfirmed[k]) {
@@ -902,24 +1218,17 @@ function renderCalendar() {
     if (key === selectedDate) cell.classList.add('selected');
     
     const stats = getDayStats(key);
-    let hasReal = false;
-    if (stats.total > 0 && state.tasks[key]) {
-      hasReal = SUBJECTS.some(s => 
-        (state.tasks[key][s.id] || []).some(t => t.text !== '숙제 내용 입력...' || t.done)
-      );
-    }
+    const hasReal = hasRealTaskOnDay(key);
     
     let html = `<span class="day-num">${d}</span>`;
     
-    if (hasReal) {
+    if (hasReal && stats.total > 0) {
       const allDone = stats.done === stats.total;
       const momOk = state.momConfirmed[key];
       
       if (allDone && momOk) {
-        // 다 완료 + 엄마 확인 → 녹색 + 🐶
         cell.classList.add('all-confirmed');
       } else {
-        // 물 차오르는 게이지 (25/50/75/100 단계)
         let level;
         if (allDone && !momOk) {
           level = 100;
@@ -969,17 +1278,25 @@ function renderTasks() {
   const container = document.getElementById('subjects');
   container.innerHTML = '';
   
-  SUBJECTS.forEach(s => {
-    const tasks = state.tasks[selectedDate][s.id];
+  if (state.subjects.length === 0) {
+    container.innerHTML = '<div class="empty-subjects">아직 과목이 없어요.<br>아래 "+ 과목 추가" 버튼을 눌러주세요!</div>';
+    return;
+  }
+  
+  state.subjects.forEach(s => {
+    const tasks = state.tasks[selectedDate][s.id] || [];
     const done = tasks.filter(t => t.done).length;
     
     const sEl = document.createElement('div');
     sEl.className = 'subject';
     sEl.innerHTML = `
-      <div class="subject-header">
-        <span class="subject-icon">${s.icon}</span>
-        <span class="subject-name">${s.name}</span>
+      <div class="subject-header" style="background:${s.color || '#DBEAFE'};">
+        <input type="text" class="subject-name-input" value="${esc(s.name)}" 
+               maxlength="20"
+               onchange="updateSubjectName('${s.id}', this.value)"
+               onfocus="this.select()">
         <span class="subject-status">${done}/${tasks.length}</span>
+        <button class="subject-delete-btn" onclick="openDeleteSubject('${s.id}')" title="과목 삭제">−</button>
       </div>
       <div class="task-list" id="list-${s.id}"></div>
       <button class="add-btn" onclick="addTask('${s.id}')">+ 숙제 추가</button>
@@ -995,7 +1312,7 @@ function renderTasks() {
         <input type="text" class="task-input" value="${esc(task.text)}" 
                onchange="updateText('${s.id}',${idx},this.value)"
                onfocus="this.select()">
-        <button class="delete-btn" onclick="deleteTask('${s.id}',${idx})">✕</button>
+        <button class="delete-btn" onclick="deleteTask('${s.id}',${idx})" title="삭제">−</button>
       `;
       list.appendChild(tEl);
     });
@@ -1005,11 +1322,14 @@ function renderTasks() {
 function renderMomSection() {
   const container = document.getElementById('momSection');
   const stats = getDayStats(selectedDate);
-  const hasReal = SUBJECTS.some(s => 
-    (state.tasks[selectedDate][s.id] || []).some(t => t.text !== '숙제 내용 입력...' || t.done)
-  );
+  const hasReal = hasRealTaskOnDay(selectedDate);
   const allDone = hasReal && stats.done === stats.total;
   const confirmed = state.momConfirmed[selectedDate];
+  
+  if (state.subjects.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
   
   if (confirmed) {
     container.innerHTML = `
@@ -1036,6 +1356,157 @@ function esc(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/* ====== 앱 제목 수정 ====== */
+function editAppTitle() {
+  const h1 = document.getElementById('appTitle');
+  const cur = state.appTitle;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'header-title-input';
+  input.value = cur;
+  input.maxLength = 8;
+  
+  const updateWidth = () => {
+    const len = Math.max(input.value.length, 4);
+    input.style.width = (len + 1.5) + 'ch';
+  };
+  
+  h1.replaceWith(input);
+  updateWidth();
+  input.focus();
+  input.select();
+  
+  // 8자 초과 시 잘라내기 (IME 한글 조합도 대응)
+  input.addEventListener('input', () => {
+    if (input.value.length > 8) {
+      input.value = input.value.slice(0, 8);
+    }
+    updateWidth();
+  });
+  
+  const finish = () => {
+    let val = input.value.trim();
+    if (val.length > 8) val = val.slice(0, 8);
+    if (!val) val = '숙제 체크리스트';
+    state.appTitle = val;
+    save();
+    const newH1 = document.createElement('h1');
+    newH1.id = 'appTitle';
+    newH1.textContent = val;
+    newH1.onclick = editAppTitle;
+    input.replaceWith(newH1);
+  };
+  
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { input.value = cur; input.blur(); }
+  });
+}
+
+/* ====== 과목 관리 ====== */
+function openAddSubject() {
+  soundClick();
+  document.getElementById('newSubjectInput').value = '';
+  document.getElementById('addSubjectError').textContent = '';
+  document.getElementById('addSubjectModal').classList.add('show');
+  setTimeout(() => document.getElementById('newSubjectInput').focus(), 100);
+}
+
+function closeAddSubject() {
+  document.getElementById('addSubjectModal').classList.remove('show');
+}
+
+function addSubject() {
+  const name = document.getElementById('newSubjectInput').value.trim();
+  const err = document.getElementById('addSubjectError');
+  
+  if (!name) {
+    err.textContent = '과목 이름을 입력하세요';
+    soundError();
+    return;
+  }
+  if (name.length > 20) {
+    err.textContent = '20자 이내로 입력하세요';
+    soundError();
+    return;
+  }
+  if (state.subjects.some(s => s.name === name)) {
+    err.textContent = '같은 이름의 과목이 있어요';
+    soundError();
+    return;
+  }
+  
+  const id = genId();
+  state.subjects.push({ id, name, color: randomSubjectColor() });
+  ensureDay(selectedDate);
+  save();
+  soundFanfare();
+  closeAddSubject();
+  renderAll();
+  showToast(`✨ "${name}" 과목 추가됨`);
+}
+
+function updateSubjectName(subjectId, newName) {
+  const trimmed = newName.trim();
+  const s = state.subjects.find(x => x.id === subjectId);
+  if (!s) return;
+  if (!trimmed) {
+    renderAll();
+    return;
+  }
+  s.name = trimmed.slice(0, 20);
+  save();
+}
+
+function openDeleteSubject(subjectId) {
+  soundClick();
+  pendingDeleteSubjectId = subjectId;
+  const s = state.subjects.find(x => x.id === subjectId);
+  if (!s) return;
+  document.getElementById('deleteSubjectMsg').textContent = 
+    `"${s.name}" 과목 삭제`;
+  document.getElementById('deleteSubjectPwd').value = '';
+  document.getElementById('deleteSubjectError').textContent = '';
+  document.getElementById('deleteSubjectModal').classList.add('show');
+  setTimeout(() => document.getElementById('deleteSubjectPwd').focus(), 100);
+}
+
+function closeDeleteSubject() {
+  document.getElementById('deleteSubjectModal').classList.remove('show');
+  pendingDeleteSubjectId = null;
+}
+
+function confirmDeleteSubject() {
+  const pwd = document.getElementById('deleteSubjectPwd').value;
+  const err = document.getElementById('deleteSubjectError');
+  
+  if (pwd !== state.momPassword) {
+    err.textContent = '비밀번호가 틀려요 ❌';
+    soundError();
+    document.getElementById('deleteSubjectPwd').value = '';
+    return;
+  }
+  
+  if (!pendingDeleteSubjectId) return;
+  
+  // 과목 삭제
+  state.subjects = state.subjects.filter(s => s.id !== pendingDeleteSubjectId);
+  // 모든 날짜에서 해당 과목 데이터 삭제
+  Object.keys(state.tasks).forEach(dk => {
+    if (state.tasks[dk] && state.tasks[dk][pendingDeleteSubjectId]) {
+      delete state.tasks[dk][pendingDeleteSubjectId];
+    }
+  });
+  
+  save();
+  soundFanfare();
+  closeDeleteSubject();
+  renderAll();
+  showToast('🗑️ 과목이 삭제되었어요');
+}
+
+/* ====== 숙제 ====== */
 function toggleTask(subjectId, idx, checkboxEl) {
   const task = state.tasks[selectedDate][subjectId][idx];
   const wasDone = task.done;
@@ -1044,7 +1515,6 @@ function toggleTask(subjectId, idx, checkboxEl) {
   if (!wasDone && task.done) {
     soundCheck();
     setTimeout(() => soundCoin(), 200);
-    // 예비 코인으로 적립
     addPendingCoin(selectedDate, 1, checkboxEl);
     showDogMsg('잘했어! +1 🪙 (예비)', 2200);
     
@@ -1070,18 +1540,15 @@ function toggleTask(subjectId, idx, checkboxEl) {
       delete state.bonusGiven[selectedDate];
       msg = '보너스도 회수! -6 🪙';
     }
-    // 엄마 확인도 취소 → 코인을 다시 예비로
     if (state.momConfirmed[selectedDate]) {
       delete state.momConfirmed[selectedDate];
-      // 합산됐던 코인을 다시 예비로 되돌리기
       const prevPending = state.pendingCoins[selectedDate] || 0;
       state.coins -= prevPending;
       if (state.coins < 0) state.coins = 0;
-      state.pendingCoins[selectedDate] = prevPending; // 예비로 복귀
+      state.pendingCoins[selectedDate] = prevPending;
       msg = '엄마 확인 취소됨. 코인 회수!';
     }
     
-    // 예비에서 차감
     const cur = state.pendingCoins[selectedDate] || 0;
     state.pendingCoins[selectedDate] = Math.max(0, cur - takeBack);
     
@@ -1142,37 +1609,6 @@ function hideDogMsg() {
   if (dogTimer) { clearTimeout(dogTimer); dogTimer = null; }
 }
 
-function giveCoin(fromEl, amount, msg) {
-  state.coins += amount;
-  showDogMsg(msg, 2200);
-  
-  if (fromEl) {
-    const rect = fromEl.getBoundingClientRect();
-    const coinDisplay = document.querySelector('.coin-display').getBoundingClientRect();
-    
-    for (let i = 0; i < Math.min(amount, 3); i++) {
-      setTimeout(() => {
-        const coin = document.createElement('div');
-        coin.className = 'flying-coin';
-        coin.textContent = '🪙';
-        coin.style.left = rect.left + 'px';
-        coin.style.top = rect.top + 'px';
-        document.body.appendChild(coin);
-        
-        requestAnimationFrame(() => {
-          coin.style.left = coinDisplay.left + 'px';
-          coin.style.top = coinDisplay.top + 'px';
-          coin.style.transform = 'scale(0.5) rotate(720deg)';
-          coin.style.opacity = '0';
-        });
-        
-        setTimeout(() => coin.remove(), 900);
-      }, i * 100);
-    }
-  }
-  renderCoins();
-}
-
 function updateText(subjectId, idx, text) {
   state.tasks[selectedDate][subjectId][idx].text = text;
   save();
@@ -1185,6 +1621,7 @@ function addTask(subjectId) {
   delete state.momConfirmed[selectedDate];
   save();
   renderAll();
+  showToast('✏️ 숙제가 추가됐어요');
   setTimeout(() => {
     const list = document.getElementById(`list-${subjectId}`);
     const inputs = list.querySelectorAll('.task-input');
@@ -1222,10 +1659,8 @@ function checkMomPwd() {
   
   if (input === state.momPassword) {
     state.momConfirmed[selectedDate] = true;
-    // 예비 코인을 진짜 코인으로 합산
     const pending = state.pendingCoins[selectedDate] || 0;
     state.coins += pending;
-    // 예비는 유지 (취소 시 되돌리기 위해)
     save();
     soundFanfare();
     closeMomPwd();
@@ -1245,6 +1680,12 @@ function checkMomPwd() {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('momPwdInput').addEventListener('keypress', e => {
     if (e.key === 'Enter') checkMomPwd();
+  });
+  document.getElementById('newSubjectInput').addEventListener('keypress', e => {
+    if (e.key === 'Enter') addSubject();
+  });
+  document.getElementById('deleteSubjectPwd').addEventListener('keypress', e => {
+    if (e.key === 'Enter') confirmDeleteSubject();
   });
 });
 
@@ -1320,8 +1761,8 @@ function resetPwd() {
 /* ====== 상점 ====== */
 function openShop() {
   soundClick();
+  renderShopItems();
   renderOwned();
-  updateBuyButtons();
   document.getElementById('shopModal').classList.add('show');
 }
 
@@ -1330,22 +1771,48 @@ function closeShop() {
   document.getElementById('shopModal').classList.remove('show');
 }
 
+function renderShopItems() {
+  const grid = document.getElementById('shopItemsGrid');
+  grid.innerHTML = '';
+  if (!state.shopItems || state.shopItems.length === 0) {
+    grid.innerHTML = '<div style="grid-column:span 2;text-align:center;font-family:Gaegu,cursive;color:#94A3B8;padding:10px;">상품이 없어요</div>';
+    return;
+  }
+  state.shopItems.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'shop-item';
+    el.innerHTML = `
+      <span class="shop-item-icon">${item.icon || '🎁'}</span>
+      <div class="shop-item-name">${esc(item.name)}</div>
+      <div class="shop-item-price">${item.price} 🪙</div>
+      <div class="shop-item-actions">
+        <button class="buy-btn" ${state.coins < item.price ? 'disabled' : ''} onclick="buyItem('${item.id}', ${item.price}, '${esc(item.icon || '🎁')} ${esc(item.name)}')">구매</button>
+        <button class="shop-item-delete" onclick="deleteShopItem('${item.id}')" title="삭제">−</button>
+      </div>
+    `;
+    grid.appendChild(el);
+  });
+}
+
 function renderOwned() {
   const ownedEl = document.getElementById('ownedList');
   const items = [];
-  if (state.tickets.samgyup > 0) items.push(`🥓 삼겹살 ${state.tickets.samgyup}장`);
-  if (state.tickets.pcbang > 0) items.push(`🎮 PC방 ${state.tickets.pcbang}장`);
+  state.shopItems.forEach(item => {
+    const cnt = state.tickets[item.id] || 0;
+    if (cnt > 0) items.push(`${item.icon || '🎁'} ${item.name} ${cnt}장`);
+  });
+  // shopItems에서 삭제된 항목이라도 ticket이 있으면 표시
+  Object.keys(state.tickets).forEach(tid => {
+    if (state.tickets[tid] > 0 && !state.shopItems.some(s => s.id === tid)) {
+      items.push(`(삭제됨) ${tid} ${state.tickets[tid]}장`);
+    }
+  });
   
   if (items.length === 0) {
-    ownedEl.innerHTML = '<span class="owned-empty">아직 없어요. 코인 모으자!</span>';
+    ownedEl.innerHTML = '<span class="owned-empty">아직 없어요</span>';
   } else {
     ownedEl.textContent = items.join(' · ');
   }
-}
-
-function updateBuyButtons() {
-  document.getElementById('buy-samgyup').disabled = state.coins < 30;
-  document.getElementById('buy-pcbang').disabled = state.coins < 20;
 }
 
 function buyItem(id, price, name) {
@@ -1355,16 +1822,74 @@ function buyItem(id, price, name) {
   save();
   soundFanfare();
   renderCoins();
+  renderShopItems();
   renderOwned();
-  updateBuyButtons();
   showToast(`🎉 ${name} 구매 완료!`);
+}
+
+function deleteShopItem(id) {
+  soundClick();
+  state.shopItems = state.shopItems.filter(s => s.id !== id);
+  save();
+  renderShopItems();
+  renderOwned();
+  showToast('🗑️ 상품이 삭제됐어요');
+}
+
+/* ===== 상품 추가 (비번 필요) ===== */
+function openAddShopItem() {
+  soundClick();
+  document.getElementById('newShopItemName').value = '';
+  document.getElementById('newShopItemPrice').value = '';
+  document.getElementById('newShopItemPwd').value = '';
+  document.getElementById('addShopItemError').textContent = '';
+  document.getElementById('addShopItemModal').classList.add('show');
+  setTimeout(() => document.getElementById('newShopItemName').focus(), 100);
+}
+
+function closeAddShopItem() {
+  document.getElementById('addShopItemModal').classList.remove('show');
+}
+
+function addShopItem() {
+  const name = document.getElementById('newShopItemName').value.trim();
+  const priceStr = document.getElementById('newShopItemPrice').value.trim();
+  const pwd = document.getElementById('newShopItemPwd').value;
+  const err = document.getElementById('addShopItemError');
+  
+  if (!name) {
+    err.textContent = '상품 이름을 입력하세요';
+    soundError();
+    return;
+  }
+  const price = parseInt(priceStr);
+  if (isNaN(price) || price < 1) {
+    err.textContent = '가격을 올바로 입력하세요';
+    soundError();
+    return;
+  }
+  if (pwd !== state.momPassword) {
+    err.textContent = '비밀번호가 틀려요 ❌';
+    soundError();
+    return;
+  }
+  
+  const id = 'item_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  state.shopItems.push({ id, name, icon: '🎁', price });
+  save();
+  soundFanfare();
+  closeAddShopItem();
+  renderShopItems();
+  renderOwned();
+  showToast(`✨ "${name}" 추가됨`);
 }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1800);
 }
 
 if ('serviceWorker' in navigator) {
