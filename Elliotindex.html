@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#EFF6FF">
+<meta name="theme-color" content="#F5EDD7">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="숙제">
@@ -16,12 +16,12 @@
   
   body {
     font-family: 'Gowun Dodum', sans-serif;
-    background: #0F172A;
+    background: #F5EDD7;
     min-height: 100vh;
     padding: 20px 14px 40px;
     padding-top: max(20px, env(safe-area-inset-top));
     padding-bottom: max(40px, env(safe-area-inset-bottom));
-    color: #FFFFFF;
+    color: #4A2F1B;
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;
@@ -32,8 +32,8 @@
   .header { 
     text-align: left; 
     margin-bottom: 16px;
-    padding-right: 36px;
-    min-height: 40px;
+    padding-right: 0;
+    min-height: 30px;
     display: flex;
     align-items: center;
     overflow: visible;
@@ -41,157 +41,165 @@
   
   .header h1 {
     font-family: 'Gaegu', cursive;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
     letter-spacing: -1.5px;
     cursor: pointer;
-    padding: 4px 6px;
+    padding: 4px 8px;
     border-radius: 8px;
     transition: background 0.2s;
-    color: #FFFFFF;
+    color: #4A2F1B;
     white-space: nowrap;
     overflow: visible;
     flex-shrink: 0;
   }
   
-  .header h1:hover { background: rgba(255,255,255,0.1); }
+  .header h1:hover { background: rgba(74,47,27,0.08); }
   
   .header-title-input {
     font-family: 'Gaegu', cursive;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
     letter-spacing: -1.5px;
-    border: 2px solid #2563EB;
+    border: 2px solid #B88A4A;
     border-radius: 8px;
-    padding: 4px 6px;
+    padding: 4px 8px;
     background: white;
     outline: none;
     min-width: 100px;
     max-width: 100%;
-    color: #1E3A8A;
+    color: #4A2F1B;
   }
   
   .top-buttons {
-    position: fixed;
-    top: 14px;
-    right: 8px;
     display: flex;
     flex-direction: column;
     gap: 0;
-    z-index: 100;
     background: white;
-    border: 1.5px solid #1E3A8A;
-    border-radius: 8px;
+    border: 2px solid #4A2F1B;
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 1.5px 1.5px 0 #1E3A8A;
+    box-shadow: 3px 3px 0 #4A2F1B;
+    flex-shrink: 0;
+    align-self: stretch;
   }
   
   .top-buttons button {
     background: white;
     border: none;
-    width: 22px;
-    height: 22px;
-    font-size: 9px;
+    width: 18px;
+    flex: 1;
+    font-size: 11px;
     cursor: pointer;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #1E293B;
+    color: #4A2F1B;
     font-family: 'Gaegu', cursive;
     font-weight: 700;
   }
   
   .top-buttons button + button {
     border-left: none;
-    border-top: 1.5px solid #1E3A8A;
+    border-top: 2px solid #4A2F1B;
   }
   
   .top-buttons button:active {
-    background: #DBEAFE;
+    background: #EAE0C2;
   }
   
-  .top-bar { display: flex; gap: 10px; margin-bottom: 18px; }
+  .top-bar { display: flex; gap: 8px; margin-bottom: 18px; align-items: stretch; }
   
   .coin-display {
     flex: 1;
-    background: linear-gradient(135deg, #60A5FA, #3B82F6);
-    border: 3px solid #1E3A8A;
-    border-radius: 16px;
-    padding: 12px 16px;
+    background: linear-gradient(135deg, #FCD34D, #F59E0B);
+    border: 3px solid #4A2F1B;
+    border-radius: 14px;
+    padding: 8px 12px;
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 4px 4px 0 #1E3A8A;
+    box-shadow: 3px 3px 0 #4A2F1B;
   }
   
-  .coin-icon { font-size: 28px; animation: spin 4s linear infinite; }
+  .coin-icon { font-size: 26px; animation: spin 4s linear infinite; }
   
   @keyframes spin {
     0%, 90%, 100% { transform: rotateY(0deg); }
     95% { transform: rotateY(360deg); }
   }
   
-  .coin-amount { font-family: 'Gaegu', cursive; font-size: 26px; font-weight: 700; color: white; }
-  .coin-label { font-family: 'Gaegu', cursive; font-size: 14px; color: #DBEAFE; margin-top: -4px; }
+  .coin-amount { font-family: 'Gaegu', cursive; font-size: 22px; font-weight: 700; color: #4A2F1B; line-height: 1; }
+  .coin-label { font-family: 'Gaegu', cursive; font-size: 12px; color: #7C2D12; margin-top: 2px; white-space: nowrap; }
   
   .shop-btn {
-    background: #1E3A8A;
-    border: 3px solid #1E3A8A;
-    border-radius: 16px;
-    padding: 10px 16px;
+    background: #5A8A5E;
+    border: 3px solid #4A2F1B;
+    border-radius: 14px;
+    padding: 6px 8px;
     font-family: 'Gaegu', cursive;
-    font-size: 18px;
+    font-size: 13px;
+    font-weight: 700;
     color: white;
     cursor: pointer;
-    box-shadow: 4px 4px 0 #1E3A8A;
+    box-shadow: 3px 3px 0 #4A2F1B;
+    line-height: 1.1;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-width: 60px;
   }
   
-  .shop-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #1E3A8A; }
+  .shop-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #4A2F1B; }
   
   .calendar-card {
     background: white;
-    border: 3px solid #1E3A8A;
-    border-radius: 16px;
-    padding: 12px;
+    border: 3px solid #4A2F1B;
+    border-radius: 18px;
+    padding: 14px;
     margin-bottom: 20px;
-    box-shadow: 4px 4px 0 #1E3A8A;
+    box-shadow: 4px 4px 0 #4A2F1B;
     overflow: hidden;
   }
   
-  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
   
   .cal-nav {
-    background: #BFDBFE;
-    border: 2px solid #1E3A8A;
+    background: #EAE0C2;
+    border: 2px solid #4A2F1B;
     border-radius: 10px;
     width: 36px;
     height: 36px;
     font-family: 'Gaegu', cursive;
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
     font-weight: 700;
+    color: #4A2F1B;
   }
   
-  .cal-title { font-family: 'Gaegu', cursive; font-size: 24px; font-weight: 700; }
+  .cal-title { font-family: 'Gaegu', cursive; font-size: 22px; font-weight: 700; color: #4A2F1B; }
   
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; width: 100%; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; width: 100%; }
   
   .cal-day-name {
     text-align: center;
     font-family: 'Gaegu', cursive;
     font-size: 14px;
     font-weight: 700;
-    color: #475569;
+    color: #7C5A3A;
     padding: 4px 0;
   }
   
-  .cal-day-name.sun { color: #DC2626; }
-  .cal-day-name.sat { color: #1D4ED8; }
+  .cal-day-name.sun { color: #B86B6B; }
+  .cal-day-name.sat { color: #6B89B8; }
   
   .cal-cell {
     aspect-ratio: 1;
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -200,7 +208,7 @@
     font-family: 'Gaegu', cursive;
     font-size: 16px;
     font-weight: 700;
-    background: #DBEAFE;
+    background: #EAE0C2;
     border: 2px solid transparent;
     position: relative;
     transition: all 0.15s;
@@ -209,63 +217,67 @@
     min-width: 0;
     box-sizing: border-box;
     overflow: hidden;
+    color: #4A2F1B;
   }
+  
+  .cal-cell.sun { color: #B86B6B; }
+  .cal-cell.sat { color: #6B89B8; }
   
   .cal-cell:active { transform: scale(0.95); }
   .cal-cell.empty { background: transparent; cursor: default; }
   
-  .cal-cell.today { border-color: #2563EB; background: #60A5FA; }
-  .cal-cell.selected { background: #1E3A8A; color: #EFF6FF; border-color: #1E3A8A; }
+  .cal-cell.today { border-color: #1E88E5; background: #1E88E5; color: #FFFFFF !important; }
+  .cal-cell.today .day-num { color: #FFFFFF; }
+  .cal-cell.selected { background: #4A2F1B; color: #F5EDD7; border-color: #4A2F1B; }
   
   .cell-gauge {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
-    background: #3B82F6;
-    border-radius: 0 0 8px 8px;
+    overflow: hidden;
     transition: height 0.4s ease;
     pointer-events: none;
+    z-index: 1;
   }
   
-  .cell-gauge.h25 { height: 25%; }
-  .cell-gauge.h50 { height: 50%; }
-  .cell-gauge.h75 { height: 75%; }
-  .cell-gauge.h100 { height: 100%; border-radius: 8px; }
+  /* inner는 셀 전체 높이에 걸친 그라데이션을 가지고, cell-gauge가 overflow:hidden으로 잘라 보여줌 */
+  .cell-gauge-inner {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(to top, #E53935 0%, #FB8C00 25%, #FDD835 50%, #43A047 75%, #1E88E5 100%);
+  }
   
-  .cal-cell.gauge-lines::before {
-    content: '';
+  .cell-gauge-lines {
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
     pointer-events: none;
-    background-image: 
-      linear-gradient(to bottom, transparent calc(25% - 2px), rgba(255,255,255,0.9) 25%, transparent calc(25% + 2px)),
-      linear-gradient(to bottom, transparent calc(50% - 2px), rgba(255,255,255,0.9) 50%, transparent calc(50% + 2px)),
-      linear-gradient(to bottom, transparent calc(75% - 2px), rgba(255,255,255,0.9) 75%, transparent calc(75% + 2px));
-    z-index: 1;
-    border-radius: 8px;
+    z-index: 2;
+    border-radius: 10px;
   }
   
-  .cal-cell .day-num { position: relative; z-index: 2; }
+  .cal-cell .day-num { position: relative; z-index: 3; }
   
-  .cal-cell.all-confirmed { background: #7DD3FC; }
-  .cal-cell.all-confirmed::after {
-    content: '🐶';
-    position: absolute;
-    bottom: 2px;
-    font-size: 14px;
-    line-height: 1;
+  .cal-cell.has-gauge {
+    background: #2A1F14;
   }
+  .cal-cell.has-gauge .day-num { color: rgba(255,255,255,0.65); }
+  .cal-cell.has-gauge.selected .day-num { color: rgba(255,255,255,0.65); }
+  
+  .cal-cell.all-confirmed { background: #5A8A5E; color: #FFF4D6; }
+  .cal-cell.all-confirmed.sun, .cal-cell.all-confirmed.sat { color: #FFF4D6; }
   .cal-cell.all-confirmed .cell-gauge { display: none; }
   
-  .cal-cell.selected.all-confirmed { background: #1E3A8A; }
+  .cal-cell.selected.all-confirmed { background: #4A2F1B; }
   
-  .cal-cell.sun { color: #DC2626; }
-  .cal-cell.sat { color: #1D4ED8; }
-  .cal-cell.selected.sun, .cal-cell.selected.sat { color: #EFF6FF; }
+  .cal-cell.selected.sun, .cal-cell.selected.sat { color: #F5EDD7; }
   
   .selected-date {
     text-align: center;
@@ -273,24 +285,24 @@
     font-family: 'Gaegu', cursive;
     font-size: 22px;
     font-weight: 700;
-    color: #FFFFFF;
+    color: #4A2F1B;
   }
   
   .subject {
     background: white;
-    border: 2px solid #1E3A8A;
-    border-radius: 12px;
-    margin-bottom: 8px;
+    border: 2px solid #4A2F1B;
+    border-radius: 14px;
+    margin-bottom: 10px;
     overflow: hidden;
-    box-shadow: 3px 3px 0 #1E3A8A;
+    box-shadow: 3px 3px 0 #4A2F1B;
   }
   
   .subject-header {
-    padding: 5px 10px;
+    padding: 6px 10px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    border-bottom: 1px dashed #CBD5E1;
+    gap: 8px;
+    border-bottom: 1px dashed #C8A47C;
   }
   
   .subject-name-input {
@@ -303,18 +315,18 @@
     outline: none;
     padding: 2px 4px;
     border-radius: 6px;
-    color: #1E3A8A;
+    color: #4A2F1B;
     min-width: 0;
   }
   
   .subject-name-input:focus { background: rgba(255,255,255,0.7); }
   
-  .subject-status { font-size: 12px; color: #1E40AF; font-weight: 700; }
+  .subject-status { font-size: 13px; color: #7C2D12; font-weight: 700; font-family: 'Gaegu', cursive; }
   
   .subject-delete-btn {
     background: transparent;
     border: none;
-    color: #1E3A8A;
+    color: #4A2F1B;
     font-size: 22px;
     cursor: pointer;
     padding: 2px 8px;
@@ -331,17 +343,17 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 10px;
+    padding: 5px 10px;
     cursor: pointer;
     user-select: none;
   }
   
-  .task:active { background: rgba(255,244,214,0.5); }
+  .task:active { background: #F5EDD7; }
   
   .checkbox {
     width: 20px;
     height: 20px;
-    border: 2px solid #1E3A8A;
+    border: 2px solid #4A2F1B;
     border-radius: 5px;
     display: flex;
     align-items: center;
@@ -351,7 +363,7 @@
     transition: all 0.2s;
   }
   
-  .task.done .checkbox { background: #0EA5E9; }
+  .task.done .checkbox { background: #6B9D6F; }
   .task.done .checkbox::after { content: '✓'; color: white; font-weight: bold; font-size: 13px; }
   
   .task-input {
@@ -359,19 +371,19 @@
     border: none;
     background: transparent;
     font-family: 'Gowun Dodum', sans-serif;
-    font-size: 14px;
-    color: #1E3A8A;
+    font-size: 15px;
+    color: #4A2F1B;
     outline: none;
     padding: 2px 0;
     min-width: 0;
   }
   
-  .task.done .task-input { text-decoration: line-through; color: #94A3B8; }
+  .task.done .task-input { text-decoration: line-through; color: #A8967C; }
   
   .delete-btn {
     background: transparent;
     border: none;
-    color: #1E3A8A;
+    color: #4A2F1B;
     font-size: 22px;
     cursor: pointer;
     padding: 2px 8px;
@@ -385,97 +397,99 @@
   
   .add-btn {
     width: 100%;
-    padding: 5px;
-    background: rgba(255,244,214,0.6);
+    padding: 3px;
+    background: #FFFFFF;
     border: none;
-    border-top: 1px dashed #CBD5E1;
+    border-top: 1px dashed #C8A47C;
     font-family: 'Gaegu', cursive;
     font-size: 13px;
-    color: #475569;
+    font-weight: 700;
+    color: #7C5A3A;
     cursor: pointer;
   }
   
-  .add-btn:active { background: #BFDBFE; color: #1E3A8A; }
+  .add-btn:active { background: #F5EDD7; color: #4A2F1B; }
   
-  /* 과목 추가 버튼 */
   .add-subject-btn {
     width: 100%;
     padding: 12px;
     background: white;
-    border: 2px dashed #475569;
-    border-radius: 12px;
+    border: 2px dashed #7C5A3A;
+    border-radius: 14px;
     font-family: 'Gaegu', cursive;
     font-size: 17px;
     font-weight: 700;
-    color: #475569;
+    color: #7C5A3A;
     cursor: pointer;
     margin-bottom: 12px;
   }
   
-  .add-subject-btn:active { background: #DBEAFE; }
+  .add-subject-btn:active { background: #EAE0C2; }
   
   .empty-subjects {
     text-align: center;
-    padding: 20px 16px;
-    color: #475569;
+    padding: 24px 16px;
+    color: #7C5A3A;
     font-family: 'Gaegu', cursive;
-    font-size: 16px;
+    font-size: 18px;
     background: white;
-    border: 2px dashed #475569;
-    border-radius: 12px;
+    border: 2px dashed #7C5A3A;
+    border-radius: 14px;
     margin-bottom: 12px;
   }
   
   .mom-card {
     background: white;
-    border: 3px solid #1E3A8A;
+    border: 3px solid #4A2F1B;
     border-radius: 16px;
-    padding: 16px;
+    padding: 12px;
     margin-bottom: 12px;
-    box-shadow: 4px 4px 0 #1E3A8A;
+    box-shadow: 4px 4px 0 #4A2F1B;
     text-align: center;
   }
   
   .mom-card.confirmed {
-    background: linear-gradient(135deg, #BFDBFE, #7DD3FC);
+    background: linear-gradient(135deg, #E8C97A, #D9B97A);
+    padding: 10px;
   }
   
   .mom-title {
     font-family: 'Gaegu', cursive;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    color: #4A2F1B;
   }
   
   .mom-btn {
-    background: #2563EB;
+    background: #B88A4A;
     color: white;
-    border: 3px solid #1E3A8A;
+    border: 3px solid #4A2F1B;
     border-radius: 12px;
-    padding: 10px 24px;
+    padding: 9px 22px;
     font-family: 'Gaegu', cursive;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 3px 3px 0 #1E3A8A;
+    box-shadow: 3px 3px 0 #4A2F1B;
   }
   
   .mom-btn:disabled {
-    background: #94A3B8;
+    background: #A8967C;
     cursor: not-allowed;
   }
   
   .mom-confirmed-text {
     font-family: 'Gaegu', cursive;
-    font-size: 22px;
+    font-size: 17px;
     font-weight: 700;
-    color: #1E3A8A;
-    line-height: 1.4;
+    color: #4A2F1B;
+    line-height: 1.3;
   }
   
   .mom-confirmed-text .heart {
-    color: #EC4899;
-    font-size: 26px;
+    color: #B86B6B;
+    font-size: 19px;
   }
   
   .dog-reward {
@@ -484,16 +498,16 @@
     left: 50%;
     transform: translateX(-50%);
     background: white;
-    border: 4px solid #1E3A8A;
-    border-radius: 20px;
-    padding: 12px 18px;
-    box-shadow: 6px 6px 0 #1E3A8A;
+    border: 2px solid #4A2F1B;
+    border-radius: 14px;
+    padding: 8px 14px;
+    box-shadow: 3px 3px 0 #4A2F1B;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     transition: opacity 0.3s;
     z-index: 200;
-    max-width: 320px;
+    max-width: 260px;
     opacity: 0;
     pointer-events: none;
     cursor: pointer;
@@ -504,14 +518,14 @@
     pointer-events: auto;
   }
   
-  .dog-face { font-size: 36px; animation: wiggle 0.5s ease infinite; }
+  .dog-face { font-size: 22px; animation: wiggle 0.5s ease infinite; }
   
   @keyframes wiggle {
     0%, 100% { transform: rotate(-8deg); }
     50% { transform: rotate(8deg); }
   }
   
-  .dog-msg { font-family: 'Gaegu', cursive; font-size: 16px; font-weight: 700; line-height: 1.3; }
+  .dog-msg { font-family: 'Gaegu', cursive; font-size: 14px; font-weight: 700; line-height: 1.2; color: #4A2F1B; }
   
   .flying-coin {
     position: fixed;
@@ -524,7 +538,7 @@
   .modal-bg {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.85);
+    background: rgba(74, 47, 27, 0.7);
     display: none;
     align-items: center;
     justify-content: center;
@@ -536,58 +550,61 @@
   
   .pwd-modal {
     background: white !important;
-    border: 2px solid #1E3A8A !important;
-    border-radius: 14px !important;
-    padding: 18px !important;
-    max-width: 300px !important;
+    border: 2px solid #4A2F1B !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    max-width: 320px !important;
     width: 100% !important;
-    box-shadow: 4px 4px 0 #1E3A8A !important;
+    box-shadow: 4px 4px 0 #4A2F1B !important;
   }
   
   .pwd-modal-title {
     font-family: 'Gaegu', cursive;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     text-align: center;
-    margin-bottom: 6px;
-    color: #1E293B;
+    margin-bottom: 8px;
+    color: #4A2F1B;
   }
   
   .pwd-modal-sub {
     text-align: center;
     margin-bottom: 10px;
     font-family: 'Gaegu', cursive;
-    font-size: 13px;
-    color: #475569;
+    font-size: 15px;
+    color: #7C5A3A;
   }
   
   .modal {
-    background: #EFF6FF;
-    border: 4px solid #1E3A8A;
-    border-radius: 20px;
+    background: #F5EDD7;
+    border: 4px solid #4A2F1B;
+    border-radius: 22px;
     padding: 24px;
     max-width: 380px;
     width: 100%;
-    box-shadow: 8px 8px 0 #1E3A8A;
+    box-shadow: 8px 8px 0 #4A2F1B;
     max-height: 85vh;
     overflow-y: auto;
   }
   
-  .modal-title { font-family: 'Gaegu', cursive; font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 8px; }
-  .modal-sub { text-align: center; margin-bottom: 20px; font-family: 'Gaegu', cursive; font-size: 18px; color: #2563EB; }
+  .modal-title { font-family: 'Gaegu', cursive; font-size: 30px; font-weight: 700; text-align: center; margin-bottom: 8px; color: #4A2F1B; }
+  .modal-sub { text-align: center; margin-bottom: 20px; font-family: 'Gaegu', cursive; font-size: 20px; color: #B88A4A; }
   
   .shop-modal {
-    max-width: 340px !important;
+    max-width: 360px !important;
     padding: 18px !important;
+    background: #E8F0E0 !important;
+    border-color: #5A8A5E !important;
+    box-shadow: 4px 4px 0 #5A8A5E !important;
   }
   
   .shop-modal-title {
     font-family: 'Gaegu', cursive;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     text-align: center;
     margin-bottom: 4px;
-    color: #1E293B;
+    color: #2E5A32;
   }
   
   .shop-modal-sub {
@@ -595,43 +612,43 @@
     margin-bottom: 12px;
     font-family: 'Gaegu', cursive;
     font-size: 15px;
-    color: #2563EB;
+    color: #5A8A5E;
     font-weight: 700;
   }
   
   .shop-items-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 10px;
+    margin-bottom: 12px;
   }
   
   .shop-item {
-    background: white;
-    border: 2px solid #1E3A8A;
+    background: #FFFFFF;
+    border: 1.5px solid #5A8A5E;
     border-radius: 10px;
-    padding: 8px 6px;
+    padding: 10px 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    box-shadow: 2px 2px 0 #1E3A8A;
+    gap: 4px;
+    box-shadow: 2px 2px 0 #5A8A5E;
   }
   
-  .shop-item-icon { font-size: 22px; }
+  .shop-item-icon { font-size: 26px; }
   .shop-item-name { 
     font-family: 'Gaegu', cursive; 
-    font-size: 13px; 
+    font-size: 16px; 
     font-weight: 700;
     text-align: center;
-    color: #1E293B;
+    color: #2E5A32;
     line-height: 1.1;
     word-break: keep-all;
   }
   .shop-item-price { 
     font-family: 'Gaegu', cursive; 
-    font-size: 12px; 
-    color: #2563EB;
+    font-size: 15px; 
+    color: #5A8A5E;
     font-weight: 700;
   }
   
@@ -639,30 +656,30 @@
     display: flex;
     gap: 4px;
     width: 100%;
-    margin-top: 2px;
+    margin-top: 4px;
   }
   
   .buy-btn {
     flex: 1;
-    background: #2563EB;
-    border: 1.5px solid #1E3A8A;
+    background: #5A8A5E;
+    border: 1.5px solid #2E5A32;
     color: white;
     font-family: 'Gaegu', cursive;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
-    padding: 4px 0;
+    padding: 5px 0;
     border-radius: 6px;
     cursor: pointer;
   }
   
-  .buy-btn:disabled { background: #94A3B8; cursor: not-allowed; }
+  .buy-btn:disabled { background: #B0B8AC; cursor: not-allowed; }
   
   .shop-item-delete {
     background: white;
-    border: 1.5px solid #1E3A8A;
-    color: #1E3A8A;
+    border: 1.5px solid #5A8A5E;
+    color: #5A8A5E;
     font-family: 'Gaegu', cursive;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 700;
     padding: 0 8px;
     border-radius: 6px;
@@ -672,103 +689,105 @@
   
   .add-shop-item-btn {
     width: 100%;
-    padding: 7px;
+    padding: 9px;
     background: white;
-    border: 2px dashed #1E3A8A;
+    border: 2px dashed #5A8A5E;
     border-radius: 8px;
     font-family: 'Gaegu', cursive;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
-    color: #1E3A8A;
+    color: #2E5A32;
     cursor: pointer;
     margin-bottom: 8px;
   }
   
   .modal-close {
     width: 100%;
-    margin-top: 8px;
-    padding: 10px;
-    background: #1E3A8A;
+    margin-top: 6px;
+    padding: 11px;
+    background: #2E5A32;
     color: white;
     border: none;
     border-radius: 10px;
     font-family: 'Gaegu', cursive;
-    font-size: 18px;
+    font-size: 17px;
+    font-weight: 700;
     cursor: pointer;
   }
   
   .owned-tickets {
-    background: #DBEAFE;
-    border: 1.5px dashed #1E3A8A;
+    background: #FFFFFF;
+    border: 1.5px dashed #5A8A5E;
     border-radius: 8px;
-    padding: 6px 8px;
+    padding: 8px 10px;
     margin-bottom: 10px;
   }
   
-  .owned-title { font-family: 'Gaegu', cursive; font-size: 13px; font-weight: 700; margin-bottom: 3px; color: #1E40AF; }
-  .owned-list { font-family: 'Gaegu', cursive; font-size: 12px; color: #1E293B; }
-  .owned-empty { color: #94A3B8; font-style: italic; }
+  .owned-title { font-family: 'Gaegu', cursive; font-size: 14px; font-weight: 700; margin-bottom: 3px; color: #2E5A32; }
+  .owned-list { font-family: 'Gaegu', cursive; font-size: 13px; color: #5A8A5E; }
+  .owned-empty { color: #A8B0A4; font-style: italic; }
   
   .pwd-input {
     width: 100%;
-    padding: 9px;
-    border: 2px solid #1E3A8A;
+    padding: 10px;
+    border: 2px solid #4A2F1B;
+    border-radius: 10px;
+    font-family: 'Gaegu', cursive;
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 8px;
+    letter-spacing: 6px;
+    outline: none;
+    color: #4A2F1B;
+    background: white;
+  }
+  
+  .pwd-input:focus { border-color: #B88A4A; }
+  
+  .text-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #4A2F1B;
     border-radius: 10px;
     font-family: 'Gaegu', cursive;
     font-size: 18px;
     text-align: center;
     margin-bottom: 8px;
-    letter-spacing: 6px;
-    outline: none;
-    color: #1E293B;
-  }
-  
-  .pwd-input:focus { border-color: #2563EB; }
-  
-  .text-input {
-    width: 100%;
-    padding: 9px;
-    border: 2px solid #1E3A8A;
-    border-radius: 10px;
-    font-family: 'Gaegu', cursive;
-    font-size: 16px;
-    text-align: center;
-    margin-bottom: 8px;
     outline: none;
     background: white;
-    color: #1E293B;
+    color: #4A2F1B;
   }
   
-  .text-input:focus { border-color: #2563EB; }
+  .text-input:focus { border-color: #B88A4A; }
   
   .modal-btns { display: flex; gap: 8px; margin-top: 4px; }
   
   .modal-btn {
     flex: 1;
-    padding: 9px;
-    border: 2px solid #1E3A8A;
+    padding: 10px;
+    border: 2px solid #4A2F1B;
     border-radius: 10px;
     font-family: 'Gaegu', cursive;
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 2px 2px 0 #1E3A8A;
+    box-shadow: 2px 2px 0 #4A2F1B;
   }
   
   .modal-btn:active {
     transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0 #1E3A8A;
+    box-shadow: 1px 1px 0 #4A2F1B;
   }
   
-  .modal-btn.primary { background: #2563EB; color: white; }
-  .modal-btn.danger { background: #1E3A8A; color: white; }
-  .modal-btn.cancel { background: white; color: #1E3A8A; }
+  .modal-btn.primary { background: #B88A4A; color: white; }
+  .modal-btn.danger { background: #94605E; color: white; }
+  .modal-btn.cancel { background: white; color: #4A2F1B; }
   
   .pwd-error {
-    color: #DC2626;
+    color: #B86B6B;
     text-align: center;
     font-family: 'Gaegu', cursive;
-    font-size: 13px;
+    font-size: 14px;
     margin-bottom: 6px;
     min-height: 18px;
   }
@@ -776,9 +795,10 @@
   .confirm-msg {
     text-align: center;
     font-family: 'Gaegu', cursive;
-    font-size: 18px;
+    font-size: 20px;
     margin-bottom: 16px;
     line-height: 1.4;
+    color: #4A2F1B;
   }
   
   .toast {
@@ -786,15 +806,15 @@
     top: 80px;
     left: 50%;
     transform: translateX(-50%);
-    background: #0EA5E9;
+    background: #B88A4A;
     color: white;
-    padding: 12px 20px;
-    border: 3px solid #1E3A8A;
-    border-radius: 14px;
+    padding: 14px 22px;
+    border: 3px solid #4A2F1B;
+    border-radius: 16px;
     font-family: 'Gaegu', cursive;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
-    box-shadow: 4px 4px 0 #1E3A8A;
+    box-shadow: 4px 4px 0 #4A2F1B;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
@@ -804,16 +824,9 @@
   }
   
   .toast.show { opacity: 1; }
-  
-  /* old sound-toggle replaced by top-buttons */
 </style>
 </head>
 <body>
-
-<div class="top-buttons">
-  <button id="settingsBtn" onclick="openSettings()" title="설정">설정</button>
-  <button id="soundToggle" onclick="toggleSound()" title="소리">소리</button>
-</div>
 
 <div class="container">
   <div class="header">
@@ -825,10 +838,14 @@
       <span class="coin-icon">🪙</span>
       <div style="flex:1;">
         <div class="coin-amount" id="coinAmount">0</div>
-        <div class="coin-label">내 코인 <span id="pendingLabel" style="color:#FCD34D;"></span></div>
+        <div class="coin-label">내 코인 <span id="pendingLabel" style="color:#7C2D12;"></span></div>
       </div>
     </div>
     <button class="shop-btn" onclick="openShop()">🎁<br>상점</button>
+    <div class="top-buttons">
+      <button id="settingsBtn" onclick="openSettings()" title="설정">설정</button>
+      <button id="soundToggle" onclick="toggleSound()" title="소리">소리</button>
+    </div>
   </div>
   
   <div class="calendar-card">
@@ -905,7 +922,7 @@
   </div>
 </div>
 
-<!-- 설정 (비밀번호 변경) -->
+<!-- 설정 -->
 <div class="modal-bg" id="settingsModal" onclick="if(event.target===this)closeSettings()">
   <div class="modal pwd-modal">
     <div class="pwd-modal-title">비밀번호 변경</div>
@@ -919,7 +936,7 @@
       <button class="modal-btn primary" onclick="changePwd()">변경</button>
     </div>
     <div style="margin-top:14px;text-align:center;">
-      <button onclick="openResetPwd()" style="background:none;border:none;color:#475569;font-family:'Gaegu',cursive;font-size:14px;text-decoration:underline;cursor:pointer;">
+      <button onclick="openResetPwd()" style="background:none;border:none;color:#7C5A3A;font-family:'Gaegu',cursive;font-size:15px;text-decoration:underline;cursor:pointer;">
         비밀번호를 잊어버렸어요
       </button>
     </div>
@@ -954,7 +971,7 @@
   </div>
 </div>
 
-<!-- 과목 삭제 확인 (비밀번호) -->
+<!-- 과목 삭제 -->
 <div class="modal-bg" id="deleteSubjectModal" onclick="if(event.target===this)closeDeleteSubject()">
   <div class="modal pwd-modal">
     <div class="pwd-modal-title" id="deleteSubjectMsg"></div>
@@ -1045,33 +1062,23 @@ let state = {
 let viewYear, viewMonth, selectedDate;
 let dogTimer = null;
 let pendingDeleteSubjectId = null;
+let pendingBuyItem = null;
+
+const SUBJECT_COLORS = [
+  '#F0DCDC', '#DCE4F0', '#F0E8D0', '#DCEEDC', '#E5DCEC',
+  '#F0E0D0', '#D8E8F0', '#F0E4DC', '#DCEEE5', '#F0EADC'
+];
 
 function dateKey(y, m, d) {
   return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
 }
-
 function todayKey() {
   const t = new Date();
   return dateKey(t.getFullYear(), t.getMonth(), t.getDate());
 }
-
-const SUBJECT_COLORS = [
-  '#FFE8E8', // 연분홍
-  '#E8F4FF', // 연하늘
-  '#DBEAFE', // 연노랑
-  '#E8FFE8', // 연초록
-  '#F4E8FF', // 연보라
-  '#FFE8D6', // 연주황
-  '#D6F4FF', // 연파랑
-  '#FFEFE8', // 연살구
-  '#E8FFF4', // 연민트
-  '#FFF8E8'  // 연크림
-];
-
 function randomSubjectColor() {
   return SUBJECT_COLORS[Math.floor(Math.random() * SUBJECT_COLORS.length)];
 }
-
 function genId() {
   return 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
@@ -1089,10 +1096,7 @@ function load() {
       { id: 'pcbang', name: 'PC방', icon: '🎮', price: 20 }
     ];
   }
-  // 기존 과목에 색이 없으면 부여
-  state.subjects.forEach(s => {
-    if (!s.color) s.color = randomSubjectColor();
-  });
+  state.subjects.forEach(s => { if (!s.color) s.color = randomSubjectColor(); });
   if (!state.tasks) state.tasks = {};
   if (!state.tickets) state.tickets = {};
   if (!state.bonusGiven) state.bonusGiven = {};
@@ -1171,11 +1175,7 @@ function renderCoins() {
   });
   
   const label = document.getElementById('pendingLabel');
-  if (pendingTotal > 0) {
-    label.textContent = ` (예비 ${pendingTotal})`;
-  } else {
-    label.textContent = '';
-  }
+  label.textContent = pendingTotal > 0 ? ` (예비 ${pendingTotal})` : '';
 }
 
 function renderCalendar() {
@@ -1229,21 +1229,24 @@ function renderCalendar() {
       if (allDone && momOk) {
         cell.classList.add('all-confirmed');
       } else {
-        let level;
-        if (allDone && !momOk) {
-          level = 100;
-        } else {
-          const pct = stats.done / stats.total;
-          if (pct >= 0.75) level = 75;
-          else if (pct >= 0.5) level = 50;
-          else if (pct >= 0.25) level = 25;
-          else if (stats.done > 0) level = 25;
-          else level = 0;
-        }
-        
-        if (level > 0) {
-          html += `<div class="cell-gauge h${level}"></div>`;
-          cell.classList.add('gauge-lines');
+        const pct = Math.round((stats.done / stats.total) * 100);
+        if (pct > 0) {
+          cell.classList.add('has-gauge');
+          const radius = pct >= 100 ? '10px' : '0 0 10px 10px';
+          // 그라데이션은 셀 전체 높이 기준 — inner의 높이를 100%로 고정하고 cell-gauge가 잘라서 보여줌
+          html += `<div class="cell-gauge" style="height:${pct}%;border-radius:${radius};">
+            <div class="cell-gauge-inner"></div>
+          </div>`;
+          
+          // 구분선 — 검정에 가깝게, 또렷하게
+          if (stats.total > 1) {
+            const lines = [];
+            for (let i = 1; i < stats.total; i++) {
+              const linePct = (i / stats.total) * 100;
+              lines.push(`linear-gradient(to bottom, transparent calc(${linePct}% - 2px), rgba(0,0,0,0.85) ${linePct}%, transparent calc(${linePct}% + 2px))`);
+            }
+            html += `<div class="cell-gauge-lines" style="background-image:${lines.join(',')}"></div>`;
+          }
         }
       }
     }
@@ -1290,30 +1293,48 @@ function renderTasks() {
     const sEl = document.createElement('div');
     sEl.className = 'subject';
     sEl.innerHTML = `
-      <div class="subject-header" style="background:${s.color || '#DBEAFE'};">
+      <div class="subject-header" style="background:${s.color || '#EAE0C2'};">
         <input type="text" class="subject-name-input" value="${esc(s.name)}" 
                maxlength="20"
-               onchange="updateSubjectName('${s.id}', this.value)"
+               data-subject-id="${s.id}"
                onfocus="this.select()">
         <span class="subject-status">${done}/${tasks.length}</span>
-        <button class="subject-delete-btn" onclick="openDeleteSubject('${s.id}')" title="과목 삭제">−</button>
+        <button class="subject-delete-btn" data-subject-id="${s.id}" title="과목 삭제">−</button>
       </div>
       <div class="task-list" id="list-${s.id}"></div>
-      <button class="add-btn" onclick="addTask('${s.id}')">+ 숙제 추가</button>
+      <button class="add-btn" data-subject-id="${s.id}">+ 숙제 추가</button>
     `;
     container.appendChild(sEl);
+    
+    // 이벤트 바인딩 (인라인 onclick 제거 → 따옴표 깨짐 문제 차단)
+    sEl.querySelector('.subject-name-input').addEventListener('change', e => {
+      updateSubjectName(s.id, e.target.value);
+    });
+    sEl.querySelector('.subject-delete-btn').addEventListener('click', () => {
+      openDeleteSubject(s.id);
+    });
+    sEl.querySelector('.add-btn').addEventListener('click', () => {
+      addTask(s.id);
+    });
     
     const list = sEl.querySelector(`#list-${s.id}`);
     tasks.forEach((task, idx) => {
       const tEl = document.createElement('div');
       tEl.className = 'task' + (task.done ? ' done' : '');
       tEl.innerHTML = `
-        <div class="checkbox" onclick="toggleTask('${s.id}',${idx}, this)"></div>
-        <input type="text" class="task-input" value="${esc(task.text)}" 
-               onchange="updateText('${s.id}',${idx},this.value)"
-               onfocus="this.select()">
-        <button class="delete-btn" onclick="deleteTask('${s.id}',${idx})" title="삭제">−</button>
+        <div class="checkbox"></div>
+        <input type="text" class="task-input" value="${esc(task.text)}" onfocus="this.select()">
+        <button class="delete-btn" title="삭제">−</button>
       `;
+      tEl.querySelector('.checkbox').addEventListener('click', (e) => {
+        toggleTask(s.id, idx, e.currentTarget);
+      });
+      tEl.querySelector('.task-input').addEventListener('change', e => {
+        updateText(s.id, idx, e.target.value);
+      });
+      tEl.querySelector('.delete-btn').addEventListener('click', () => {
+        deleteTask(s.id, idx);
+      });
       list.appendChild(tEl);
     });
   });
@@ -1336,7 +1357,7 @@ function renderMomSection() {
       <div class="mom-card confirmed">
         <div class="mom-confirmed-text">
           참 잘했어요 아들 <span class="heart">💕</span><br>
-          <span style="font-size:18px;">엄마가 확인했어요 👩</span>
+          <span style="font-size:14px;">엄마가 확인했어요 👩</span>
         </div>
       </div>
     `;
@@ -1364,10 +1385,10 @@ function editAppTitle() {
   input.type = 'text';
   input.className = 'header-title-input';
   input.value = cur;
-  input.maxLength = 8;
+  input.maxLength = 12;
   
   const updateWidth = () => {
-    const len = Math.max(input.value.length, 4);
+    const len = Math.max(input.value.length, 8);
     input.style.width = (len + 1.5) + 'ch';
   };
   
@@ -1376,17 +1397,14 @@ function editAppTitle() {
   input.focus();
   input.select();
   
-  // 8자 초과 시 잘라내기 (IME 한글 조합도 대응)
   input.addEventListener('input', () => {
-    if (input.value.length > 8) {
-      input.value = input.value.slice(0, 8);
-    }
+    if (input.value.length > 12) input.value = input.value.slice(0, 12);
     updateWidth();
   });
   
   const finish = () => {
     let val = input.value.trim();
-    if (val.length > 8) val = val.slice(0, 8);
+    if (val.length > 12) val = val.slice(0, 12);
     if (!val) val = '숙제 체크리스트';
     state.appTitle = val;
     save();
@@ -1421,20 +1439,10 @@ function addSubject() {
   const name = document.getElementById('newSubjectInput').value.trim();
   const err = document.getElementById('addSubjectError');
   
-  if (!name) {
-    err.textContent = '과목 이름을 입력하세요';
-    soundError();
-    return;
-  }
-  if (name.length > 20) {
-    err.textContent = '20자 이내로 입력하세요';
-    soundError();
-    return;
-  }
+  if (!name) { err.textContent = '과목 이름을 입력하세요'; soundError(); return; }
+  if (name.length > 20) { err.textContent = '20자 이내로 입력하세요'; soundError(); return; }
   if (state.subjects.some(s => s.name === name)) {
-    err.textContent = '같은 이름의 과목이 있어요';
-    soundError();
-    return;
+    err.textContent = '같은 이름의 과목이 있어요'; soundError(); return;
   }
   
   const id = genId();
@@ -1451,10 +1459,7 @@ function updateSubjectName(subjectId, newName) {
   const trimmed = newName.trim();
   const s = state.subjects.find(x => x.id === subjectId);
   if (!s) return;
-  if (!trimmed) {
-    renderAll();
-    return;
-  }
+  if (!trimmed) { renderAll(); return; }
   s.name = trimmed.slice(0, 20);
   save();
 }
@@ -1464,8 +1469,7 @@ function openDeleteSubject(subjectId) {
   pendingDeleteSubjectId = subjectId;
   const s = state.subjects.find(x => x.id === subjectId);
   if (!s) return;
-  document.getElementById('deleteSubjectMsg').textContent = 
-    `"${s.name}" 과목 삭제`;
+  document.getElementById('deleteSubjectMsg').textContent = `"${s.name}" 과목 삭제`;
   document.getElementById('deleteSubjectPwd').value = '';
   document.getElementById('deleteSubjectError').textContent = '';
   document.getElementById('deleteSubjectModal').classList.add('show');
@@ -1490,9 +1494,7 @@ function confirmDeleteSubject() {
   
   if (!pendingDeleteSubjectId) return;
   
-  // 과목 삭제
   state.subjects = state.subjects.filter(s => s.id !== pendingDeleteSubjectId);
-  // 모든 날짜에서 해당 과목 데이터 삭제
   Object.keys(state.tasks).forEach(dk => {
     if (state.tasks[dk] && state.tasks[dk][pendingDeleteSubjectId]) {
       delete state.tasks[dk][pendingDeleteSubjectId];
@@ -1506,57 +1508,44 @@ function confirmDeleteSubject() {
   showToast('🗑️ 과목이 삭제되었어요');
 }
 
-/* ====== 숙제 ====== */
+/* ====== 숙제 (코인 로직 정리됨) ====== */
 function toggleTask(subjectId, idx, checkboxEl) {
   const task = state.tasks[selectedDate][subjectId][idx];
   const wasDone = task.done;
   task.done = !task.done;
   
   if (!wasDone && task.done) {
+    // 체크 ✓
     soundCheck();
     setTimeout(() => soundCoin(), 200);
     addPendingCoin(selectedDate, 1, checkboxEl);
-    showDogMsg('잘했어! +1 🪙 (예비)', 2200);
-    
-    setTimeout(() => {
-      const stats = getDayStats(selectedDate);
-      if (stats.done === stats.total && stats.total > 0 && !state.bonusGiven[selectedDate]) {
-        state.bonusGiven[selectedDate] = true;
-        soundBonus();
-        addPendingCoin(selectedDate, 5, null);
-        showDogMsg('🎉 하루 끝! 보너스 +5 🪙<br>엄마 확인 받자!', 2500);
-        save();
-        renderMomSection();
-        renderCoins();
-      }
-    }, 700);
+    showDogMsg('+1 🪙', 1500);
   } else if (wasDone && !task.done) {
+    // 체크 해제
     soundClick();
-    let takeBack = 1;
-    let msg = '아쉽다... -1 🪙';
+    revokeCoin(selectedDate, 1);
+    let msg = '-1 🪙';
     
-    if (state.bonusGiven[selectedDate]) {
-      takeBack += 5;
-      delete state.bonusGiven[selectedDate];
-      msg = '보너스도 회수! -6 🪙';
-    }
     if (state.momConfirmed[selectedDate]) {
       delete state.momConfirmed[selectedDate];
-      const prevPending = state.pendingCoins[selectedDate] || 0;
-      state.coins -= prevPending;
-      if (state.coins < 0) state.coins = 0;
-      state.pendingCoins[selectedDate] = prevPending;
-      msg = '엄마 확인 취소됨. 코인 회수!';
+      msg = '확인 취소';
     }
     
-    const cur = state.pendingCoins[selectedDate] || 0;
-    state.pendingCoins[selectedDate] = Math.max(0, cur - takeBack);
-    
-    showDogMsg(msg, 1800);
+    showDogMsg(msg, 1500);
   }
   
   save();
   renderAll();
+}
+
+// 코인 회수: confirmed면 실 코인에서, 아니면 pending에서
+function revokeCoin(dateKey, amount) {
+  if (state.momConfirmed[dateKey]) {
+    state.coins = Math.max(0, state.coins - amount);
+  } else {
+    const cur = state.pendingCoins[dateKey] || 0;
+    state.pendingCoins[dateKey] = Math.max(0, cur - amount);
+  }
 }
 
 function addPendingCoin(dateKey, amount, fromEl) {
@@ -1586,14 +1575,10 @@ function addPendingCoin(dateKey, amount, fromEl) {
       }, i * 100);
     }
   }
-  renderCoins();
 }
 
 function showDogMsg(msg, duration = 2200) {
-  if (dogTimer) {
-    clearTimeout(dogTimer);
-    dogTimer = null;
-  }
+  if (dogTimer) { clearTimeout(dogTimer); dogTimer = null; }
   const dogReward = document.getElementById('dogReward');
   document.getElementById('dogMsg').innerHTML = msg;
   dogReward.classList.add('show');
@@ -1661,13 +1646,34 @@ function checkMomPwd() {
     state.momConfirmed[selectedDate] = true;
     const pending = state.pendingCoins[selectedDate] || 0;
     state.coins += pending;
+    
+    // 주간 보너스 체크 (금요일에 월~금 5일 모두 엄마 확인 완료 시)
+    const weeklyBonus = checkWeeklyBonus(selectedDate);
+    
     save();
     soundFanfare();
     closeMomPwd();
-    if (pending > 0) {
-      showDogMsg(`참 잘했어요 아들 💕<br>예비 코인 +${pending} 합산!`, 2800);
+    
+    if (weeklyBonus) {
+      // 주간 보너스 +5 지급
+      state.coins += 5;
+      state.weeklyBonusGiven = state.weeklyBonusGiven || {};
+      state.weeklyBonusGiven[selectedDate] = true;
+      save();
+      setTimeout(() => {
+        soundBonus();
+        showDogMsg('🎉 한주 완성! +5 🪙', 2200);
+        renderAll();
+      }, 1200);
+      if (pending > 0) {
+        showDogMsg(`💕 +${pending} 🪙`, 1100);
+      } else {
+        showDogMsg('💕 참 잘했어요', 1100);
+      }
+    } else if (pending > 0) {
+      showDogMsg(`💕 +${pending} 🪙`, 1800);
     } else {
-      showDogMsg('참 잘했어요 아들 💕', 2500);
+      showDogMsg('💕 참 잘했어요', 1500);
     }
     renderAll();
   } else {
@@ -1675,6 +1681,27 @@ function checkMomPwd() {
     soundError();
     document.getElementById('momPwdInput').value = '';
   }
+}
+
+// 금요일에 호출됐고 그 주 월~금 모두 momConfirmed면 true
+function checkWeeklyBonus(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  // 금요일이 아니면 X (0=일, 1=월, ..., 5=금)
+  if (dt.getDay() !== 5) return false;
+  
+  // 이미 이번주에 받았으면 X
+  state.weeklyBonusGiven = state.weeklyBonusGiven || {};
+  if (state.weeklyBonusGiven[dateStr]) return false;
+  
+  // 월~금 5일 모두 momConfirmed인지 확인
+  for (let i = 0; i < 5; i++) {
+    const day = new Date(dt);
+    day.setDate(dt.getDate() - (4 - i)); // 월(-4) → 금(0)
+    const key = dateKey(day.getFullYear(), day.getMonth(), day.getDate());
+    if (!state.momConfirmed[key]) return false;
+  }
+  return true;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1709,13 +1736,11 @@ function changePwd() {
   
   if (cur !== state.momPassword) {
     err.textContent = '현재 비밀번호가 틀려요 ❌';
-    soundError();
-    return;
+    soundError(); return;
   }
   if (!/^\d{4}$/.test(newP)) {
     err.textContent = '새 비밀번호는 4자리 숫자여야 해요';
-    soundError();
-    return;
+    soundError(); return;
   }
   
   state.momPassword = newP;
@@ -1775,7 +1800,7 @@ function renderShopItems() {
   const grid = document.getElementById('shopItemsGrid');
   grid.innerHTML = '';
   if (!state.shopItems || state.shopItems.length === 0) {
-    grid.innerHTML = '<div style="grid-column:span 2;text-align:center;font-family:Gaegu,cursive;color:#94A3B8;padding:10px;">상품이 없어요</div>';
+    grid.innerHTML = '<div style="grid-column:span 2;text-align:center;font-family:Gaegu,cursive;color:#A8967C;padding:10px;">상품이 없어요</div>';
     return;
   }
   state.shopItems.forEach(item => {
@@ -1783,13 +1808,22 @@ function renderShopItems() {
     el.className = 'shop-item';
     el.innerHTML = `
       <span class="shop-item-icon">${item.icon || '🎁'}</span>
-      <div class="shop-item-name">${esc(item.name)}</div>
+      <div class="shop-item-name"></div>
       <div class="shop-item-price">${item.price} 🪙</div>
       <div class="shop-item-actions">
-        <button class="buy-btn" ${state.coins < item.price ? 'disabled' : ''} onclick="buyItem('${item.id}', ${item.price}, '${esc(item.icon || '🎁')} ${esc(item.name)}')">구매</button>
-        <button class="shop-item-delete" onclick="deleteShopItem('${item.id}')" title="삭제">−</button>
+        <button class="buy-btn" ${state.coins < item.price ? 'disabled' : ''}>구매</button>
+        <button class="shop-item-delete" title="삭제">−</button>
       </div>
     `;
+    // 이름은 textContent로 (XSS/따옴표 안전)
+    el.querySelector('.shop-item-name').textContent = item.name;
+    // 이벤트 바인딩
+    el.querySelector('.buy-btn').addEventListener('click', () => {
+      buyItem(item.id, item.price, `${item.icon || '🎁'} ${item.name}`);
+    });
+    el.querySelector('.shop-item-delete').addEventListener('click', () => {
+      deleteShopItem(item.id);
+    });
     grid.appendChild(el);
   });
 }
@@ -1801,7 +1835,6 @@ function renderOwned() {
     const cnt = state.tickets[item.id] || 0;
     if (cnt > 0) items.push(`${item.icon || '🎁'} ${item.name} ${cnt}장`);
   });
-  // shopItems에서 삭제된 항목이라도 ticket이 있으면 표시
   Object.keys(state.tickets).forEach(tid => {
     if (state.tickets[tid] > 0 && !state.shopItems.some(s => s.id === tid)) {
       items.push(`(삭제됨) ${tid} ${state.tickets[tid]}장`);
@@ -1836,7 +1869,7 @@ function deleteShopItem(id) {
   showToast('🗑️ 상품이 삭제됐어요');
 }
 
-/* ===== 상품 추가 (비번 필요) ===== */
+/* ===== 상품 추가 ===== */
 function openAddShopItem() {
   soundClick();
   document.getElementById('newShopItemName').value = '';
@@ -1857,22 +1890,10 @@ function addShopItem() {
   const pwd = document.getElementById('newShopItemPwd').value;
   const err = document.getElementById('addShopItemError');
   
-  if (!name) {
-    err.textContent = '상품 이름을 입력하세요';
-    soundError();
-    return;
-  }
+  if (!name) { err.textContent = '상품 이름을 입력하세요'; soundError(); return; }
   const price = parseInt(priceStr);
-  if (isNaN(price) || price < 1) {
-    err.textContent = '가격을 올바로 입력하세요';
-    soundError();
-    return;
-  }
-  if (pwd !== state.momPassword) {
-    err.textContent = '비밀번호가 틀려요 ❌';
-    soundError();
-    return;
-  }
+  if (isNaN(price) || price < 1) { err.textContent = '가격을 올바로 입력하세요'; soundError(); return; }
+  if (pwd !== state.momPassword) { err.textContent = '비밀번호가 틀려요 ❌'; soundError(); return; }
   
   const id = 'item_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   state.shopItems.push({ id, name, icon: '🎁', price });
