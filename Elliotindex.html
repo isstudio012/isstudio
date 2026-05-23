@@ -769,6 +769,7 @@ function toggleTask(subjectId, idx, checkboxEl) {
   task.done = !task.done;
   
   if (!wasDone && task.done) {
+    // 체크: 코인 +1
     soundCheck();
     setTimeout(() => soundCoin(), 200);
     giveCoin(checkboxEl, 1, '잘했어! +1 🪙');
@@ -782,8 +783,25 @@ function toggleTask(subjectId, idx, checkboxEl) {
         save();
       }
     }, 700);
-  } else {
+  } else if (wasDone && !task.done) {
+    // 체크 해제: 코인 -1 (보너스 받았으면 -5도 추가)
     soundClick();
+    let takeBack = 1;
+    let msg = '아쉽다... -1 🪙';
+    
+    if (state.bonusGiven[selectedDate]) {
+      takeBack += 5;
+      delete state.bonusGiven[selectedDate];
+      msg = '보너스도 회수! -6 🪙';
+    }
+    
+    state.coins -= takeBack;
+    if (state.coins < 0) state.coins = 0;
+    
+    const dogReward = document.getElementById('dogReward');
+    document.getElementById('dogMsg').innerHTML = msg;
+    dogReward.classList.add('show');
+    setTimeout(() => dogReward.classList.remove('show'), 1800);
   }
   
   save();
