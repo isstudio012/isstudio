@@ -131,6 +131,8 @@
     border: 2px solid transparent;
     position: relative;
     transition: all 0.15s;
+    padding-top: 2px;
+    padding-bottom: 14px;
   }
   
   .cal-cell:active { transform: scale(0.95); }
@@ -149,8 +151,25 @@
     border-radius: 50%;
   }
   
-  .cal-cell.all-done::after { background: #6BAA75; }
+  .cal-cell.all-done {
+    background: #A8E6A1;
+  }
+  
+  .cal-cell.all-done::after {
+    content: '🐶';
+    width: auto;
+    height: auto;
+    background: none;
+    font-size: 14px;
+    bottom: 2px;
+    line-height: 1;
+  }
+  
   .cal-cell.selected.has-tasks::after { background: #FFD93D; }
+  .cal-cell.selected.all-done {
+    background: #3D2817;
+  }
+  .cal-cell.selected.all-done::after { background: none; }
   
   .cal-cell.sun { color: #C44536; }
   .cal-cell.sat { color: #4A89C4; }
